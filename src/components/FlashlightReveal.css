@@ -19,3 +19,16 @@
     transparent 100%
   );
 }
+
+/* Touch devices — show full-colour reveal image (no hover cursor) */
+@media (hover: none) {
+  .flashlight > img:not(.flashlight__reveal) {
+    display: none;
+  }
+
+  .flashlight__reveal {
+    opacity: 1 !important;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}

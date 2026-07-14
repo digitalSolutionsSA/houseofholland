@@ -13,9 +13,9 @@ export default function Hero() {
       <FlashlightReveal
         className="hero__photo"
         imgClassName="hero__image"
-        base="/Graphics/hero.png"
+        base="/Graphics/hero.webp"
         baseAlt="Ink built to outlast the trend — tattoo artist mid-session, back piece visible"
-        reveal="/Graphics/hero-alternative.png"
+        reveal="/Graphics/hero-alternative.webp"
         revealAlt="Ink built to outlast the trend, headline in front of the artist"
         radius={220}
       />

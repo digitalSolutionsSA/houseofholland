@@ -5,7 +5,7 @@
   background: var(--color-black);
   display: flex;
   align-items: center;
-  padding: calc(91px + clamp(8px, 2vh, 24px)) 33px clamp(16px, 4vh, 60px);
+  padding: var(--section-pad-top) var(--page-gutter) clamp(16px, 4vh, 60px);
   overflow: hidden;
 }
 
@@ -124,15 +124,31 @@
 }
 
 @media (max-width: 900px) {
-  .footer {
-    padding-top: calc(70px + clamp(8px, 2vh, 24px));
-  }
-
   .footer__content {
     flex-basis: 100%;
   }
 
   .footer__bg-img {
     object-position: 72% center;
+  }
+
+  .footer__explore nav {
+    gap: 8px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer__hours li {
+    font-size: clamp(12px, 3.5vw, 16px);
+  }
+
+  .footer__heading {
+    font-size: clamp(24px, 8vw, 40px);
+  }
+}
+
+@media (min-width: 1920px) {
+  .footer__content {
+    flex-basis: 640px;
   }
 }

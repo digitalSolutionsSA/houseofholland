@@ -31,7 +31,7 @@ export default function ArtistsLineup({ showViewAll = true }: ArtistsLineupProps
       <div className="artists-lineup__photo-wrap">
         <img
           className="artists-lineup__photo"
-          src="/Graphics/artists-cropped.png"
+          src="/Graphics/artists-cropped.webp"
           alt="The seven House of Holland tattoo artists"
         />
 
@@ -53,6 +53,10 @@ export default function ArtistsLineup({ showViewAll = true }: ArtistsLineupProps
           })}
         </div>
       </div>
+
+      <Link to="/artists" className="artists-lineup__mobile-cta">
+        VIEW ALL ARTISTS
+      </Link>
 
       <div className="artists-lineup__banner">
         <Link to="/booking" className="artists-lineup__cta artists-lineup__cta--red">

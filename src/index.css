@@ -8,6 +8,10 @@
   --font-body: 'Inter', sans-serif;
 
   --page-max-width: none;
+  --navbar-height: 91px;
+  --page-gutter: 33px;
+  --section-pad-top: calc(var(--navbar-height) + clamp(16px, 4vw, 40px));
+  --content-max: 1280px;
 
   color-scheme: dark;
 }
@@ -31,9 +35,15 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-img {
+body.is-loading {
+  overflow: hidden;
+}
+
+img,
+video {
   display: block;
   max-width: 100%;
 }
@@ -61,13 +71,7 @@ ul {
 }
 
 .navbar-spacer {
-  height: 91px;
-}
-
-@media (max-width: 900px) {
-  .navbar-spacer {
-    height: 70px;
-  }
+  height: var(--navbar-height);
 }
 
 .visually-hidden {

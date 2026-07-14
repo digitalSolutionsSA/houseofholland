@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
+import LoadingScreen from './components/LoadingScreen';
 import Home from './pages/Home';
 import Artists from './pages/Artists';
 import ArtistProfile from './pages/ArtistProfile';
@@ -10,6 +11,7 @@ import Events from './pages/Events';
 export default function App() {
   return (
     <BrowserRouter>
+      <LoadingScreen />
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />

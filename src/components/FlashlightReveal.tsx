@@ -8,6 +8,8 @@ interface FlashlightRevealProps {
   revealAlt: string;
   className?: string;
   imgClassName?: string;
+  /** Use eager loading only for above-the-fold artwork. */
+  loading?: 'eager' | 'lazy';
   /** Flashlight radius in px. */
   radius?: number;
 }
@@ -19,6 +21,7 @@ export default function FlashlightReveal({
   revealAlt,
   className,
   imgClassName,
+  loading = 'lazy',
   radius = 200,
 }: FlashlightRevealProps) {
   const revealRef = useRef<HTMLImageElement>(null);
@@ -46,7 +49,13 @@ export default function FlashlightReveal({
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
     >
-      <img src={base} alt={baseAlt} className={imgClassName} />
+      <img
+        src={base}
+        alt={baseAlt}
+        className={imgClassName}
+        loading={loading}
+        decoding="async"
+      />
       <img
         ref={revealRef}
         src={reveal}
@@ -54,6 +63,8 @@ export default function FlashlightReveal({
         className={`flashlight__reveal ${imgClassName ?? ''}`}
         style={{ '--flashlight-radius': `${radius}px` } as CSSProperties}
         aria-hidden="true"
+        loading={loading}
+        decoding="async"
       />
     </div>
   );

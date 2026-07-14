@@ -4,13 +4,13 @@
   left: 0;
   right: 0;
   z-index: 50;
-  height: 91px;
+  height: var(--navbar-height);
   max-width: var(--page-max-width);
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 33px;
+  padding: 0 var(--page-gutter);
 }
 
 .navbar__logo {
@@ -75,8 +75,6 @@
 /* ---- Tablet / mobile ---- */
 @media (max-width: 900px) {
   .navbar {
-    height: 68px;
-    padding: 0 18px;
     justify-content: space-between;
   }
 

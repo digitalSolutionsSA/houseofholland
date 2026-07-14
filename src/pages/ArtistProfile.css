@@ -5,11 +5,11 @@
   gap: 60px;
   max-width: var(--page-max-width);
   margin: 0 auto;
-  padding: 150px 33px 100px;
+  padding: var(--section-pad-top) var(--page-gutter) 100px;
   min-height: 100vh;
   background:
     linear-gradient(rgba(10, 10, 10, 0.93), rgba(10, 10, 10, 0.93)),
-    url('../assets/images/bg-texture.png') center / cover no-repeat;
+    url('../assets/images/bg-texture.webp') center / cover no-repeat;
 }
 
 .artist-profile__content {
@@ -115,10 +115,26 @@
 @media (max-width: 900px) {
   .artist-profile {
     flex-direction: column-reverse;
-    padding: 120px 20px 60px;
+    padding: var(--section-pad-top) var(--page-gutter) 60px;
+    gap: 32px;
   }
 
   .artist-profile__photo {
     max-width: 100%;
+  }
+
+  .artist-profile__cta {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .artist-profile__row label {
+    flex: 1 1 100%;
+  }
+
+  .artist-profile__ctas {
+    flex-direction: column;
   }
 }

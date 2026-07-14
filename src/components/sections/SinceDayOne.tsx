@@ -8,9 +8,9 @@ export default function SinceDayOne() {
       <FlashlightReveal
         className="since__photo"
         imgClassName="since__image"
-        base="/Graphics/since.png"
+        base="/Graphics/since.webp"
         baseAlt="Tattooed client in studio"
-        reveal="/Graphics/since-alternative.png"
+        reveal="/Graphics/since-alternative.webp"
         revealAlt="Tattooed client in studio, full colour"
         radius={200}
       />

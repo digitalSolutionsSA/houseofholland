@@ -25,7 +25,7 @@
   top: 0;
   width: 55%;
   height: 100%;
-  padding-top: 91px;
+  padding-top: var(--navbar-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -103,8 +103,13 @@
     position: relative;
     width: 100%;
     height: auto;
-    padding-top: 70px;
+    padding-top: var(--navbar-height);
     order: 1;
     text-align: left;
+  }
+
+  .since__cta {
+    width: 100%;
+    max-width: 280px;
   }
 }

@@ -112,6 +112,24 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+@media (max-width: 480px) {
+  .calendar {
+    padding: 12px;
+  }
+
+  .calendar__title {
+    font-size: 18px;
+  }
+
+  .calendar__cell {
+    font-size: 12px;
+  }
+
+  .calendar__weekdays span {
+    font-size: 9px;
+  }
+}
+
 .calendar__legend-dot {
   width: 12px;
   height: 12px;

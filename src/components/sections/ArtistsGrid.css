@@ -1,7 +1,7 @@
 .artists-grid {
-  max-width: 1280px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 20px 33px 100px;
+  padding: 20px var(--page-gutter) 100px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -138,5 +138,23 @@
   /* Touch devices can't hover — tapping the card opens the artist's page instead */
   .artists-grid__gallery {
     display: none;
+  }
+
+  .artists-grid__card:active .artists-grid__photo {
+    filter: grayscale(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .artists-grid__card {
+    flex: 1 1 100%;
+    max-width: 340px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1200px) {
+  .artists-grid__card {
+    flex: 0 1 calc(33.333% - 20px);
+    max-width: none;
   }
 }

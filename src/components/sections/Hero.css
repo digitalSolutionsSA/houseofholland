@@ -56,15 +56,30 @@
   .hero__cta {
     width: 44%;
     height: 44px;
+    min-height: 44px;
     top: auto;
-    bottom: 4%;
+    bottom: max(4%, env(safe-area-inset-bottom, 0px));
+    font-size: clamp(13px, 3.8vw, 18px);
   }
 
   .hero__cta--merch {
-    bottom: 4%;
+    left: 2.3%;
+    right: auto;
   }
 
   .hero__cta--book {
-    bottom: 4%;
+    right: 2.3%;
+    left: auto;
+  }
+
+  .hero__image {
+    object-fit: cover;
+    object-position: center 20%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .hero__cta {
+    max-width: 320px;
   }
 }

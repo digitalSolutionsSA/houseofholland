@@ -23,6 +23,7 @@ export default function Footer() {
         baseAlt="House of Holland Tattoo Emporium"
         reveal="/Graphics/footer-alternative.png"
         revealAlt="House of Holland Tattoo Emporium"
+        loading="lazy"
         radius={240}
       />
 

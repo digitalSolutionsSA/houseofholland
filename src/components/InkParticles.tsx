@@ -9,6 +9,11 @@ export default function InkParticles() {
     const mount = mountRef.current;
     if (!mount) return;
 
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return;
+
     const width = mount.clientWidth;
     const height = mount.clientHeight;
 
@@ -16,12 +21,12 @@ export default function InkParticles() {
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
     camera.position.z = 20;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !isMobile });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
     mount.appendChild(renderer.domElement);
 
-    const particleCount = 220;
+    const particleCount = isMobile ? 90 : 220;
     const positions = new Float32Array(particleCount * 3);
     const speeds = new Float32Array(particleCount);
 

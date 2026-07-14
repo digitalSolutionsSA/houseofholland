@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
     <meta name="description" content="House of Holland Tattoo Emporium — Greenville, SC. Ink built to outlast the trend." />
     <title>House of Holland Tattoo Emporium</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -12,6 +13,10 @@
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@200;300;400;500;600&display=swap"
       rel="stylesheet"
     />
+    <!-- Preload the loading video and hero art for a smooth first paint -->
+    <link rel="preload" as="video" href="/load.mp4" type="video/mp4" />
+    <link rel="preload" as="image" href="/logo-white.webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/Graphics/hero.webp" />
   </head>
   <body>
     <div id="root"></div>

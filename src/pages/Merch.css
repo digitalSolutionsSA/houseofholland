@@ -2,14 +2,14 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  padding: calc(91px + 40px) 33px 80px;
+  padding: var(--section-pad-top) var(--page-gutter) 80px;
   background:
     linear-gradient(rgba(10, 10, 10, 0.94), rgba(10, 10, 10, 0.94)),
-    url('../assets/images/bg-texture.png') center / cover no-repeat;
+    url('../assets/images/bg-texture.webp') center / cover no-repeat;
 }
 
 .merch__main {
-  max-width: 1280px;
+  max-width: var(--content-max);
   margin: 0 auto;
 }
 
@@ -193,7 +193,20 @@
 }
 
 @media (max-width: 640px) {
-  .merch {
-    padding: calc(70px + 24px) 20px 60px;
+  .merch__card {
+    flex: 1 1 100%;
+    max-width: 340px;
+  }
+
+  .merch__banner {
+    margin-top: 48px;
+    padding: 24px 20px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1200px) {
+  .merch__card {
+    flex: 0 1 calc(33.333% - 20px);
+    max-width: none;
   }
 }

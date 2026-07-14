@@ -1,23 +1,23 @@
-import armandArtwork1 from '../assets/images/armand-artwork-1.png';
-import armandArtwork2 from '../assets/images/armand-artwork-2.png';
-import armandArtwork3 from '../assets/images/armand-artwork-3.png';
-import armandArtwork4 from '../assets/images/armand-artwork-4.png';
-import armandArtwork5 from '../assets/images/armand-artwork-5.png';
-import armandArtwork6 from '../assets/images/armand-artwork-6.png';
-import armandArtwork7 from '../assets/images/armand-artwork-7.png';
-import armandArtwork8 from '../assets/images/armand-artwork-8.png';
+import armandArtwork1 from '../assets/images/armand-artwork-1.webp';
+import armandArtwork2 from '../assets/images/armand-artwork-2.webp';
+import armandArtwork3 from '../assets/images/armand-artwork-3.webp';
+import armandArtwork4 from '../assets/images/armand-artwork-4.webp';
+import armandArtwork5 from '../assets/images/armand-artwork-5.webp';
+import armandArtwork6 from '../assets/images/armand-artwork-6.webp';
+import armandArtwork7 from '../assets/images/armand-artwork-7.webp';
+import armandArtwork8 from '../assets/images/armand-artwork-8.webp';
 
-import gallery1 from '../assets/images/gallery-1.png';
-import gallery2 from '../assets/images/gallery-2.png';
-import gallery3 from '../assets/images/gallery-3.png';
-import gallery4 from '../assets/images/gallery-4.png';
-import gallery5 from '../assets/images/gallery-5.png';
-import gallery6 from '../assets/images/gallery-6.png';
-import gallery7 from '../assets/images/gallery-7.png';
-import gallery8 from '../assets/images/gallery-8.png';
-import gallery9 from '../assets/images/gallery-9.png';
-import gallery10 from '../assets/images/gallery-10.png';
-import gallery11 from '../assets/images/gallery-11.png';
+import gallery1 from '../assets/images/gallery-1.webp';
+import gallery2 from '../assets/images/gallery-2.webp';
+import gallery3 from '../assets/images/gallery-3.webp';
+import gallery4 from '../assets/images/gallery-4.webp';
+import gallery5 from '../assets/images/gallery-5.webp';
+import gallery6 from '../assets/images/gallery-6.webp';
+import gallery7 from '../assets/images/gallery-7.webp';
+import gallery8 from '../assets/images/gallery-8.webp';
+import gallery9 from '../assets/images/gallery-9.webp';
+import gallery10 from '../assets/images/gallery-10.webp';
+import gallery11 from '../assets/images/gallery-11.webp';
 
 export interface Artist {
   slug: string;
@@ -38,7 +38,7 @@ export const artists: Artist[] = [
     name: 'Armand Groesbeek',
     specialty: 'Neo-Traditional Color',
     bio: 'Shop owner and neo-traditional specialist, blending bold color work with fine detail.',
-    portrait: '/Graphics/Artists/1.png',
+    portrait: '/Graphics/Artists/1.webp',
     artwork: [
       armandArtwork1,
       armandArtwork2,
@@ -55,7 +55,7 @@ export const artists: Artist[] = [
     name: 'Marcus Reid',
     specialty: 'American Traditional',
     bio: 'Bold lines and classic Americana, built to hold up for decades.',
-    portrait: '/Graphics/Artists/2.png',
+    portrait: '/Graphics/Artists/2.webp',
     artwork: [gallery1, gallery2],
   },
   {
@@ -63,7 +63,7 @@ export const artists: Artist[] = [
     name: 'Sarah Coetzee',
     specialty: 'Fine Line',
     bio: 'Delicate fine line and single-needle work with an eye for detail.',
-    portrait: '/Graphics/Artists/3.png',
+    portrait: '/Graphics/Artists/3.webp',
     artwork: [gallery3, gallery4],
   },
   {
@@ -71,7 +71,7 @@ export const artists: Artist[] = [
     name: 'Devon Blake',
     specialty: 'Blackwork',
     bio: 'Heavy blackwork and pattern-driven pieces with striking contrast.',
-    portrait: '/Graphics/Artists/4.png',
+    portrait: '/Graphics/Artists/4.webp',
     artwork: [gallery5, gallery6],
   },
   {
@@ -79,7 +79,7 @@ export const artists: Artist[] = [
     name: 'Tyler Brooks',
     specialty: 'Portrait Realism',
     bio: 'Custom black and grey portraiture, specializing in high-detail linework.',
-    portrait: '/Graphics/Artists/5.png',
+    portrait: '/Graphics/Artists/5.webp',
     artwork: [gallery7, gallery8],
   },
   {
@@ -87,7 +87,7 @@ export const artists: Artist[] = [
     name: 'Jono van der Merwe',
     specialty: 'Japanese Irezumi',
     bio: 'Traditional Japanese Irezumi with a focus on large-scale flow pieces.',
-    portrait: '/Graphics/Artists/6.png',
+    portrait: '/Graphics/Artists/6.webp',
     artwork: [gallery9, gallery10],
   },
   {
@@ -95,7 +95,7 @@ export const artists: Artist[] = [
     name: 'Naomi Price',
     specialty: 'Realism',
     bio: 'Photorealistic portrait and nature work, built from real consultations.',
-    portrait: '/Graphics/Artists/7.png',
+    portrait: '/Graphics/Artists/7.webp',
     artwork: [gallery11, gallery1],
   },
 ];
