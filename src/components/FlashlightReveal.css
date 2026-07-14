@@ -1,0 +1,21 @@
+.flashlight {
+  position: absolute;
+  inset: 0;
+}
+
+.flashlight__reveal {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  -webkit-mask-image: radial-gradient(
+    circle var(--flashlight-radius, 200px) at var(--mx, 50%) var(--my, 50%),
+    black 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--flashlight-radius, 200px) at var(--mx, 50%) var(--my, 50%),
+    black 55%,
+    transparent 100%
+  );
+}

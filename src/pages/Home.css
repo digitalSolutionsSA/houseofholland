@@ -1,0 +1,14 @@
+.home-scroll {
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+}
+
+.home-scroll > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

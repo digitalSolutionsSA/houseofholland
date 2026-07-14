@@ -1,0 +1,120 @@
+.calendar {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.calendar__title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: var(--color-white);
+}
+
+.calendar__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.calendar__nav:hover:not(:disabled) {
+  background: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.calendar__nav:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.calendar__weekdays span {
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar__cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-white);
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.calendar__cell--empty {
+  border: none;
+}
+
+.calendar__cell--open {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(158, 18, 18, 0.5);
+  cursor: pointer;
+}
+
+.calendar__cell--open:hover {
+  background: rgba(158, 18, 18, 0.4);
+}
+
+.calendar__cell--disabled {
+  color: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+}
+
+.calendar__cell--today {
+  font-weight: 700;
+}
+
+.calendar__cell--selected {
+  background: var(--color-red);
+  border-color: var(--color-red);
+  color: var(--color-white);
+}
+
+.calendar__legend {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.calendar__legend-dot {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(158, 18, 18, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+}

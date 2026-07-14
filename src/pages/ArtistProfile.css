@@ -1,0 +1,124 @@
+.artist-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 150px 33px 100px;
+  min-height: 100vh;
+  background:
+    linear-gradient(rgba(10, 10, 10, 0.93), rgba(10, 10, 10, 0.93)),
+    url('../assets/images/bg-texture.png') center / cover no-repeat;
+}
+
+.artist-profile__content {
+  flex: 1 1 500px;
+  min-width: 0;
+}
+
+.artist-profile__heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(40px, 8vw, 100px);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.artist-profile__specialty {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--color-red);
+  margin-bottom: 20px;
+}
+
+.artist-profile__bio {
+  font-family: var(--font-body);
+  font-weight: 200;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 560px;
+  margin-bottom: 40px;
+}
+
+.artist-profile__row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.artist-profile__row label {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.artist-profile__row span {
+  font-family: var(--font-body);
+  font-weight: 200;
+  font-size: 18px;
+  letter-spacing: 0.03em;
+}
+
+.artist-profile__row textarea {
+  min-height: 130px;
+  background: transparent;
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.artist-profile__ctas {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.artist-profile__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 240px;
+  height: 60px;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2.4vw, 28px);
+  transition: opacity 0.2s ease;
+}
+
+.artist-profile__cta:hover {
+  opacity: 0.85;
+}
+
+.artist-profile__cta--red {
+  background: var(--color-red);
+  color: var(--color-black-soft);
+}
+
+.artist-profile__cta--outline {
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+
+.artist-profile__photo {
+  position: relative;
+  flex: 1 1 400px;
+  min-width: 0;
+  max-width: 500px;
+  aspect-ratio: 652 / 781;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .artist-profile {
+    flex-direction: column-reverse;
+    padding: 120px 20px 60px;
+  }
+
+  .artist-profile__photo {
+    max-width: 100%;
+  }
+}

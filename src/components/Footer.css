@@ -1,0 +1,138 @@
+.footer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--color-black);
+  display: flex;
+  align-items: center;
+  padding: calc(91px + clamp(8px, 2vh, 24px)) 33px clamp(16px, 4vh, 60px);
+  overflow: hidden;
+}
+
+.footer__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.footer__bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.55) 35%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.footer__content {
+  position: relative;
+  flex: 0 1 560px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(10px, 2.5vh, 32px);
+  min-width: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.footer__content a {
+  pointer-events: auto;
+}
+
+.footer__heading {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 80px);
+  line-height: 1;
+  color: var(--color-white);
+}
+
+.text-red {
+  color: var(--color-red);
+}
+
+.footer h3 {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2vw, 30px);
+  color: var(--color-red);
+  margin-bottom: clamp(4px, 1vh, 12px);
+  font-weight: 400;
+}
+
+.footer__hours ul {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.6vh, 6px);
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.4vw, 22px);
+  color: var(--color-white);
+  max-width: 420px;
+}
+
+.footer__hours li {
+  display: flex;
+  justify-content: space-between;
+}
+
+.footer__visit {
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.3vw, 20px);
+}
+
+.footer__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: clamp(3px, 0.8vh, 8px);
+  line-height: 1.25;
+}
+
+.footer__row svg {
+  flex-shrink: 0;
+  width: clamp(14px, 1.4vw, 22px);
+  height: clamp(14px, 1.4vw, 22px);
+  color: var(--color-red);
+  margin-top: 2px;
+}
+
+.footer__phone {
+  color: var(--color-red);
+  text-decoration: underline;
+  width: fit-content;
+}
+
+.footer__explore nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-family: var(--font-display);
+  font-size: clamp(12px, 1.1vw, 18px);
+}
+
+@media (max-width: 900px) {
+  .footer {
+    padding-top: calc(70px + clamp(8px, 2vh, 24px));
+  }
+
+  .footer__content {
+    flex-basis: 100%;
+  }
+
+  .footer__bg-img {
+    object-position: 72% center;
+  }
+}
