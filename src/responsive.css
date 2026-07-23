@@ -1,0 +1,63 @@
+/* Shared responsive tokens — imported after :root in index.css */
+
+@media (max-width: 900px) {
+  :root {
+    --navbar-height: 68px;
+    --page-gutter: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --page-gutter: 16px;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --page-gutter: clamp(33px, 2.5vw, 56px);
+    --content-max: 1600px;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --content-max: 1920px;
+  }
+}
+
+/* Large displays — prevent typography and UI from scaling too far */
+@media (min-width: 1920px) {
+  html {
+    font-size: clamp(16px, 0.85vw, 20px);
+  }
+}
+
+/* Touch-friendly minimum tap targets */
+@media (pointer: coarse) {
+  .navbar__button,
+  .navbar__book-mobile,
+  .hero__cta,
+  .artists-grid__book,
+  .merch__cta,
+  .events__cta,
+  .booking__submit,
+  .artist-profile__cta,
+  .since__cta,
+  .artists-lineup__cta {
+    min-height: 44px;
+  }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: env(safe-area-inset-top)) {
+  .navbar {
+    padding-left: max(var(--page-gutter), env(safe-area-inset-left));
+    padding-right: max(var(--page-gutter), env(safe-area-inset-right));
+  }
+
+  .loader {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

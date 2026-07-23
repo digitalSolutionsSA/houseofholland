@@ -1,0 +1,29 @@
+.home-scroll {
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+}
+
+.home-scroll > * {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  height: 100svh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Tablet — softer snap so scrolling feels more natural */
+@media (max-width: 900px) {
+  .home-scroll {
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* Phone — allow footer to grow if content overflows */
+@media (max-width: 640px) {
+  .home-scroll > .footer {
+    height: auto;
+    min-height: 100svh;
+  }
+}

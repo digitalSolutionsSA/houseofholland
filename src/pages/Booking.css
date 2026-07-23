@@ -1,0 +1,308 @@
+.booking {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: var(--section-pad-top) var(--page-gutter) 80px;
+  background:
+    linear-gradient(rgba(10, 10, 10, 0.94), rgba(10, 10, 10, 0.94)),
+    url('../assets/images/bg-texture.webp') center / cover no-repeat;
+}
+
+.booking__main {
+  max-width: min(1100px, var(--content-max));
+  margin: 0 auto;
+}
+
+.booking__heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(40px, 8vw, 100px);
+  line-height: 1;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.text-white {
+  color: var(--color-white);
+}
+.text-red {
+  color: var(--color-red);
+}
+
+.booking__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.booking__col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.booking__label {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 200;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--color-white);
+  margin-bottom: 8px;
+}
+
+.booking__field {
+  display: block;
+}
+
+.booking__field select {
+  width: 100%;
+  height: 54px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 16px;
+  padding: 0 16px;
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.booking__field select option {
+  background: var(--color-black);
+}
+
+.booking__artists {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.booking__artist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.booking__artist:hover {
+  border-color: rgba(158, 18, 18, 0.7);
+}
+
+.booking__artist--active {
+  border-color: var(--color-red);
+  background: rgba(158, 18, 18, 0.18);
+}
+
+.booking__artist-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  filter: grayscale(1);
+  transition: filter 0.2s ease;
+  background: var(--color-black-soft);
+}
+
+.booking__artist:hover .booking__artist-photo,
+.booking__artist--active .booking__artist-photo {
+  filter: grayscale(0);
+}
+
+.booking__artist-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.booking__artist-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.05;
+  color: var(--color-white);
+}
+
+.booking__artist-style {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-red);
+}
+
+.booking__estimate {
+  display: flex;
+  gap: 32px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.booking__estimate > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking__estimate-label {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.booking__estimate-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--color-white);
+}
+
+.booking__slots {
+  margin-top: 4px;
+}
+
+.booking__slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.booking__slot {
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: 15px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.booking__slot:hover:not(:disabled) {
+  background: rgba(158, 18, 18, 0.4);
+  border-color: var(--color-red);
+}
+
+.booking__slot--selected {
+  background: var(--color-red);
+  border-color: var(--color-red);
+}
+
+.booking__slot--booked {
+  opacity: 0.3;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.booking__hint {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 8px 0;
+}
+
+.booking__footer-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 12px;
+}
+
+.booking__recommend {
+  font-family: var(--font-body);
+  font-weight: 200;
+  font-size: 18px;
+  text-align: center;
+  color: var(--color-white);
+}
+
+.booking__submit {
+  width: 100%;
+  max-width: 500px;
+  height: 66px;
+  background: var(--color-red);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 40px);
+  transition: opacity 0.2s ease;
+}
+
+.booking__submit:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.booking__submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.booking__confirmation {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.booking__confirmation h2 {
+  font-family: var(--font-display);
+  font-size: 44px;
+  color: var(--color-red);
+  margin-bottom: 20px;
+}
+
+.booking__confirmation p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--color-white);
+}
+
+.booking__confirmation-note {
+  margin-top: 20px;
+  font-size: 15px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+@media (max-width: 800px) {
+  .booking__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .booking__artists {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .booking__estimate {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .booking__slot-grid {
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .booking__heading {
+    font-size: clamp(32px, 10vw, 48px);
+  }
+
+  .booking__submit {
+    height: 56px;
+    font-size: clamp(20px, 5vw, 28px);
+  }
+}

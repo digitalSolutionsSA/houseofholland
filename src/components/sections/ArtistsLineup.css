@@ -1,0 +1,201 @@
+.artists-lineup {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: var(--section-pad-top) var(--page-gutter) clamp(16px, 3vh, 40px);
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(rgba(10, 10, 10, 0.93), rgba(10, 10, 10, 0.93)),
+    url('../../assets/images/bg-texture.webp') center / cover no-repeat;
+}
+
+.artists-lineup__heading {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 6vw, 100px);
+  line-height: 1;
+  margin-bottom: clamp(12px, 3vh, 40px);
+}
+
+.text-white {
+  color: var(--color-white);
+}
+
+.artists-lineup__photo-wrap {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+}
+
+.artists-lineup__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.artists-lineup__hotspots {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+.artists-lineup__hotspot {
+  position: relative;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-bottom: clamp(10px, 2vh, 24px);
+  text-align: center;
+  background: linear-gradient(to top, rgba(158, 18, 18, 0.85), rgba(10, 10, 10, 0.15) 60%, transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.artists-lineup__hotspot:hover,
+.artists-lineup__hotspot:focus-visible {
+  opacity: 1;
+}
+
+.artists-lineup__hotspot-name {
+  font-family: var(--font-display);
+  font-size: clamp(12px, 1.6vw, 24px);
+  color: var(--color-white);
+  line-height: 1.1;
+  padding: 0 4px;
+}
+
+.artists-lineup__hotspot-cta {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(9px, 0.9vw, 13px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-white);
+}
+
+.artists-lineup__banner {
+  flex: 0 0 auto;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 60px);
+  padding: clamp(14px, 3vh, 32px) clamp(24px, 4vw, 64px);
+  background: linear-gradient(180deg, var(--color-black-soft), var(--color-black));
+  border-top: 1px solid rgba(158, 18, 18, 0.4);
+}
+
+.artists-lineup__body {
+  flex: 1 1 auto;
+  font-family: var(--font-body);
+  font-weight: 200;
+  font-size: clamp(13px, 1.5vw, 22px);
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.4;
+  color: var(--color-white);
+}
+
+.artists-lineup__cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(180px, 18vw, 280px);
+  height: clamp(44px, 6vh, 64px);
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2vw, 34px);
+  transition: opacity 0.2s ease;
+}
+
+.artists-lineup__cta-spacer {
+  flex-shrink: 0;
+  width: clamp(180px, 18vw, 280px);
+}
+
+.artists-lineup__cta:hover {
+  opacity: 0.85;
+}
+
+.artists-lineup__cta--outline {
+  border: 1px solid var(--color-white);
+  color: var(--color-white);
+}
+
+.artists-lineup__cta--red {
+  background: var(--color-red);
+  color: var(--color-black-soft);
+}
+
+@media (max-width: 900px) {
+  .artists-lineup__hotspot-name {
+    font-size: clamp(10px, 2.5vw, 16px);
+  }
+}
+
+@media (hover: none) {
+  .artists-lineup__hotspots {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .artists-lineup__banner {
+    flex-direction: column;
+    gap: 12px;
+    padding: clamp(12px, 2.5vh, 24px) 20px;
+  }
+
+  .artists-lineup__body {
+    order: -1;
+  }
+
+  .artists-lineup__cta {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .artists-lineup__cta-spacer {
+    display: none;
+  }
+}
+
+.artists-lineup__mobile-cta {
+  display: none;
+}
+
+@media (hover: none) {
+  .artists-lineup__mobile-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    width: 100%;
+    max-width: 320px;
+    height: 48px;
+    margin-top: 12px;
+    border: 1px solid var(--color-white);
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--color-white);
+    transition: opacity 0.2s ease;
+  }
+
+  .artists-lineup__mobile-cta:hover {
+    opacity: 0.85;
+  }
+}
