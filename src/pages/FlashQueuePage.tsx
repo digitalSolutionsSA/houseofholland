@@ -174,15 +174,16 @@ export function FlashQueuePage() {
           <p className="flash-queue-page__lineup-title">ARTISTS LINED UP</p>
           <div className="flash-queue-page__artists">
             {artists.map(a => (
-              <div key={a.id} className="flash-queue-page__artist-chip">
+              <div key={a.id} className="flash-queue-page__artist-card">
                 {a.avatar_url ? (
                   <img src={a.avatar_url} alt={a.name} className="flash-queue-page__artist-avatar" />
                 ) : (
                   <div className="flash-queue-page__artist-avatar--placeholder">
-                    <User size={12} strokeWidth={2} />
+                    <User size={28} strokeWidth={1.5} />
                   </div>
                 )}
                 <span className="flash-queue-page__artist-name">{a.name}</span>
+                <span className="flash-queue-page__artist-role">TATTOO ARTIST</span>
               </div>
             ))}
           </div>

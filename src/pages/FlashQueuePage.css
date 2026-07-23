@@ -1,32 +1,17 @@
 .flash-queue-page {
-  padding-bottom: 0 !important;
+  padding-bottom: 40px !important;
   overflow-x: hidden;
-  background: #000;
-  /* stretch to fill full viewport height so marble never shows below content */
-  min-height: 100dvh;
 }
 
 /* ── Hero ── */
 .flash-queue-page__hero {
   position: relative;
-  min-height: 280px;
+  min-height: 260px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 var(--page-pad) 32px;
+  padding: 0 var(--page-pad) 28px;
   overflow: hidden;
-  /* solid base so BrandBackground marble doesn't bleed through */
-  background: #000;
-}
-
-.flash-queue-page__hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,175,55,0.2) 0%, transparent 65%),
-    linear-gradient(to bottom, #0a0a0a 0%, #000 100%);
-  z-index: 0;
 }
 
 /* animated gold shimmer line at top */
@@ -344,53 +329,61 @@
   letter-spacing: 0.2em;
   font-weight: 700;
   color: var(--gold);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   text-align: center;
 }
 
 .flash-queue-page__artists {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
 }
 
-.flash-queue-page__artist-chip {
+.flash-queue-page__artist-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 7px 14px 7px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(212,175,55,0.3);
-  background: rgba(212,175,55,0.06);
+  gap: 10px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(212,175,55,0.25);
+  background: rgba(212,175,55,0.05);
+  min-width: 120px;
 }
 
 .flash-queue-page__artist-avatar {
-  width: 28px;
-  height: 28px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(212,175,55,0.4);
+  border: 2px solid rgba(212,175,55,0.5);
+  box-shadow: 0 0 20px rgba(212,175,55,0.2);
 }
 
 .flash-queue-page__artist-avatar--placeholder {
-  width: 28px;
-  height: 28px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: rgba(212,175,55,0.12);
-  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(212,175,55,0.1);
+  border: 2px solid rgba(212,175,55,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
   color: var(--gold);
-  font-weight: 700;
 }
 
 .flash-queue-page__artist-name {
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text);
+  text-align: center;
+}
+
+.flash-queue-page__artist-role {
+  font-size: 0.7rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
 }
 
 /* ── Closed / upcoming copy ── */

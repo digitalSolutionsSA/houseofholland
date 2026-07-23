@@ -21,3 +21,113 @@
   font-weight: 500;
   margin-top: 8px;
 }
+
+/* ── Today's check-in section ── */
+.bookings-page__today-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 10px;
+  margin-top: 0 !important;
+}
+
+.bookings-page__today-card {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(212,175,55,0.35);
+  background: rgba(212,175,55,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bookings-page__today-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bookings-page__today-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(212,175,55,0.4);
+  flex-shrink: 0;
+}
+
+.bookings-page__today-avatar--empty {
+  background: rgba(212,175,55,0.08);
+}
+
+.bookings-page__today-service {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.bookings-page__today-artist {
+  font-size: 0.82rem;
+  color: var(--gold-muted);
+  margin-top: 2px;
+}
+
+.bookings-page__today-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.bookings-page__checkin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d4af37, #f5e27a, #d4af37);
+  color: #000;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  width: 100%;
+}
+
+.bookings-page__checked-in {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.25);
+  color: #4ade80;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ── Booking status pill ── */
+.bookings-page__status {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bookings-page__status--pending {
+  color: #fbbf24;
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.25);
+}
+
+.bookings-page__status--confirmed {
+  color: #4ade80;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
+}

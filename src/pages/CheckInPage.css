@@ -1,0 +1,280 @@
+.checkin-page {
+  padding-bottom: 40px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.checkin__spin { animation: spin 0.8s linear infinite; }
+
+.checkin__loading {
+  display: flex; justify-content: center; padding: 60px 0;
+}
+
+.checkin__body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 var(--page-pad);
+  max-width: 640px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* ── Appointment card ── */
+.checkin__appt-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(212,175,55,0.05);
+}
+
+.checkin__appt-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.checkin__appt-service {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.checkin__appt-artist {
+  font-size: 0.85rem;
+  color: var(--gold-muted);
+  margin-top: 2px;
+}
+
+.checkin__appt-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.checkin__appt-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.checkin__appt-meta svg { color: var(--gold); }
+
+/* ── Consent status banners ── */
+.checkin__consent-ok,
+.checkin__consent-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.checkin__consent-ok {
+  background: rgba(74,222,128,0.07);
+  border: 1px solid rgba(74,222,128,0.25);
+  color: #4ade80;
+}
+
+.checkin__consent-warn {
+  background: rgba(251,191,36,0.07);
+  border: 1px solid rgba(251,191,36,0.3);
+  color: #fbbf24;
+}
+
+.checkin__consent-ok svg { flex-shrink: 0; margin-top: 1px; }
+.checkin__consent-warn svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ── Sections ── */
+.checkin__section {
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: rgba(0,0,0,0.2);
+}
+
+.checkin__section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(212,175,55,0.15);
+}
+
+.checkin__section-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: -4px;
+}
+
+/* ── Fields ── */
+.checkin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkin__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.checkin__input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.92rem;
+  padding: 10px 13px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.checkin__input:focus {
+  border-color: var(--gold);
+  background: rgba(212,175,55,0.04);
+}
+
+/* ── Signature ── */
+.checkin__sig-wrap {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(0,0,0,0.4);
+  touch-action: none;
+}
+
+.checkin__sig-canvas {
+  display: block;
+  width: 100%;
+  height: 130px;
+  cursor: crosshair;
+}
+
+.checkin__sig-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(212,175,55,0.3);
+  font-size: 0.85rem;
+  pointer-events: none;
+  font-style: italic;
+}
+
+.checkin__sig-clear {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+/* ── Error ── */
+.checkin__error {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(255,107,107,0.08);
+  border: 1px solid rgba(255,107,107,0.25);
+  color: #ff6b6b;
+  font-size: 0.82rem;
+}
+
+/* ── Submit ── */
+.checkin__submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d4af37, #f5e27a, #d4af37);
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+}
+
+.checkin__submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Not-today / Done screens ── */
+.checkin__not-today,
+.checkin__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px var(--page-pad);
+  color: var(--text-muted);
+}
+
+.checkin__not-today svg { color: var(--gold); opacity: 0.6; }
+.checkin__not-today h2,
+.checkin__done h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.checkin__appt-date {
+  color: var(--gold);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.checkin__done-icon { color: #4ade80; }
+
+.checkin__done p {
+  max-width: 320px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.checkin__done-btn {
+  margin-top: 8px;
+  padding: 11px 28px;
+  border-radius: 8px;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(212,175,55,0.06);
+}
+
+.checkin__error-msg {
+  padding: 24px var(--page-pad);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}

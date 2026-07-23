@@ -14,8 +14,6 @@ type FormData = {
   emergency_contact_name: string
   emergency_contact_address: string
   emergency_contact_phone: string
-  location_of_tattoo: string
-  design: string
   init_risks: string
   init_waiver: string
   init_aftercare: string
@@ -28,7 +26,6 @@ type FormData = {
 const EMPTY: FormData = {
   full_name: '', date_of_birth: '', address: '', phone: '', email: '',
   emergency_contact_name: '', emergency_contact_address: '', emergency_contact_phone: '',
-  location_of_tattoo: '', design: '',
   init_risks: '', init_waiver: '', init_aftercare: '',
   init_no_alcohol: '', init_no_medical: '', init_photos: '', init_age: '',
 }
@@ -98,8 +95,6 @@ export function ConsentFormsPage() {
             emergency_contact_name: data.emergency_contact_name ?? '',
             emergency_contact_address: data.emergency_contact_address ?? '',
             emergency_contact_phone: data.emergency_contact_phone ?? '',
-            location_of_tattoo: data.location_of_tattoo ?? '',
-            design: data.design ?? '',
             init_risks: data.init_risks ?? '',
             init_waiver: data.init_waiver ?? '',
             init_aftercare: data.init_aftercare ?? '',
@@ -296,21 +291,6 @@ export function ConsentFormsPage() {
             <div className="consent-form__field">
               <label className="consent-form__label">Email</label>
               {inp('email', 'your@email.com', { type: 'email' })}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Tattoo details ── */}
-        <section className="consent-form__section">
-          <h3 className="consent-form__section-title">Tattoo Details</h3>
-          <div className="consent-form__row">
-            <div className="consent-form__field">
-              <label className="consent-form__label">Location of Tattoo</label>
-              {inp('location_of_tattoo', 'e.g. Left forearm')}
-            </div>
-            <div className="consent-form__field">
-              <label className="consent-form__label">Design</label>
-              {inp('design', 'e.g. Traditional rose')}
             </div>
           </div>
         </section>

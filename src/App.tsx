@@ -11,6 +11,7 @@ import { ConsentFormsPage } from './pages/ConsentFormsPage'
 import { PassportPage } from './pages/PassportPage'
 import { MembershipPage } from './pages/MembershipPage'
 import { SelectDateTimePage } from './pages/SelectDateTimePage'
+import { CheckInPage } from './pages/CheckInPage'
 import { FlashQueuePage } from './pages/FlashQueuePage'
 import { BookingsPage } from './pages/BookingsPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/membership" element={<RequireAuth><MembershipPage /></RequireAuth>} />
           <Route path="/bookings" element={<RequireAuth><BookingsPage /></RequireAuth>} />
           <Route path="/bookings/select-time" element={<RequireAuth><SelectDateTimePage /></RequireAuth>} />
+          <Route path="/bookings/checkin/:bookingId" element={<RequireAuth><CheckInPage /></RequireAuth>} />
           <Route path="/flash-queue/:eventId" element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
           <Route path="/flash-queue" element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
