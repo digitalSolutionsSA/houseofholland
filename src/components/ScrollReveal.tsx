@@ -2,10 +2,13 @@ import { useRef, useEffect, type ReactNode } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
+  as?: string;
   className?: string;
   y?: number;
   delay?: number;
   duration?: number;
+  stagger?: number;
+  [key: string]: unknown;
 }
 
 export default function ScrollReveal({
