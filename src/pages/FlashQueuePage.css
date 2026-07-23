@@ -1,6 +1,9 @@
 .flash-queue-page {
   padding-bottom: 0 !important;
   overflow-x: hidden;
+  background: #000;
+  /* stretch to fill full viewport height so marble never shows below content */
+  min-height: 100dvh;
 }
 
 /* ── Hero ── */
