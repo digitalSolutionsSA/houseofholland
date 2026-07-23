@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronLeft, Clock, CalendarDays, Zap } from 'lucide-react'
+import { Bell, ChevronLeft, Clock, CalendarDays, Zap, User } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { DiamondDivider } from '../components/shared/DiamondDivider'
 import { GradientButton } from '../components/shared/GradientButton'
@@ -17,7 +17,10 @@ type FlashEvent = {
   status: 'upcoming' | 'open' | 'closed'
   max_spots: number
   artist_name: string | null
+  artist_avatar: string | null
 }
+
+type ArtistChip = { id: string; name: string; avatar_url: string | null }
 
 type Reservation = {
   id: string
@@ -30,6 +33,7 @@ export function FlashQueuePage() {
   const { profile } = useAuth()
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
+  const [artists, setArtists] = useState<ArtistChip[]>([])
   const [reservation, setReservation] = useState<Reservation | null>(null)
   const [queueSize, setQueueSize] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -41,12 +45,19 @@ export function FlashQueuePage() {
 
     const { data: ev } = await supabase
       .from('flash_events')
-      .select('*, artists(name)')
+      .select('*, artists(id, name, avatar_url)')
       .eq('id', eventId)
       .single()
 
     if (ev) {
-      setEvent({ ...ev, artist_name: (ev as any).artists?.name ?? null })
+      const a = (ev as any).artists
+      setEvent({
+        ...ev,
+        artist_name: a?.name ?? null,
+        artist_avatar: a?.avatar_url ?? null,
+      })
+      // build lineup — start with the linked artist if present
+      if (a) setArtists([{ id: a.id, name: a.name, avatar_url: a.avatar_url ?? null }])
     }
 
     const { count } = await supabase
@@ -136,12 +147,6 @@ export function FlashQueuePage() {
         <div className="flash-queue-page__hero-content">
           <p className="flash-queue-page__eyebrow">⚡ FLASH DAY</p>
           <h1>{event.title.toUpperCase()}</h1>
-          {event.artist_name && (
-            <div className="flash-queue-page__artist-badge">
-              <Zap size={12} strokeWidth={2} />
-              with {event.artist_name}
-            </div>
-          )}
         </div>
       </div>
 
@@ -160,6 +165,27 @@ export function FlashQueuePage() {
       {event.description && (
         <div className="flash-queue-page__desc-wrap">
           <p className="flash-queue-page__desc">{event.description}</p>
+        </div>
+      )}
+
+      {/* ── Artist lineup ── */}
+      {artists.length > 0 && (
+        <div className="flash-queue-page__lineup">
+          <p className="flash-queue-page__lineup-title">ARTISTS LINED UP</p>
+          <div className="flash-queue-page__artists">
+            {artists.map(a => (
+              <div key={a.id} className="flash-queue-page__artist-chip">
+                {a.avatar_url ? (
+                  <img src={a.avatar_url} alt={a.name} className="flash-queue-page__artist-avatar" />
+                ) : (
+                  <div className="flash-queue-page__artist-avatar--placeholder">
+                    <User size={12} strokeWidth={2} />
+                  </div>
+                )}
+                <span className="flash-queue-page__artist-name">{a.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
