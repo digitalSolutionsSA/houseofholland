@@ -1,0 +1,61 @@
+:root {
+  /* Brand */
+  --bg: #000000;
+  --bg-elevated: #0d0d0d;
+  --bg-card: #1c1c1e;
+  --bg-muted: #1a1a1a;
+  --bg-chip: #2a2a2a;
+
+  --gold: #d4af37;
+  --gold-bright: #e8c547;
+  --gold-warm: #c58e4b;
+  --gold-deep: #8a6e2f;
+  --gold-muted: #a8924a;
+  --gold-gradient: linear-gradient(90deg, #b8860b 0%, #ffd700 45%, #c9a227 70%, #b8860b 100%);
+  --gold-gradient-btn: linear-gradient(90deg, #c9a227 0%, #e8c547 50%, #a67c2a 100%);
+
+  --text: #ffffff;
+  --text-muted: #9a9a9a;
+  --text-dim: #6b6b6b;
+  --text-on-gold: #1a1a1a;
+
+  --border-gold: rgba(212, 175, 55, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Outfit', system-ui, sans-serif;
+
+  --nav-height: 68px;
+  --sidebar-width: 200px;
+  --content-max: 1100px;
+  --page-pad: 18px;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left,   0px);
+  --safe-right:  env(safe-area-inset-right,  0px);
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+}
+
+/* Tablet: sidebar appears, bottom nav hidden */
+@media (min-width: 768px) {
+  :root {
+    --nav-height: 0px;
+    --page-pad: 28px;
+    --sidebar-width: 200px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  :root {
+    --page-pad: 36px;
+    --sidebar-width: 260px;
+    --content-max: 1200px;
+  }
+}

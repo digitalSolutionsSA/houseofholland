@@ -1,0 +1,400 @@
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { PageHeader } from '../components/shared/PageHeader'
+import { GradientButton } from '../components/shared/GradientButton'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
+import './SelectDateTimePage.css'
+
+const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+const SERVICES = [
+  'Custom Tattoo',
+  'Flash Tattoo',
+  'Touch-up / Rework',
+  'Cover-up',
+  'Consultation',
+]
+
+type Artist = { id: string; name: string; slug: string; avatar_url: string | null; specialties: string[] }
+type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number; is_active: boolean }
+
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate()
+}
+
+function pad(n: number) { return String(n).padStart(2, '0') }
+
+function generateSlots(schedule: Schedule, bookedTimes: string[]): string[] {
+  const [sh, sm] = schedule.start_time.split(':').map(Number)
+  const [eh, em] = schedule.end_time.split(':').map(Number)
+  const startMins = sh * 60 + sm
+  const endMins   = eh * 60 + em
+  const slots: string[] = []
+  for (let m = startMins; m + schedule.slot_minutes <= endMins; m += schedule.slot_minutes) {
+    const hh = Math.floor(m / 60)
+    const mm = m % 60
+    const label = `${pad(hh)}:${pad(mm)}`
+    if (!bookedTimes.includes(label)) slots.push(label)
+  }
+  return slots
+}
+
+function fmtSlot(time: string) {
+  const [h, m] = time.split(':').map(Number)
+  const ampm = h < 12 ? 'AM' : 'PM'
+  const h12  = h % 12 || 12
+  return `${h12}:${pad(m)} ${ampm}`
+}
+
+export function SelectDateTimePage() {
+  const navigate  = useNavigate()
+  const { profile } = useAuth()
+  const today = new Date()
+
+  // Steps: 0 = pick artist, 1 = pick date/time, 2 = confirm
+  const [step, setStep] = useState(0)
+
+  // Artist step
+  const [artists, setArtists]         = useState<Artist[]>([])
+  const [artistsLoading, setArtistsLoading] = useState(true)
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null)
+
+  // Calendar step
+  const [year, setYear]               = useState(today.getFullYear())
+  const [month, setMonth]             = useState(today.getMonth())
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+
+  // Schedule for selected artist
+  const [schedules, setSchedules]     = useState<Schedule[]>([])
+  const [slotsForDay, setSlotsForDay] = useState<string[]>([])
+  const [slotsLoading, setSlotsLoading] = useState(false)
+
+  // Confirm step
+  const [service, setService]         = useState(SERVICES[0])
+  const [notes, setNotes]             = useState('')
+  const [booking, setBooking]         = useState(false)
+  const [bookingError, setBookingError] = useState<string | null>(null)
+  const [done, setDone]               = useState(false)
+
+  // Load artists on mount
+  useEffect(() => {
+    supabase.from('artists').select('id, name, slug, avatar_url, specialties')
+      .eq('is_active', true).order('name')
+      .then(({ data }) => { setArtists(data ?? []); setArtistsLoading(false) })
+  }, [])
+
+  // Load schedule when artist chosen
+  useEffect(() => {
+    if (!selectedArtist) return
+    supabase.from('artist_schedules').select('*')
+      .eq('artist_id', selectedArtist.id)
+      .eq('is_active', true)
+      .then(({ data }) => setSchedules(data ?? []))
+  }, [selectedArtist])
+
+  // Load available slots when day changes
+  useEffect(() => {
+    if (!selectedArtist || selectedDay === null) return
+    const dow = new Date(year, month, selectedDay).getDay()
+    const sched = schedules.find(s => s.day_of_week === dow && s.is_active)
+    if (!sched) { setSlotsForDay([]); return }
+
+    setSlotsLoading(true)
+    setSelectedTime(null)
+
+    const dayStart = new Date(year, month, selectedDay, 0, 0, 0).toISOString()
+    const dayEnd   = new Date(year, month, selectedDay, 23, 59, 59).toISOString()
+
+    supabase.from('bookings')
+      .select('appointment_at')
+      .eq('artist_id', selectedArtist.id)
+      .eq('status', 'confirmed')
+      .gte('appointment_at', dayStart)
+      .lte('appointment_at', dayEnd)
+      .then(({ data }) => {
+        const booked = (data ?? []).map((b: any) => {
+          const d = new Date(b.appointment_at)
+          return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+        })
+        setSlotsForDay(generateSlots(sched, booked))
+        setSlotsLoading(false)
+      })
+  }, [selectedDay, schedules])
+
+  const days = useMemo(() => {
+    const firstDow = new Date(year, month, 1).getDay()
+    const total    = getDaysInMonth(year, month)
+    const cells: (number | null)[] = Array.from({ length: firstDow }, () => null)
+    for (let d = 1; d <= total; d++) cells.push(d)
+    while (cells.length % 7 !== 0) cells.push(null)
+    return cells
+  }, [year, month])
+
+  function isDayOff(day: number) {
+    const dow = new Date(year, month, day).getDay()
+    return !schedules.some(s => s.day_of_week === dow && s.is_active)
+  }
+
+  function isPast(day: number) {
+    const d = new Date(year, month, day)
+    d.setHours(23, 59, 59)
+    return d < today
+  }
+
+  function shiftMonth(delta: number) {
+    const d = new Date(year, month + delta, 1)
+    setYear(d.getFullYear())
+    setMonth(d.getMonth())
+    setSelectedDay(null)
+    setSelectedTime(null)
+  }
+
+  const monthLabel = useMemo(
+    () => new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+    [year, month]
+  )
+
+  async function confirmBooking() {
+    if (!selectedArtist || !selectedDay || !selectedTime || !profile) return
+    setBooking(true)
+    setBookingError(null)
+
+    const [h, m] = selectedTime.split(':').map(Number)
+    const appointmentAt = new Date(year, month, selectedDay, h, m, 0).toISOString()
+
+    const { error } = await supabase.from('bookings').insert({
+      profile_id:     profile.id,
+      artist_id:      selectedArtist.id,
+      appointment_at: appointmentAt,
+      service,
+      notes: notes.trim() || null,
+      status: 'pending',
+    })
+
+    if (error) { setBookingError(error.message); setBooking(false); return }
+    setDone(true)
+    setBooking(false)
+  }
+
+  const summaryDate = selectedDay
+    ? new Date(year, month, selectedDay).toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+      })
+    : ''
+
+  // ── Done screen ──────────────────────────────────────────────
+  if (done) {
+    return (
+      <div className="page page--no-nav select-time-page select-time-page--done">
+        <div className="select-time-page__done">
+          <div className="select-time-page__done-icon"><Check size={32} strokeWidth={2.5} /></div>
+          <h2>Booking Request Sent!</h2>
+          <p>
+            Your appointment with <strong>{selectedArtist?.name}</strong> on{' '}
+            <strong>{summaryDate}</strong> at <strong>{selectedTime ? fmtSlot(selectedTime) : ''}</strong> is pending confirmation.
+          </p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginTop: 8 }}>
+            You'll be notified once the artist confirms.
+          </p>
+          <GradientButton onClick={() => navigate('/bookings')}>View My Bookings</GradientButton>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Step 0: Pick artist ──────────────────────────────────────
+  if (step === 0) {
+    return (
+      <div className="page page--no-nav select-time-page">
+        <PageHeader title="Choose Artist" backTo="/bookings" align="center" />
+        {artistsLoading ? (
+          <p className="select-time-page__loading">Loading artists…</p>
+        ) : (
+          <div className="select-time-page__artists">
+            {artists.map(a => (
+              <button
+                key={a.id}
+                type="button"
+                className="select-time-page__artist-card"
+                onClick={() => { setSelectedArtist(a); setStep(1) }}
+              >
+                {a.avatar_url
+                  ? <img src={a.avatar_url} alt={a.name} className="select-time-page__artist-avatar" />
+                  : <div className="select-time-page__artist-avatar select-time-page__artist-avatar--empty" />
+                }
+                <div className="select-time-page__artist-info">
+                  <span className="select-time-page__artist-name">{a.name}</span>
+                  <span className="select-time-page__artist-specs">{a.specialties.join(' · ')}</span>
+                </div>
+                <ChevronRight size={18} strokeWidth={1.5} color="var(--gold-muted)" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── Step 1: Pick date + time ─────────────────────────────────
+  if (step === 1) {
+    return (
+      <div className="page page--no-nav select-time-page">
+        <PageHeader
+          title="Select Date & Time"
+          align="center"
+          leftAction={
+            <button type="button" onClick={() => { setStep(0); setSelectedDay(null); setSelectedTime(null) }}>
+              <ChevronLeft size={22} strokeWidth={1.5} />
+            </button>
+          }
+        />
+
+        {/* Artist strip */}
+        <div className="select-time-page__artist-strip">
+          {selectedArtist?.avatar_url && (
+            <img src={selectedArtist.avatar_url} alt="" className="select-time-page__strip-avatar" />
+          )}
+          <span>{selectedArtist?.name}</span>
+        </div>
+
+        <div className="select-time-page__layout">
+          {/* Calendar */}
+          <section className="select-time-page__calendar">
+            <div className="select-time-page__month">
+              <button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+                <ChevronLeft size={20} strokeWidth={1.5} />
+              </button>
+              <h2>{monthLabel}</h2>
+              <button type="button" onClick={() => shiftMonth(1)} aria-label="Next month">
+                <ChevronRight size={20} strokeWidth={1.5} />
+              </button>
+            </div>
+            <div className="select-time-page__weekdays">
+              {WEEKDAYS.map(d => <span key={d}>{d}</span>)}
+            </div>
+            <div className="select-time-page__days">
+              {days.map((day, i) =>
+                day === null ? <span key={`e-${i}`} /> : (
+                  <button
+                    key={day}
+                    type="button"
+                    disabled={isPast(day) || isDayOff(day)}
+                    className={[
+                      selectedDay === day ? 'is-selected' : '',
+                      isPast(day) || isDayOff(day) ? 'is-disabled' : '',
+                    ].join(' ')}
+                    onClick={() => setSelectedDay(day)}
+                  >
+                    {day}
+                  </button>
+                )
+              )}
+            </div>
+            {schedules.length === 0 && (
+              <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 12 }}>
+                This artist hasn't set their schedule yet.
+              </p>
+            )}
+          </section>
+
+          {/* Time slots */}
+          <section className="select-time-page__times">
+            <h3>
+              {selectedDay
+                ? `Available Times — ${new Date(year, month, selectedDay).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}`
+                : 'Select a date first'}
+            </h3>
+            {slotsLoading ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Loading slots…</p>
+            ) : selectedDay && slotsForDay.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No available slots for this day.</p>
+            ) : (
+              <div className="select-time-page__grid">
+                {slotsForDay.map(time => (
+                  <button
+                    key={time}
+                    type="button"
+                    className={selectedTime === time ? 'is-selected' : ''}
+                    onClick={() => setSelectedTime(time)}
+                  >
+                    {fmtSlot(time)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <footer className="select-time-page__footer">
+          <GradientButton
+            onClick={() => setStep(2)}
+            disabled={!selectedDay || !selectedTime}
+          >
+            CONTINUE
+          </GradientButton>
+          {selectedDay && selectedTime && (
+            <p>{fmtSlot(selectedTime)} · {summaryDate}</p>
+          )}
+        </footer>
+      </div>
+    )
+  }
+
+  // ── Step 2: Confirm ──────────────────────────────────────────
+  return (
+    <div className="page page--no-nav select-time-page">
+      <PageHeader
+        title="Confirm Booking"
+        align="center"
+        leftAction={
+          <button type="button" onClick={() => setStep(1)}>
+            <ChevronLeft size={22} strokeWidth={1.5} />
+          </button>
+        }
+      />
+
+      <div className="select-time-page__confirm">
+        <div className="select-time-page__confirm-summary">
+          {selectedArtist?.avatar_url && (
+            <img src={selectedArtist.avatar_url} alt="" className="select-time-page__confirm-avatar" />
+          )}
+          <div>
+            <div className="select-time-page__confirm-artist">{selectedArtist?.name}</div>
+            <div className="select-time-page__confirm-when">
+              {summaryDate} at {selectedTime ? fmtSlot(selectedTime) : ''}
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-modal__field">
+          <label className="admin-modal__label">Service</label>
+          <select className="admin-modal__select" value={service} onChange={e => setService(e.target.value)}>
+            {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+
+        <div className="admin-modal__field">
+          <label className="admin-modal__label">Notes / Description (optional)</label>
+          <textarea
+            className="admin-modal__textarea"
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Describe your idea, reference images, placement, size…"
+            rows={4}
+          />
+        </div>
+
+        {bookingError && <p className="admin-modal__error">{bookingError}</p>}
+
+        <GradientButton onClick={confirmBooking} disabled={booking}>
+          {booking ? 'SUBMITTING…' : 'REQUEST APPOINTMENT'}
+        </GradientButton>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', textAlign: 'center', marginTop: 8 }}>
+          The artist will confirm your appointment shortly.
+        </p>
+      </div>
+    </div>
+  )
+}

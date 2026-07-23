@@ -1,0 +1,32 @@
+.gradient-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  background: var(--gold-gradient-btn);
+  color: var(--text-on-gold);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: filter 0.2s ease, transform 0.15s ease;
+}
+
+.gradient-btn--full {
+  width: 100%;
+}
+
+.gradient-btn:hover {
+  filter: brightness(1.08);
+}
+
+.gradient-btn:active {
+  transform: scale(0.98);
+}
+
+.gradient-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

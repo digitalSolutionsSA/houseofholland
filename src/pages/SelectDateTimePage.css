@@ -1,0 +1,331 @@
+.select-time-page {
+  padding-bottom: 28px;
+  overflow-x: hidden;
+}
+
+/* ── Artist picker (step 0) ── */
+.select-time-page__loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.select-time-page__artists {
+  display: flex;
+  flex-direction: column;
+  padding: 8px var(--page-pad);
+  gap: 4px;
+}
+
+.select-time-page__artist-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  width: 100%;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.select-time-page__artist-card:hover {
+  background: rgba(212,175,55,0.04);
+}
+
+.select-time-page__artist-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-gold);
+  flex-shrink: 0;
+}
+
+.select-time-page__artist-avatar--empty {
+  background: rgba(212,175,55,0.08);
+}
+
+.select-time-page__artist-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.select-time-page__artist-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.select-time-page__artist-specs {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── Artist strip (step 1) ── */
+.select-time-page__artist-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px var(--page-pad) 10px;
+  font-size: 0.88rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.select-time-page__strip-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--border-gold);
+}
+
+/* ── Calendar disabled days ── */
+.select-time-page__days button.is-disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.2);
+  background: transparent;
+  border-color: transparent;
+  font-weight: 400;
+}
+
+/* ── Confirm step ── */
+.select-time-page__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px var(--page-pad) 32px;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.select-time-page__confirm-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-gold);
+  background: rgba(212,175,55,0.05);
+}
+
+.select-time-page__confirm-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-gold);
+  flex-shrink: 0;
+}
+
+.select-time-page__confirm-artist {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.select-time-page__confirm-when {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Done screen ── */
+.select-time-page--done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-time-page__done {
+  text-align: center;
+  padding: 40px var(--page-pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.select-time-page__done-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(107,255,184,0.12);
+  border: 1px solid rgba(107,255,184,0.3);
+  color: #6bffb8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-time-page__done h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.select-time-page__done p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.select-time-page__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.select-time-page__calendar {
+  margin: 8px var(--page-pad);
+  padding: 16px 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-elevated);
+}
+
+.select-time-page__month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.select-time-page__month h2 {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.select-time-page__month button {
+  color: var(--gold);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-time-page__weekdays,
+.select-time-page__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+}
+
+.select-time-page__weekdays {
+  margin-bottom: 8px;
+}
+
+.select-time-page__weekdays span {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--gold-muted);
+  font-weight: 600;
+}
+
+.select-time-page__days button {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  /* Available days: bright white, subtle gold ring */
+  color: #ffffff;
+  font-weight: 600;
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.select-time-page__days button:hover:not(.is-disabled):not(.is-selected) {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.7);
+}
+
+.select-time-page__days button.is-selected {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--text-on-gold);
+  font-weight: 700;
+}
+
+.select-time-page__times {
+  padding: 20px var(--page-pad) 8px;
+}
+
+.select-time-page__times h3 {
+  font-size: 0.85rem;
+  color: var(--gold-muted);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.select-time-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.select-time-page__grid button {
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  /* Available slots: gold-tinted, clearly selectable */
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.08);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.select-time-page__grid button:hover:not(.is-selected) {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.75);
+}
+
+.select-time-page__grid button.is-selected {
+  background: var(--gold-gradient-btn);
+  border-color: transparent;
+  color: var(--text-on-gold);
+  font-weight: 700;
+}
+
+.select-time-page__footer {
+  padding: 20px var(--page-pad) 8px;
+  text-align: center;
+  max-width: 480px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.select-time-page__footer p {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--gold-muted);
+}
+
+@media (min-width: 768px) {
+  .select-time-page__layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 24px;
+    align-items: start;
+    padding: 0 var(--page-pad);
+  }
+
+  .select-time-page__calendar {
+    margin: 0;
+  }
+
+  .select-time-page__times {
+    padding: 0;
+  }
+}

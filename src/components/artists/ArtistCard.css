@@ -1,0 +1,67 @@
+.artist-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-gold);
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.artist-card:hover {
+  background: rgba(212, 175, 55, 0.04);
+}
+
+.artist-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--gold);
+  flex-shrink: 0;
+}
+
+.artist-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.artist-card__name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.artist-card__specs {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.artist-card__link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.artist-card__avatar--empty {
+  background: rgba(212, 175, 55, 0.08);
+  border-style: dashed;
+}
+
+.artist-card--placeholder .artist-card__name {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.artist-card--placeholder .artist-card__link {
+  color: var(--text-muted);
+}
+
+.artist-card__chevron {
+  color: var(--gold);
+  flex-shrink: 0;
+}

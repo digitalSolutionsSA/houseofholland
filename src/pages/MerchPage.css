@@ -1,0 +1,15 @@
+.merch-page__cart {
+  color: var(--gold);
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.merch-page__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 16px var(--page-pad);
+}

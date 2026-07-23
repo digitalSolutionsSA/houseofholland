@@ -1,0 +1,28 @@
+.outline-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.outline-btn--full {
+  width: 100%;
+}
+
+.outline-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.outline-btn:active {
+  transform: scale(0.98);
+}

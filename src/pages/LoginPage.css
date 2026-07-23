@@ -1,0 +1,139 @@
+.login-page {
+  position: relative;
+}
+
+.login-page__content {
+  position: relative;
+  z-index: 1;
+  padding: 36px var(--page-pad) 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 440px;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.login-page__brand {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 240px);
+}
+
+.login-page__brand .brand-logo--full {
+  width: 100%;
+  height: auto !important;
+}
+
+.login-page__tabs {
+  display: flex;
+  gap: 28px;
+}
+
+.login-page__tabs button {
+  padding-bottom: 8px;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+}
+
+.login-page__tabs button.is-active {
+  color: var(--text);
+  border-bottom-color: var(--gold);
+}
+
+.login-page__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-page__forgot {
+  align-self: flex-end;
+  color: var(--gold);
+  font-size: 0.85rem;
+  margin: -2px 0 6px;
+}
+
+.login-page__social {
+  width: 100%;
+}
+
+.login-page__or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.login-page__or span {
+  flex: 1;
+  height: 1px;
+  background: rgba(212, 175, 55, 0.35);
+}
+
+.login-page__or p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.login-page__social-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.social-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.login-page__footer {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.login-page__footer a {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.login-page__error {
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(255, 107, 107, 0.08);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  border-radius: var(--radius-sm);
+}
+
+.login-page__success {
+  font-size: 0.85rem;
+  color: #6bffb8;
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(107, 255, 184, 0.08);
+  border: 1px solid rgba(107, 255, 184, 0.25);
+  border-radius: var(--radius-sm);
+}
+
+.login-page__forgot-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}

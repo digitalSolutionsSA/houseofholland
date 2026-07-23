@@ -1,0 +1,23 @@
+.bookings-page__content {
+  padding: 8px var(--page-pad) 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bookings-page__cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-gold);
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.bookings-page__content h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 8px;
+}

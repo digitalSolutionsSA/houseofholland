@@ -1,0 +1,164 @@
+.home-page {
+  padding-top: 8px;
+}
+
+/* ── Header ── */
+.home-page__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px var(--page-pad) 6px;
+}
+
+.home-page__logo {
+  display: flex;
+  justify-content: center;
+}
+
+.home-page__avatar-link {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 50%;
+  outline-offset: 2px;
+}
+
+.home-page__avatar-link:focus-visible {
+  outline: 2px solid var(--gold);
+}
+
+.home-page__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+  display: block;
+}
+
+.home-page__avatar--empty {
+  background: rgba(212,175,55,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(212,175,55,0.35);
+}
+
+/* Greeting lives in header on all sizes */
+.home-page__welcome--inline {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+
+.home-page__welcome--mobile {
+  display: none;
+}
+
+.home-page__bell {
+  flex-shrink: 0;
+  color: var(--gold);
+  position: relative;
+}
+
+.home-page__bell-dot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e07a2f;
+}
+
+.home-page__welcome {
+  padding: 6px var(--page-pad) 14px;
+}
+
+.home-page__welcome p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.home-page__welcome h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.home-page__section {
+  padding: 0 var(--page-pad) 20px;
+}
+
+.home-page__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.home-page__section-head h2,
+.home-page__section-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.home-page__section-head h2 {
+  margin-bottom: 0;
+}
+
+.home-page__section-head a {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.78rem;
+  color: var(--gold);
+}
+
+/* ── Tablet (768px+) ── */
+@media (min-width: 768px) {
+  .home-page {
+    padding-top: 16px;
+  }
+
+  .home-page__avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .home-page__desktop-grid {
+    padding: 0 var(--page-pad);
+  }
+
+  .home-page__desktop-grid .home-page__section {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* ── Desktop (1024px+) ── */
+@media (min-width: 1024px) {
+  .home-page {
+    padding-top: 24px;
+  }
+
+  .home-page__avatar {
+    width: 54px;
+    height: 54px;
+  }
+
+  .home-page__welcome h1 {
+    font-size: 2rem;
+  }
+
+  .home-page__section-title {
+    font-size: 1.1rem;
+  }
+}

@@ -1,0 +1,147 @@
+.passport-page {
+  padding-bottom: 32px;
+}
+
+.passport-page__more {
+  color: var(--gold);
+}
+
+.passport-page__reward {
+  margin: 20px var(--page-pad);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.passport-page__reward-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.passport-page__reward h2 {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.passport-page__reward-item {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.passport-page__reward img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.passport-page__tiers {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.passport-page__tiers button {
+  padding: 10px 4px 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+}
+
+.passport-page__tiers button.is-active {
+  color: var(--text);
+  border-bottom-color: var(--gold);
+}
+
+.passport-page__stats {
+  margin: 20px var(--page-pad);
+  padding: 20px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+}
+
+.passport-page__stats strong {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.passport-page__stats strong.is-gold {
+  color: var(--gold);
+}
+
+.passport-page__stats span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.passport-page__tier-rewards {
+  margin: 0 var(--page-pad) 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.passport-page__tier-rewards li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-muted);
+}
+
+.passport-page__tier-rewards li.is-unlocked {
+  color: var(--text);
+}
+
+.passport-page__reward-check {
+  font-size: 1rem;
+  color: var(--border-gold);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.passport-page__tier-rewards li.is-unlocked .passport-page__reward-check {
+  color: var(--gold);
+}
+
+.passport-page__tier-rewards div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.passport-page__reward-count {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.passport-page__reward-name {
+  font-size: 0.88rem;
+}
+
+.passport-page__cta {
+  padding: 8px var(--page-pad);
+}

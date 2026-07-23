@@ -1,0 +1,108 @@
+.desktop-nav {
+  display: none;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 12px;
+  border-right: 1px solid var(--border-subtle);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 30;
+}
+
+.desktop-nav__brand {
+  padding: 0 6px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.desktop-nav__links,
+.desktop-nav__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.desktop-nav__section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.desktop-nav__section-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-muted);
+  padding: 0 10px 6px;
+  font-weight: 600;
+}
+
+.desktop-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.desktop-nav__link:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: var(--text);
+}
+
+.desktop-nav__link--active {
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--gold);
+}
+
+/* Show on tablet and above */
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+}
+
+/* Wider, more spacious on desktop */
+@media (min-width: 1024px) {
+  .desktop-nav {
+    padding: 28px 16px;
+    gap: 8px;
+  }
+
+  .desktop-nav__brand {
+    padding: 0 8px 20px;
+    margin-bottom: 12px;
+  }
+
+  .desktop-nav__section {
+    margin-top: 20px;
+    padding-top: 16px;
+    gap: 4px;
+  }
+
+  .desktop-nav__section-label {
+    font-size: 0.65rem;
+    padding: 0 12px 8px;
+  }
+
+  .desktop-nav__link {
+    padding: 12px 14px;
+    gap: 12px;
+    font-size: 0.95rem;
+  }
+}

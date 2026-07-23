@@ -1,0 +1,48 @@
+.appointment-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+.appointment-card__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.appointment-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.appointment-card__when {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.appointment-card__artist {
+  margin-top: 2px;
+  font-size: 0.85rem;
+  color: var(--gold);
+}
+
+.appointment-card__service {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.appointment-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--gold);
+  font-weight: 500;
+}

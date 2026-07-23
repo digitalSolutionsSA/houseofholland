@@ -1,0 +1,22 @@
+.brand-logo--full {
+  display: block;
+  object-fit: contain;
+  max-width: 100%;
+}
+
+.brand-logo--mark {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.brand-logo--mark img {
+  width: 165%;
+  height: auto;
+  max-width: none;
+  margin-top: -6%;
+  object-fit: cover;
+  object-position: center top;
+}

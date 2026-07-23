@@ -1,0 +1,75 @@
+.membership-page {
+  padding: 20px var(--page-pad) 32px;
+}
+
+.membership-page__header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-left: 4px;
+}
+
+.membership-page__num {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.membership-page__frame {
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  padding: 24px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.membership-page__brand {
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.membership-page__frame > h1 {
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.06em;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+
+.membership-page__benefits-title {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.membership-page__benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.membership-page__benefits li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.membership-page__benefits svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}

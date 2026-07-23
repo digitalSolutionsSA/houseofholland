@@ -1,0 +1,41 @@
+.artists-page__info {
+  color: var(--gold);
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.artists-page__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px var(--page-pad) 14px;
+  padding: 0 16px;
+  height: 46px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  color: var(--gold);
+  max-width: 520px;
+}
+
+.artists-page__search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.artists-page__search input::placeholder {
+  color: var(--text-muted);
+}
+
+.artists-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px var(--page-pad) 8px;
+}
