@@ -1,0 +1,388 @@
+.booth-rent-page { padding-bottom: 48px; }
+
+.booth-rent__content {
+  padding: 0 var(--page-pad);
+  max-width: 480px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Rate card ── */
+.booth-rent__rate-card {
+  padding: 24px 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(201,168,76,0.3);
+  background: linear-gradient(160deg, rgba(201,168,76,0.07) 0%, rgba(0,0,0,0) 70%);
+  text-align: center;
+}
+
+.booth-rent__rate-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.booth-rent__rate-amount {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 700;
+  color: #F0EDE6;
+  line-height: 1;
+  text-shadow: 0 0 30px rgba(201,168,76,0.25);
+}
+
+.booth-rent__rate-monthly {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.booth-rent__rate-notes {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.5;
+}
+
+/* ── Pay button ── */
+.booth-rent__pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #C9A84C;
+  color: #080808;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: opacity 0.18s, box-shadow 0.18s;
+}
+.booth-rent__pay-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+}
+
+/* ── History ── */
+.booth-rent__history-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.booth-rent__empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.booth-rent__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booth-rent__payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+}
+
+.booth-rent__payment-left { flex: 1; min-width: 0; }
+
+.booth-rent__payment-amount {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.booth-rent__payment-period {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.booth-rent__payment-weeks { color: var(--gold); }
+
+.booth-rent__payment-ref {
+  font-size: 0.68rem;
+  color: rgba(201,168,76,0.5);
+  margin-top: 3px;
+  font-family: monospace;
+}
+
+.booth-rent__payment-status {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ── Unlinked state ── */
+.booth-rent__unlinked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px var(--page-pad);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  max-width: 320px;
+  margin-inline: auto;
+}
+
+/* ── Modal overlay ── */
+.booth-rent__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 480px) {
+  .booth-rent__overlay { align-items: center; padding: 20px; }
+}
+
+.booth-rent__modal {
+  background: #111010;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 460px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 480px) {
+  .booth-rent__modal { border-radius: 20px; }
+}
+
+.booth-rent__modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.booth-rent__modal-head h2 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.booth-rent__modal-head button {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+.booth-rent__modal-head button:hover { color: var(--text); }
+
+.booth-rent__modal-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.booth-rent__modal-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: -8px;
+}
+
+/* ── Week options ── */
+.booth-rent__week-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.booth-rent__week-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(201,168,76,0.2);
+  background: rgba(201,168,76,0.03);
+  transition: border-color 0.15s, background 0.15s;
+}
+.booth-rent__week-btn--active {
+  border-color: #C9A84C;
+  background: rgba(201,168,76,0.1);
+}
+
+.booth-rent__week-num {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #C9A84C;
+  line-height: 1;
+}
+.booth-rent__week-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+.booth-rent__week-amount {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Summary ── */
+.booth-rent__summary {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booth-rent__summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.booth-rent__summary-row--total {
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ── EFT info ── */
+.booth-rent__eft-info {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.booth-rent__eft-info svg { color: #C9A84C; flex-shrink: 0; margin-top: 1px; }
+
+.booth-rent__modal-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+/* ── Confirm button ── */
+.booth-rent__confirm-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  background: #C9A84C;
+  color: #080808;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: opacity 0.18s;
+}
+.booth-rent__confirm-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── Success state ── */
+.booth-rent__modal-success {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.booth-rent__modal-success h3 {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: var(--text);
+}
+.booth-rent__modal-success p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 300px;
+}
+.booth-rent__modal-success strong { color: var(--text); }
+
+.booth-rent__ref-box {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.25);
+  text-align: center;
+}
+.booth-rent__ref-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.booth-rent__ref-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: 0.08em;
+  font-family: monospace;
+}
+.booth-rent__ref-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.booth-rent__modal-close-btn {
+  padding: 11px 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-top: 4px;
+  background: rgba(201,168,76,0.06);
+  transition: background 0.15s;
+}
+.booth-rent__modal-close-btn:hover { background: rgba(201,168,76,0.12); }

@@ -638,6 +638,69 @@
   }
 }
 
+/* ── Flash artist checkbox list ── */
+.admin-flash__artist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid rgba(212,175,55,0.15);
+  border-radius: 8px;
+  padding: 6px;
+  background: rgba(0,0,0,0.2);
+}
+
+.admin-flash__artist-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+
+.admin-flash__artist-row:hover {
+  background: rgba(212,175,55,0.06);
+}
+
+.admin-flash__artist-row--checked {
+  background: rgba(212,175,55,0.08);
+  border-color: rgba(212,175,55,0.3);
+}
+
+.admin-flash__checkbox {
+  accent-color: #d4af37;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.admin-flash__artist-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(212,175,55,0.3);
+  flex-shrink: 0;
+}
+
+.admin-flash__artist-name {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.admin-flash__artist-tick {
+  font-size: 0.75rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+
 /* ── Tablet admin: narrower sidebar ── */
 @media (min-width: 768px) and (max-width: 1023px) {
   .admin-sidebar {

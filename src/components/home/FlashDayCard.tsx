@@ -23,7 +23,7 @@ export function FlashDayCard() {
     async function load() {
       const { data: ev } = await supabase
         .from('flash_events')
-        .select('id, title, date, description, status, max_spots, artists(name)')
+        .select('id, title, date, description, status, max_spots')
         .in('status', ['upcoming', 'open'])
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date')
@@ -32,7 +32,16 @@ export function FlashDayCard() {
 
       if (!ev) { setLoading(false); return }
 
-      setEvent({ ...ev, artist_name: (ev as any).artists?.name ?? null })
+      // Fetch first artist from junction table
+      const { data: junc } = await supabase
+        .from('flash_event_artists')
+        .select('artists(name)')
+        .eq('flash_event_id', ev.id)
+        .limit(1)
+        .single()
+
+      const artistName = (junc as any)?.artists?.name ?? null
+      setEvent({ ...ev, artist_name: artistName })
 
       const { count } = await supabase
         .from('flash_reservations')

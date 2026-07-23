@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, ChevronRight, User } from 'lucide-react'
+import { ChevronRight, User } from 'lucide-react'
 import { FlashDayCard } from '../components/home/FlashDayCard'
 import { AppointmentCard } from '../components/home/AppointmentCard'
 import { QuickActions } from '../components/home/QuickActions'
+import { NotificationPanel } from '../components/shared/NotificationPanel'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './HomePage.css'
@@ -74,10 +75,7 @@ export function HomePage() {
           <p>{greeting()},</p>
           <h1>{firstName}</h1>
         </div>
-        <button type="button" className="home-page__bell" aria-label="Notifications">
-          <Bell size={22} strokeWidth={1.5} />
-          <span className="home-page__bell-dot" />
-        </button>
+        <NotificationPanel />
       </header>
 
       <section className="home-page__welcome home-page__welcome--mobile">

@@ -24,6 +24,10 @@ import { AdminCompletions } from './pages/admin/AdminCompletions'
 import { AdminPortfolio } from './pages/admin/AdminPortfolio'
 import { AdminSchedule } from './pages/admin/AdminSchedule'
 import { AdminBookings } from './pages/admin/AdminBookings'
+import { AdminGuestArtists } from './pages/admin/AdminGuestArtists'
+import { AdminNotifications } from './pages/admin/AdminNotifications'
+import { AdminRent } from './pages/admin/AdminRent'
+import { BoothRentPage } from './pages/BoothRentPage'
 import { useAuth } from './context/AuthContext'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -60,8 +64,11 @@ export default function App() {
           <Route path="schedule"   element={<AdminSchedule />} />
           <Route path="portfolio"  element={<AdminPortfolio />} />
           <Route path="artists" element={<AdminArtists />} />
-          <Route path="merch" element={<AdminMerch />} />
-          <Route path="flash" element={<AdminFlash />} />
+          <Route path="merch"          element={<AdminMerch />} />
+          <Route path="flash"          element={<AdminFlash />} />
+          <Route path="guest-artists"  element={<AdminGuestArtists />} />
+          <Route path="notifications"  element={<AdminNotifications />} />
+          <Route path="rent"           element={<AdminRent />} />
         </Route>
 
         {/* Public app */}
@@ -83,6 +90,7 @@ export default function App() {
           <Route path="/flash-queue/:eventId" element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
           <Route path="/flash-queue" element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+          <Route path="/booth-rent" element={<RequireAuth><BoothRentPage /></RequireAuth>} />
           <Route path="/settings" element={<Navigate to="/profile" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

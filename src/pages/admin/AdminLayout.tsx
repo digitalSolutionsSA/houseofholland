@@ -1,17 +1,20 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Users, Shirt, Zap, LayoutDashboard, ArrowLeft, CheckCircle, Images, CalendarDays, CalendarCheck } from 'lucide-react'
+import { Users, Shirt, Zap, LayoutDashboard, ArrowLeft, CheckCircle, Images, CalendarDays, CalendarCheck, UserCheck, Bell, DollarSign } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
 import './AdminLayout.css'
 
 const links = [
-  { to: '/admin',             label: 'Dashboard',         icon: LayoutDashboard, end: true },
-  { to: '/admin/bookings',    label: 'Appointments',       icon: CalendarCheck },
-  { to: '/admin/schedule',    label: 'My Schedule',        icon: CalendarDays },
-  { to: '/admin/completions', label: 'Record Tattoo',      icon: CheckCircle },
-  { to: '/admin/portfolio',   label: 'My Portfolio',       icon: Images },
-  { to: '/admin/artists',     label: 'Artists',            icon: Users },
-  { to: '/admin/merch',       label: 'Merch',              icon: Shirt },
-  { to: '/admin/flash',       label: 'Flash Events',       icon: Zap },
+  { to: '/admin',                  label: 'Dashboard',       icon: LayoutDashboard, end: true },
+  { to: '/admin/bookings',         label: 'Appointments',    icon: CalendarCheck },
+  { to: '/admin/schedule',         label: 'My Schedule',     icon: CalendarDays },
+  { to: '/admin/completions',      label: 'Record Tattoo',   icon: CheckCircle },
+  { to: '/admin/portfolio',        label: 'My Portfolio',    icon: Images },
+  { to: '/admin/artists',          label: 'Artists',         icon: Users },
+  { to: '/admin/guest-artists',    label: 'Guest Artists',   icon: UserCheck },
+  { to: '/admin/merch',            label: 'Merch',           icon: Shirt },
+  { to: '/admin/flash',            label: 'Flash Events',    icon: Zap },
+  { to: '/admin/rent',             label: 'Booth Rent',      icon: DollarSign },
+  { to: '/admin/notifications',    label: 'Notifications',   icon: Bell },
 ]
 
 export function AdminLayout() {
