@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ChevronRight, CreditCard, Award, Shirt, FilePen,
   LogOut, Camera, User, Mail, Phone, Save, X, Loader2,
+  IdCard, Upload, CheckCircle2,
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
@@ -20,6 +21,14 @@ export function ProfilePage() {
   const { profile, signOut, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
+
+  const idFileRef = useRef<HTMLInputElement>(null)
+  const [idUrl, setIdUrl]               = useState<string | null>(null)
+  const [idUploading, setIdUploading]   = useState(false)
+
+  useEffect(() => {
+    setIdUrl((profile as any)?.id_document_url ?? null)
+  }, [profile?.id])
 
   const [editing, setEditing]           = useState(false)
   const [fullName, setFullName]         = useState(profile?.full_name ?? '')
@@ -113,6 +122,29 @@ export function ProfilePage() {
   async function handleSignOut() {
     await signOut()
     navigate('/login')
+  }
+
+  async function onIdPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !profile) return
+    setIdUploading(true)
+    setError(null)
+
+    const ext = file.name.split('.').pop()
+    const path = `${profile.id}/id.${ext}`
+
+    const { error: upErr } = await supabase.storage
+      .from('id-documents')
+      .upload(path, file, { upsert: true })
+
+    if (upErr) { setError('ID upload failed: ' + upErr.message); setIdUploading(false); return }
+
+    const { data } = supabase.storage.from('id-documents').getPublicUrl(path)
+    await supabase.from('profiles').update({ id_document_url: data.publicUrl }).eq('id', profile.id)
+    setIdUrl(data.publicUrl)
+    setIdUploading(false)
+    await refreshProfile()
+    e.target.value = ''
   }
 
   const displayName = profile?.full_name?.trim() || 'Your Profile'
@@ -266,6 +298,52 @@ export function ProfilePage() {
                 Tap <strong>Edit</strong> to add your name and phone number.
               </p>
             )}
+          </div>
+        )}
+
+        {/* ── ID Document ── */}
+        {!editing && (
+          <div className="profile-page__id-section">
+            <div className="profile-page__id-header">
+              <IdCard size={16} strokeWidth={1.5} />
+              <span>ID Document</span>
+              {idUrl && <CheckCircle2 size={14} strokeWidth={2} className="profile-page__id-check" />}
+            </div>
+            {idUrl ? (
+              <div className="profile-page__id-preview-wrap">
+                <img src={idUrl} alt="ID document" className="profile-page__id-preview" />
+                <button
+                  type="button"
+                  className="profile-page__id-replace"
+                  onClick={() => idFileRef.current?.click()}
+                  disabled={idUploading}
+                >
+                  {idUploading ? <Loader2 size={13} className="profile-page__avatar-spinner" /> : <Upload size={13} />}
+                  {idUploading ? 'Uploading…' : 'Replace'}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="profile-page__id-upload-btn"
+                onClick={() => idFileRef.current?.click()}
+                disabled={idUploading}
+              >
+                {idUploading
+                  ? <><Loader2 size={16} className="profile-page__avatar-spinner" /> Uploading…</>
+                  : <><Upload size={16} strokeWidth={1.5} /> Upload Driver's License or ID Card</>}
+              </button>
+            )}
+            <input
+              ref={idFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,application/pdf"
+              style={{ display: 'none' }}
+              onChange={onIdPick}
+            />
+            <p className="profile-page__id-note">
+              Your ID is stored securely and only visible to studio staff.
+            </p>
           </div>
         )}
 
