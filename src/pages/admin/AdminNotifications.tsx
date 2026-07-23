@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Send, Bell } from 'lucide-react'
+import { Send } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type Profile = { id: string; full_name: string | null; email: string | null; role: string }

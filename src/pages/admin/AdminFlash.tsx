@@ -18,9 +18,15 @@ type FlashEvent = {
 type Artist      = { id: string; name: string; avatar_url: string | null }
 type GuestArtist = { id: string; name: string; avatar_url: string | null; specialty: string | null }
 
-const EMPTY_FORM = {
+type FormState = {
+  title: string; description: string; date: string
+  start_time: string; end_time: string
+  status: FlashEvent['status']; max_spots: number
+}
+
+const EMPTY_FORM: FormState = {
   title: '', description: '', date: '', start_time: '10:00',
-  end_time: '18:00', status: 'upcoming' as const, max_spots: 10,
+  end_time: '18:00', status: 'upcoming', max_spots: 10,
 }
 
 export function AdminFlash() {
@@ -29,7 +35,7 @@ export function AdminFlash() {
   const [guestArtists, setGuestArtists] = useState<GuestArtist[]>([])
   const [loading, setLoading]           = useState(true)
   const [modal, setModal]               = useState<'add' | 'edit' | null>(null)
-  const [form, setForm]                 = useState(EMPTY_FORM)
+  const [form, setForm]                 = useState<FormState>(EMPTY_FORM)
   const [selectedArtists, setSelectedArtists]           = useState<string[]>([])
   const [selectedGuestArtists, setSelectedGuestArtists] = useState<string[]>([])
   const [editId, setEditId]   = useState<string | null>(null)

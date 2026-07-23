@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Clock, DollarSign, Pencil, X } from 'lucide-react'
+import { CheckCircle2, Pencil, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type Artist = { id: string; name: string; avatar_url: string | null }

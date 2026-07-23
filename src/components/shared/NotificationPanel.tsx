@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 import { Bell, X, Check, CheckCheck, Zap, CalendarCheck, Info, AlertCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -13,7 +13,7 @@ type Notification = {
   created_at: string
 }
 
-const TYPE_ICON: Record<string, JSX.Element> = {
+const TYPE_ICON: Record<string, ReactElement> = {
   flash:   <Zap size={14} strokeWidth={2} />,
   booking: <CalendarCheck size={14} strokeWidth={1.5} />,
   alert:   <AlertCircle size={14} strokeWidth={1.5} />,

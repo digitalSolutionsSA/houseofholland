@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, CreditCard, Calendar, CheckCircle2, Clock, AlertCircle, X, Pen } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { CreditCard, Calendar, CheckCircle2, AlertCircle, X, Pen } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
