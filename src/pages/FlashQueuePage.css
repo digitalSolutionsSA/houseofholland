@@ -1,59 +1,113 @@
-.flash-queue-page__top {
-  padding: 12px 16px 0;
+.flash-queue-page {
+  padding-bottom: 0 !important;
+  overflow-x: hidden;
+}
+
+/* ── Hero ── */
+.flash-queue-page__hero {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 var(--page-pad) 32px;
+  overflow: hidden;
+}
+
+.flash-queue-page__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,175,55,0.18) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
+  z-index: 0;
+}
+
+/* animated gold shimmer line at top */
+.flash-queue-page__hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 300%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 40%, rgba(212,175,55,0.4) 60%, transparent 100%);
+  animation: fq-shimmer 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes fq-shimmer {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(33.33%); }
 }
 
 .flash-queue-page__back {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   color: var(--gold);
   width: 40px;
   height: 40px;
   align-items: center;
   justify-content: center;
+  margin-bottom: auto;
+  padding-top: 12px;
+  align-self: flex-start;
 }
 
-.flash-queue-page__event {
+.flash-queue-page__hero-content {
+  position: relative;
+  z-index: 2;
   text-align: center;
-  padding: 0 20px 8px;
 }
 
 .flash-queue-page__eyebrow {
   font-family: var(--font-serif);
-  font-size: 0.85rem;
-  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
   color: var(--gold);
-  font-weight: 600;
-}
-
-.flash-queue-page__event h1 {
-  margin-top: 4px;
-  font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 5vw, 2.2rem);
   font-weight: 700;
+  opacity: 0.85;
+}
+
+.flash-queue-page__hero-content h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 800;
   color: var(--gold);
+  line-height: 1.1;
+  margin-top: 6px;
+  text-shadow: 0 0 40px rgba(212,175,55,0.5), 0 2px 8px rgba(0,0,0,0.8);
+  letter-spacing: 0.04em;
 }
 
-.flash-queue-page__style {
-  margin-top: 4px;
+.flash-queue-page__artist-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(212,175,55,0.35);
+  background: rgba(212,175,55,0.08);
+  font-size: 0.8rem;
   color: var(--gold-muted);
-  font-size: 0.9rem;
 }
 
-.flash-queue-page__divider {
-  margin-top: 16px;
-}
-
+/* ── Meta strip ── */
 .flash-queue-page__meta {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 var(--page-pad) 12px;
-  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px var(--page-pad) 0;
+  flex-wrap: wrap;
 }
 
 .flash-queue-page__meta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   font-size: 0.85rem;
   color: var(--text-muted);
 }
@@ -63,43 +117,91 @@
   flex-shrink: 0;
 }
 
-.flash-queue-page__desc {
-  margin-top: 4px;
-  font-size: 0.83rem;
-  color: var(--text-muted);
+/* ── Description ── */
+.flash-queue-page__desc-wrap {
+  max-width: 520px;
+  margin: 16px auto 0;
+  padding: 0 var(--page-pad);
   text-align: center;
 }
 
+.flash-queue-page__desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Divider ── */
+.flash-queue-page__divider {
+  margin: 20px auto 0;
+  max-width: 520px;
+  padding: 0 var(--page-pad);
+}
+
+/* ── Card ── */
 .flash-queue-page__card {
-  margin: 16px var(--page-pad);
-  padding: 24px 18px 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-gold);
-  background: var(--bg-card);
+  margin: 20px var(--page-pad) 40px;
+  padding: 28px 22px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(212,175,55,0.3);
+  background: linear-gradient(160deg, rgba(212,175,55,0.06) 0%, rgba(0,0,0,0) 60%), var(--bg-card);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
   max-width: 520px;
+  box-shadow: 0 0 40px rgba(212,175,55,0.08), 0 8px 32px rgba(0,0,0,0.4);
 }
 
 @media (min-width: 768px) {
   .flash-queue-page__card {
     margin-inline: auto;
   }
+
+  .flash-queue-page__hero {
+    min-height: 320px;
+  }
 }
 
+/* ── Status badge ── */
 .flash-queue-page__status {
   text-align: center;
-  font-size: 0.7rem;
-  letter-spacing: 0.14em;
-  color: var(--gold);
-  font-weight: 600;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  align-self: center;
 }
 
+.flash-queue-page__status--open {
+  color: #4ade80;
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+
+.flash-queue-page__status--upcoming {
+  color: var(--gold);
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.3);
+}
+
+.flash-queue-page__status--joined {
+  color: var(--gold);
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.3);
+}
+
+.flash-queue-page__status--closed {
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── Queue number ── */
 .flash-queue-page__number-wrap {
   position: relative;
   text-align: center;
-  padding: 12px 0 8px;
+  padding: 16px 0 8px;
 }
 
 .flash-queue-page__watermark {
@@ -109,64 +211,126 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-serif);
-  font-size: 5rem;
-  font-weight: 700;
-  color: rgba(212, 175, 55, 0.08);
+  font-size: 6rem;
+  font-weight: 800;
+  color: rgba(212,175,55,0.06);
   pointer-events: none;
+  letter-spacing: -0.02em;
 }
 
 .flash-queue-page__number {
   position: relative;
   font-family: var(--font-serif);
-  font-size: 3.5rem;
-  font-weight: 700;
+  font-size: 4.5rem;
+  font-weight: 800;
   color: var(--gold);
   line-height: 1;
+  text-shadow: 0 0 30px rgba(212,175,55,0.4);
 }
 
+.flash-queue-page__number-label {
+  position: relative;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Spots progress bar ── */
+.flash-queue-page__spots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flash-queue-page__spots-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.flash-queue-page__spots-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.flash-queue-page__spots-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.flash-queue-page__progress {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.flash-queue-page__progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), rgba(212,175,55,0.6));
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* ── Stats row ── */
 .flash-queue-page__stat {
   display: flex;
   gap: 12px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  align-items: flex-start;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.07);
   color: var(--gold);
 }
 
 .flash-queue-page__stat-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
   color: var(--gold);
 }
 
 .flash-queue-page__stat-value {
-  margin-top: 4px;
-  font-size: 1.5rem;
+  margin-top: 3px;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
+  font-family: var(--font-serif);
 }
 
 .flash-queue-page__stat-copy {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
+/* ── Note box ── */
 .flash-queue-page__note {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.35);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(212,175,55,0.05);
+  border: 1px solid rgba(212,175,55,0.12);
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: flex-start;
   color: var(--text-muted);
-  font-size: 0.75rem;
-  line-height: 1.4;
+  font-size: 0.78rem;
+  line-height: 1.5;
 }
 
 .flash-queue-page__note svg {
   color: var(--gold);
   flex-shrink: 0;
   margin-top: 1px;
+}
+
+/* ── Closed / upcoming copy ── */
+.flash-queue-page__closed-copy {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }

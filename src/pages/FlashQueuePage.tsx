@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronLeft, Clock, CalendarDays } from 'lucide-react'
+import { Bell, ChevronLeft, Clock, CalendarDays, Zap } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { DiamondDivider } from '../components/shared/DiamondDivider'
 import { GradientButton } from '../components/shared/GradientButton'
@@ -46,10 +46,7 @@ export function FlashQueuePage() {
       .single()
 
     if (ev) {
-      setEvent({
-        ...ev,
-        artist_name: (ev as any).artists?.name ?? null,
-      })
+      setEvent({ ...ev, artist_name: (ev as any).artists?.name ?? null })
     }
 
     const { count } = await supabase
@@ -78,13 +75,11 @@ export function FlashQueuePage() {
     if (!event || !profile) return
     setActing(true)
     setError(null)
-
     const { data, error: err } = await supabase
       .from('flash_reservations')
       .insert({ flash_event_id: event.id, profile_id: profile.id, position: queueSize + 1 })
       .select('id, position, reserved_at')
       .single()
-
     if (err) setError(err.message)
     else { setReservation(data); setQueueSize(q => q + 1) }
     setActing(false)
@@ -106,11 +101,12 @@ export function FlashQueuePage() {
     : ''
 
   const spotsLeft = event ? Math.max(0, event.max_spots - queueSize) : 0
+  const fillPct = event ? Math.min(100, (queueSize / event.max_spots) * 100) : 0
 
   if (loading) {
     return (
       <div className="page flash-queue-page">
-        <div className="flash-queue-page__top">
+        <div className="flash-queue-page__hero">
           <Link to="/home" className="flash-queue-page__back"><ChevronLeft size={24} strokeWidth={1.5} /></Link>
         </div>
         <p style={{ padding: 24, color: 'var(--text-muted)' }}>Loading…</p>
@@ -121,7 +117,7 @@ export function FlashQueuePage() {
   if (!event) {
     return (
       <div className="page flash-queue-page">
-        <div className="flash-queue-page__top">
+        <div className="flash-queue-page__hero">
           <Link to="/home" className="flash-queue-page__back"><ChevronLeft size={24} strokeWidth={1.5} /></Link>
         </div>
         <p style={{ padding: 24, color: 'var(--text-muted)' }}>Flash event not found.</p>
@@ -131,64 +127,89 @@ export function FlashQueuePage() {
 
   return (
     <div className="page flash-queue-page">
-      <div className="flash-queue-page__top">
+
+      {/* ── Hero ── */}
+      <div className="flash-queue-page__hero">
         <Link to="/home" className="flash-queue-page__back" aria-label="Go back">
           <ChevronLeft size={24} strokeWidth={1.5} />
         </Link>
+        <div className="flash-queue-page__hero-content">
+          <p className="flash-queue-page__eyebrow">⚡ FLASH DAY</p>
+          <h1>{event.title.toUpperCase()}</h1>
+          {event.artist_name && (
+            <div className="flash-queue-page__artist-badge">
+              <Zap size={12} strokeWidth={2} />
+              with {event.artist_name}
+            </div>
+          )}
+        </div>
       </div>
 
-      <header className="flash-queue-page__event">
-        <p className="flash-queue-page__eyebrow">FLASH DAY</p>
-        <h1>{event.title.toUpperCase()}</h1>
-        {event.artist_name && (
-          <p className="flash-queue-page__style">with {event.artist_name}</p>
-        )}
-        <DiamondDivider className="flash-queue-page__divider" />
-      </header>
-
+      {/* ── Meta ── */}
       <div className="flash-queue-page__meta">
         <div className="flash-queue-page__meta-row">
-          <CalendarDays size={16} strokeWidth={1.5} />
+          <CalendarDays size={15} strokeWidth={1.5} />
           <span>{dateLabel}</span>
         </div>
         <div className="flash-queue-page__meta-row">
-          <Clock size={16} strokeWidth={1.5} />
+          <Clock size={15} strokeWidth={1.5} />
           <span>{event.start_time.slice(0,5)} – {event.end_time.slice(0,5)}</span>
         </div>
-        {event.description && (
-          <p className="flash-queue-page__desc">{event.description}</p>
-        )}
       </div>
 
+      {event.description && (
+        <div className="flash-queue-page__desc-wrap">
+          <p className="flash-queue-page__desc">{event.description}</p>
+        </div>
+      )}
+
+      <div className="flash-queue-page__divider">
+        <DiamondDivider />
+      </div>
+
+      {/* ── Card ── */}
       {event.status === 'closed' ? (
         <article className="flash-queue-page__card">
-          <p className="flash-queue-page__status" style={{ color: 'var(--text-muted)' }}>
-            THIS EVENT IS CLOSED
-          </p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', marginTop: 8 }}>
-            Keep an eye out for the next flash day!
+          <span className="flash-queue-page__status flash-queue-page__status--closed">CLOSED</span>
+          <p className="flash-queue-page__closed-copy">
+            This flash day has ended.<br />Keep an eye out for the next one!
           </p>
         </article>
+
       ) : event.status === 'upcoming' ? (
         <article className="flash-queue-page__card">
-          <p className="flash-queue-page__status">QUEUE OPENS SOON</p>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', marginTop: 8 }}>
-            {spotsLeft} of {event.max_spots} spots available. Check back on the day!
+          <span className="flash-queue-page__status flash-queue-page__status--upcoming">COMING SOON</span>
+          <div className="flash-queue-page__spots">
+            <div className="flash-queue-page__spots-row">
+              <span className="flash-queue-page__spots-label">SPOTS AVAILABLE</span>
+              <span className="flash-queue-page__spots-count">{spotsLeft} / {event.max_spots}</span>
+            </div>
+            <div className="flash-queue-page__progress">
+              <div className="flash-queue-page__progress-fill" style={{ width: `${fillPct}%` }} />
+            </div>
+          </div>
+          <p className="flash-queue-page__closed-copy">
+            Queue opens on the day. Check back soon!
           </p>
         </article>
+
       ) : reservation ? (
         <article className="flash-queue-page__card">
-          <p className="flash-queue-page__status">YOU'RE IN THE QUEUE</p>
+          <span className="flash-queue-page__status flash-queue-page__status--joined">YOU'RE IN THE QUEUE</span>
+
           <div className="flash-queue-page__number-wrap">
             <span className="flash-queue-page__watermark" aria-hidden>HH</span>
-            <h2 className="flash-queue-page__number">#{reservation.position ?? queueSize}</h2>
+            <p className="flash-queue-page__number">#{reservation.position ?? queueSize}</p>
+            <p className="flash-queue-page__number-label">YOUR QUEUE POSITION</p>
           </div>
 
-          <div className="flash-queue-page__stat">
-            <Clock size={18} strokeWidth={1.5} />
-            <div>
-              <p className="flash-queue-page__stat-label">SPOTS REMAINING</p>
-              <p className="flash-queue-page__stat-value">{spotsLeft} of {event.max_spots}</p>
+          <div className="flash-queue-page__spots">
+            <div className="flash-queue-page__spots-row">
+              <span className="flash-queue-page__spots-label">SPOTS REMAINING</span>
+              <span className="flash-queue-page__spots-count">{spotsLeft} / {event.max_spots}</span>
+            </div>
+            <div className="flash-queue-page__progress">
+              <div className="flash-queue-page__progress-fill" style={{ width: `${fillPct}%` }} />
             </div>
           </div>
 
@@ -196,8 +217,13 @@ export function FlashQueuePage() {
             <Bell size={18} strokeWidth={1.5} />
             <div>
               <p className="flash-queue-page__stat-label">WE'LL NOTIFY YOU</p>
-              <p className="flash-queue-page__stat-copy">1 hour before it's your turn.</p>
+              <p className="flash-queue-page__stat-copy">You'll receive a notification 1 hour before it's your turn.</p>
             </div>
+          </div>
+
+          <div className="flash-queue-page__note">
+            <Clock size={14} strokeWidth={1.5} />
+            <span>Show up on time when called — spots may be passed to the next person if you're late.</span>
           </div>
 
           {error && <p style={{ color: '#ff6b6b', fontSize: '0.83rem' }}>{error}</p>}
@@ -205,19 +231,34 @@ export function FlashQueuePage() {
             {acting ? 'LEAVING…' : 'LEAVE QUEUE'}
           </GradientButton>
         </article>
+
       ) : (
         <article className="flash-queue-page__card">
-          <p className="flash-queue-page__status">QUEUE IS OPEN</p>
+          <span className="flash-queue-page__status flash-queue-page__status--open">● QUEUE IS OPEN</span>
+
           <div className="flash-queue-page__number-wrap">
             <span className="flash-queue-page__watermark" aria-hidden>HH</span>
-            <h2 className="flash-queue-page__number">{queueSize + 1}</h2>
+            <p className="flash-queue-page__number">{queueSize + 1}</p>
+            <p className="flash-queue-page__number-label">
+              {spotsLeft > 0 ? 'YOU WOULD BE POSITION' : 'WAITLIST POSITION'}
+            </p>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center' }}>
-            {spotsLeft > 0 ? `${spotsLeft} spots left` : 'Queue is full — join the waitlist'}
-          </p>
+
+          <div className="flash-queue-page__spots">
+            <div className="flash-queue-page__spots-row">
+              <span className="flash-queue-page__spots-label">
+                {spotsLeft > 0 ? 'SPOTS REMAINING' : 'QUEUE FULL — WAITLIST OPEN'}
+              </span>
+              <span className="flash-queue-page__spots-count">{spotsLeft} / {event.max_spots}</span>
+            </div>
+            <div className="flash-queue-page__progress">
+              <div className="flash-queue-page__progress-fill" style={{ width: `${fillPct}%` }} />
+            </div>
+          </div>
+
           {error && <p style={{ color: '#ff6b6b', fontSize: '0.83rem' }}>{error}</p>}
-          <GradientButton onClick={joinQueue} disabled={acting || spotsLeft === 0}>
-            {acting ? 'JOINING…' : 'JOIN QUEUE'}
+          <GradientButton onClick={joinQueue} disabled={acting}>
+            {acting ? 'JOINING…' : spotsLeft > 0 ? 'JOIN QUEUE' : 'JOIN WAITLIST'}
           </GradientButton>
         </article>
       )}
