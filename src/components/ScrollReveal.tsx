@@ -1,23 +1,19 @@
-import { useRef, useEffect, type ReactNode, type ElementType } from 'react';
+import { useRef, useEffect, type ReactNode } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
-  as?: ElementType;
   className?: string;
   y?: number;
   delay?: number;
   duration?: number;
-  [key: string]: unknown;
 }
 
 export default function ScrollReveal({
   children,
-  as: Tag = 'div',
   className,
   y = 40,
   delay = 0,
   duration = 0.7,
-  ...rest
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,8 +41,8 @@ export default function ScrollReveal({
   }, [y, delay, duration]);
 
   return (
-    <Tag ref={ref as React.RefObject<HTMLDivElement>} className={className} {...rest}>
+    <div ref={ref} className={className}>
       {children}
-    </Tag>
+    </div>
   );
 }
