@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, ChevronRight, User } from 'lucide-react'
-import { Logo } from '../components/shared/Logo'
 import { FlashDayCard } from '../components/home/FlashDayCard'
 import { AppointmentCard } from '../components/home/AppointmentCard'
 import { QuickActions } from '../components/home/QuickActions'

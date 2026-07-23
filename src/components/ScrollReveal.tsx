@@ -1,8 +1,4 @@
 import { useRef, useEffect, type ReactNode, type ElementType } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -11,7 +7,6 @@ interface ScrollRevealProps {
   y?: number;
   delay?: number;
   duration?: number;
-  stagger?: number;
   [key: string]: unknown;
 }
 
@@ -19,10 +14,9 @@ export default function ScrollReveal({
   children,
   as: Tag = 'div',
   className,
-  y = 60,
+  y = 40,
   delay = 0,
-  duration = 1,
-  stagger = 0,
+  duration = 0.7,
   ...rest
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -31,37 +25,27 @@ export default function ScrollReveal({
     const el = ref.current;
     if (!el) return;
 
-    const targets = stagger ? Array.from(el.children) : el;
-    // Home page scrolls inside a nested .home-scroll container (for scroll-snap),
-    // not the window — ScrollTrigger must watch that scroller or it never fires.
-    const scroller = el.closest('.home-scroll') as HTMLElement | null;
+    el.style.opacity = '0';
+    el.style.transform = `translateY(${y}px)`;
+    el.style.transition = `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`;
 
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        targets,
-        { opacity: 0, y },
-        {
-          opacity: 1,
-          y: 0,
-          duration,
-          delay,
-          stagger,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: el,
-            scroller: scroller ?? window,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-        },
-      );
-    }, ref);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
 
-    return () => ctx.revert();
-  }, [y, delay, duration, stagger]);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [y, delay, duration]);
 
   return (
-    <Tag ref={ref} className={className} {...rest}>
+    <Tag ref={ref as React.RefObject<HTMLDivElement>} className={className} {...rest}>
       {children}
     </Tag>
   );

@@ -17,7 +17,7 @@ type Completion = {
 export function AdminCompletions() {
   const { profile } = useAuth()
   const [artists, setArtists] = useState<Artist[]>([])
-  const [myArtistId, setMyArtistId] = useState<string | null>(null)
+  const [_myArtistId, setMyArtistId] = useState<string | null>(null)
   const [selectedArtistId, setSelectedArtistId] = useState<string>('')
   const [completions, setCompletions] = useState<Completion[]>([])
   const [loading, setLoading] = useState(true)
