@@ -35,15 +35,28 @@ export function AdminBookings() {
     setLoading(true)
     let q = supabase
       .from('bookings')
-      .select('id, appointment_at, service, notes, status, profiles(full_name, email, phone)')
+      .select('id, appointment_at, service, notes, status, profile_id')
       .eq('artist_id', aid)
       .gte('appointment_at', new Date().toISOString())
       .order('appointment_at')
 
     if (filter !== 'all') q = q.eq('status', filter)
 
-    const { data } = await q
-    setBookings((data as any) ?? [])
+    const { data: rows } = await q
+    const bookingRows = rows ?? []
+
+    // Fetch client profiles separately (embedded join silently fails for artists due to RLS)
+    const profileIds = [...new Set(bookingRows.map((b: any) => b.profile_id).filter(Boolean))]
+    let profileMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {}
+    if (profileIds.length > 0) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .in('id', profileIds)
+      for (const p of profileData ?? []) profileMap[p.id] = p
+    }
+
+    setBookings(bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null })))
     setLoading(false)
   }
 
