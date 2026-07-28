@@ -27,6 +27,8 @@ import { AdminBookings } from './pages/admin/AdminBookings'
 import { AdminGuestArtists } from './pages/admin/AdminGuestArtists'
 import { AdminNotifications } from './pages/admin/AdminNotifications'
 import { AdminRent } from './pages/admin/AdminRent'
+import { AdminWaivers } from './pages/admin/AdminWaivers'
+import { AdminArtistProfile } from './pages/admin/AdminArtistProfile'
 import { BoothRentPage } from './pages/BoothRentPage'
 import { useAuth } from './context/AuthContext'
 
@@ -67,8 +69,10 @@ export default function App() {
           <Route path="merch"          element={<AdminMerch />} />
           <Route path="flash"          element={<AdminFlash />} />
           <Route path="guest-artists"  element={<AdminGuestArtists />} />
-          <Route path="notifications"  element={<AdminNotifications />} />
-          <Route path="rent"           element={<AdminRent />} />
+          <Route path="notifications"    element={<AdminNotifications />} />
+          <Route path="rent"             element={<AdminRent />} />
+          <Route path="waivers"          element={<AdminWaivers />} />
+          <Route path="artist-profile"   element={<AdminArtistProfile />} />
         </Route>
 
         {/* Public app */}

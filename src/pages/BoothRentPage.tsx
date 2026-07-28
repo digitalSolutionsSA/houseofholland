@@ -13,11 +13,11 @@ type Payment = {
   payment_method: string
 }
 
-function fmt(n: number, currency = 'ZAR') {
-  return new Intl.NumberFormat('en-ZA', { style: 'currency', currency, minimumFractionDigits: 2 }).format(n)
+function fmt(n: number, currency = 'USD') {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2 }).format(n)
 }
 function fmtDate(d: string) {
-  return new Date(d + 'T12:00:00').toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 function addWeeks(date: Date, weeks: number) {
   const d = new Date(date); d.setDate(d.getDate() + weeks * 7); return d

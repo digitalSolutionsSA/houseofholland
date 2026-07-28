@@ -7,10 +7,10 @@ type RentRow = { artist_id: string; weekly_rate: number; currency: string; notes
 type Payment = { id: string; artist_id: string; amount: number; weeks_covered: number; period_from: string; period_to: string; status: string; reference: string | null; created_at: string; artist_name?: string }
 
 function fmt(n: number) {
-  return new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', minimumFractionDigits: 2 }).format(n)
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n)
 }
 function fmtDate(d: string) {
-  return new Date(d + 'T12:00:00').toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
 }
 
 export function AdminRent() {
@@ -174,7 +174,7 @@ export function AdminRent() {
             </h2>
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Weekly Rate (ZAR)</label>
+              <label className="admin-modal__label">Weekly Rate (USD)</label>
               <input className="admin-modal__input" type="number" min="0" step="50" value={rate}
                 placeholder="e.g. 1500"
                 onChange={e => setRate(e.target.value)} />

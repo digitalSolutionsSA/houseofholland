@@ -18,6 +18,7 @@ const SERVICES = [
 
 type Artist = { id: string; name: string; slug: string; avatar_url: string | null; specialties: string[] }
 type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number; is_active: boolean }
+type DateOverride = { override_date: string; is_available: boolean; start_time: string | null; end_time: string | null; slot_minutes: number }
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate()
@@ -68,6 +69,7 @@ export function SelectDateTimePage() {
 
   // Schedule for selected artist
   const [schedules, setSchedules]     = useState<Schedule[]>([])
+  const [overrides, setOverrides]     = useState<DateOverride[]>([])
   const [slotsForDay, setSlotsForDay] = useState<string[]>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
 
@@ -85,20 +87,47 @@ export function SelectDateTimePage() {
       .then(({ data }) => { setArtists(data ?? []); setArtistsLoading(false) })
   }, [])
 
-  // Load schedule when artist chosen
+  // Load schedule + overrides when artist chosen
   useEffect(() => {
     if (!selectedArtist) return
-    supabase.from('artist_schedules').select('*')
-      .eq('artist_id', selectedArtist.id)
-      .eq('is_active', true)
-      .then(({ data }) => setSchedules(data ?? []))
+    Promise.all([
+      supabase.from('artist_schedules').select('*').eq('artist_id', selectedArtist.id).eq('is_active', true),
+      supabase.from('schedule_date_overrides').select('*').eq('artist_id', selectedArtist.id),
+    ]).then(([schedRes, overRes]) => {
+      setSchedules(schedRes.data ?? [])
+      setOverrides((overRes.data ?? []).map((o: any) => ({
+        override_date: o.override_date,
+        is_available:  o.is_available,
+        start_time:    o.start_time ? String(o.start_time).slice(0, 5) : null,
+        end_time:      o.end_time   ? String(o.end_time).slice(0, 5)   : null,
+        slot_minutes:  o.slot_minutes ?? 60,
+      })))
+    })
   }, [selectedArtist])
+
+  // Resolve effective schedule for a specific date (override beats weekly)
+  function effectiveSched(d: Date): Schedule | null {
+    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    const override = overrides.find(o => o.override_date === dateStr)
+    if (override) {
+      if (!override.is_available) return null
+      return {
+        day_of_week:  d.getDay(),
+        is_active:    true,
+        start_time:   override.start_time ?? '09:00',
+        end_time:     override.end_time   ?? '18:00',
+        slot_minutes: override.slot_minutes,
+      }
+    }
+    const dow = d.getDay()
+    return schedules.find(s => s.day_of_week === dow && s.is_active) ?? null
+  }
 
   // Load available slots when day changes
   useEffect(() => {
     if (!selectedArtist || selectedDay === null) return
-    const dow = new Date(year, month, selectedDay).getDay()
-    const sched = schedules.find(s => s.day_of_week === dow && s.is_active)
+    const date  = new Date(year, month, selectedDay)
+    const sched = effectiveSched(date)
     if (!sched) { setSlotsForDay([]); return }
 
     setSlotsLoading(true)
@@ -121,7 +150,7 @@ export function SelectDateTimePage() {
         setSlotsForDay(generateSlots(sched, booked))
         setSlotsLoading(false)
       })
-  }, [selectedDay, schedules])
+  }, [selectedDay, schedules, overrides])
 
   const days = useMemo(() => {
     const firstDow = new Date(year, month, 1).getDay()
@@ -133,8 +162,7 @@ export function SelectDateTimePage() {
   }, [year, month])
 
   function isDayOff(day: number) {
-    const dow = new Date(year, month, day).getDay()
-    return !schedules.some(s => s.day_of_week === dow && s.is_active)
+    return effectiveSched(new Date(year, month, day)) === null
   }
 
   function isPast(day: number) {
@@ -284,7 +312,8 @@ export function SelectDateTimePage() {
                     className={[
                       selectedDay === day ? 'is-selected' : '',
                       isPast(day) || isDayOff(day) ? 'is-disabled' : '',
-                    ].join(' ')}
+                      day === today.getDate() && year === today.getFullYear() && month === today.getMonth() && !isPast(day) && !isDayOff(day) ? 'is-today' : '',
+                    ].filter(Boolean).join(' ')}
                     onClick={() => setSelectedDay(day)}
                   >
                     {day}
