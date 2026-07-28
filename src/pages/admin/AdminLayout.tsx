@@ -2,13 +2,15 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Users, Shirt, Zap, LayoutDashboard, ArrowLeft, CheckCircle,
   Images, CalendarDays, CalendarCheck, UserCheck, Bell, DollarSign,
-  FileText, UserCog,
+  FileText, UserCog, type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
 import { useAuth } from '../../context/AuthContext'
 import './AdminLayout.css'
 
-const MANAGER_LINKS = [
+type NavLink = { to: string; label: string; icon: LucideIcon; end?: boolean }
+
+const MANAGER_LINKS: NavLink[] = [
   { to: '/admin',               label: 'Dashboard',        icon: LayoutDashboard, end: true },
   { to: '/admin/bookings',      label: 'Appointments',     icon: CalendarCheck },
   { to: '/admin/schedule',      label: 'My Schedule',      icon: CalendarDays },
@@ -24,7 +26,7 @@ const MANAGER_LINKS = [
   { to: '/admin/notifications', label: 'Notifications',    icon: Bell },
 ]
 
-const ARTIST_LINKS = [
+const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/bookings',       label: 'Appointments',    icon: CalendarCheck },
   { to: '/admin/schedule',       label: 'My Schedule',     icon: CalendarDays },
   { to: '/admin/portfolio',      label: 'My Portfolio',    icon: Images },

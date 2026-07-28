@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FileText, ChevronDown, ChevronUp, Phone, Mail, AlertCircle } from 'lucide-react'
+import { FileText, ChevronDown, ChevronUp, Mail, AlertCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
