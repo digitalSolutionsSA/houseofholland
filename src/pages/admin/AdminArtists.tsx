@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type ArtistProfile = {
@@ -25,6 +25,52 @@ const EMPTY_FORM = {
 }
 
 type AccountModalMode = 'assign' | 'change_password'
+
+function SpecialtyTagInput({ value, onChange }: { value: string[]; onChange: (tags: string[]) => void }) {
+  const [input, setInput] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function add(raw: string) {
+    const trimmed = raw.trim()
+    if (!trimmed || value.includes(trimmed)) { setInput(''); return }
+    onChange([...value, trimmed])
+    setInput('')
+  }
+
+  function onKey(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input) }
+    if (e.key === 'Backspace' && !input && value.length > 0) {
+      onChange(value.slice(0, -1))
+    }
+  }
+
+  function remove(tag: string) { onChange(value.filter(t => t !== tag)) }
+
+  return (
+    <div
+      className="specialty-tag-input"
+      onClick={() => inputRef.current?.focus()}
+    >
+      {value.map(tag => (
+        <span key={tag} className="specialty-tag">
+          {tag}
+          <button type="button" onClick={(e) => { e.stopPropagation(); remove(tag) }} aria-label={`Remove ${tag}`}>
+            <X size={11} strokeWidth={2.5} />
+          </button>
+        </span>
+      ))}
+      <input
+        ref={inputRef}
+        className="specialty-tag-input__field"
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={onKey}
+        onBlur={() => add(input)}
+        placeholder={value.length === 0 ? 'Type a style and press Enter…' : 'Add another…'}
+      />
+    </div>
+  )
+}
 
 export function AdminArtists() {
   const [artists, setArtists] = useState<Artist[]>([])
@@ -336,11 +382,11 @@ export function AdminArtists() {
             </div>
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Specialties (comma separated)</label>
-              <input className="admin-modal__input"
-                value={form.specialties.join(', ')}
-                placeholder="e.g. Realism, Black & Grey"
-                onChange={(e) => setForm(f => ({ ...f, specialties: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))} />
+              <label className="admin-modal__label">Styles</label>
+              <SpecialtyTagInput
+                value={form.specialties}
+                onChange={(tags) => setForm(f => ({ ...f, specialties: tags }))}
+              />
             </div>
 
             <div className="admin-modal__field">

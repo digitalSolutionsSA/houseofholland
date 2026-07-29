@@ -64,7 +64,11 @@ export function ArtistProfilePage() {
         </div>
         <div className="artist-profile-page__hero-info">
           <h1>{artist.name}</h1>
-          <p className="artist-profile-page__specs">{artist.specialties.join(' • ')}</p>
+          <div className="artist-profile-page__specs">
+            {artist.specialties.map(s => (
+              <span key={s} className="artist-profile-page__spec-tag">{s}</span>
+            ))}
+          </div>
           {artist.rating > 0 && (
             <p className="artist-profile-page__rating">
               <Star size={14} fill="currentColor" />

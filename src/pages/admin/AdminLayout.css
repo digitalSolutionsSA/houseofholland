@@ -701,6 +701,69 @@
   font-weight: 700;
 }
 
+/* ── Specialty tag input ── */
+.specialty-tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: text;
+  min-height: 42px;
+}
+
+.specialty-tag-input:focus-within {
+  border-color: rgba(212, 175, 55, 0.6);
+  outline: none;
+}
+
+.specialty-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 10px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.specialty-tag button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--gold);
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.specialty-tag button:hover { opacity: 1; }
+
+.specialty-tag-input__field {
+  flex: 1;
+  min-width: 120px;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 0;
+}
+
+.specialty-tag-input__field::placeholder {
+  color: var(--text-dim);
+}
+
 /* ── Tablet admin: narrower sidebar ── */
 @media (min-width: 768px) and (max-width: 1023px) {
   .admin-sidebar {

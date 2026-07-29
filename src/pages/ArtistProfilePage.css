@@ -70,9 +70,23 @@
 }
 
 .artist-profile-page__specs {
-  margin-top: 4px;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.artist-profile-page__spec-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  border-radius: 99px;
+  background: rgba(212, 175, 55, 0.1);
   color: var(--gold);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .artist-profile-page__rating {
