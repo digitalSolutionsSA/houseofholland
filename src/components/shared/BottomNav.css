@@ -1,5 +1,5 @@
 .bottom-nav {
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -12,8 +12,6 @@
   border-top: 1px solid var(--border-subtle);
   backdrop-filter: blur(12px);
   z-index: 40;
-  /* ensure it sits at the bottom of app-main */
-  margin-top: auto;
 }
 
 .app-main {
