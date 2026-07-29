@@ -55,17 +55,19 @@
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   color: var(--text-muted);
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  border-left: 2px solid transparent;
 }
 
 .admin-sidebar__link:hover {
-  background: rgba(212,175,55,0.06);
+  background: rgba(212,175,55,0.07);
   color: var(--text);
 }
 
 .admin-sidebar__link--active {
   background: rgba(212,175,55,0.12);
   color: var(--gold);
+  border-left-color: var(--gold);
 }
 
 .admin-sidebar__back {
@@ -586,10 +588,12 @@
   cursor: pointer;
 }
 
-/* ── Mobile admin: compact horizontal scroll strip ── */
+/* ── Mobile admin: horizontal strip + bottom nav ── */
 @media (max-width: 767px) {
   .admin-shell {
     flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .admin-sidebar {
@@ -598,7 +602,7 @@
     position: sticky;
     top: 0;
     flex-direction: column;
-    padding: 8px 0 0;
+    padding: 0;
     gap: 0;
     border-right: none;
     border-bottom: 1px solid var(--border-gold);
@@ -609,13 +613,16 @@
     display: none;
   }
 
+  /* Wrap nav to allow right-fade overflow hint */
   .admin-sidebar__nav {
     flex-direction: row;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0 12px 8px;
+    padding: 8px 12px;
     gap: 4px;
     scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
   }
 
   .admin-sidebar__nav::-webkit-scrollbar {
@@ -625,21 +632,28 @@
   .admin-sidebar__link {
     white-space: nowrap;
     flex-shrink: 0;
-    padding: 8px 12px;
-    font-size: 0.8rem;
+    padding: 7px 12px;
+    font-size: 0.78rem;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
   }
 
+  .admin-sidebar__link--active {
+    border-left-color: transparent;
+    border-bottom-color: var(--gold);
+  }
+
+  /* Back to App hidden on mobile — use bottom nav instead */
   .admin-sidebar__back {
-    display: flex;
-    order: -1;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-    padding: 8px 16px;
-    color: var(--gold);
-    font-size: 0.8rem;
+    display: none;
   }
 
   .admin-main {
+    flex: 1;
     padding: 16px;
+    /* Reserve space so content clears the bottom nav */
+    padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 16px);
   }
 }
 

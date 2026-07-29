@@ -5,6 +5,7 @@ import {
   FileText, UserCog, type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
+import { BottomNav } from '../../components/shared/BottomNav'
 import { useAuth } from '../../context/AuthContext'
 import './AdminLayout.css'
 
@@ -81,6 +82,8 @@ export function AdminLayout() {
       <main className="admin-main">
         <Outlet />
       </main>
+      {/* Renders only on mobile (≤767px) via BottomNav CSS */}
+      <BottomNav />
     </div>
   )
 }
