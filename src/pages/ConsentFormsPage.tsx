@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { CheckSquare, Square, Pen, RotateCcw, Save, Loader2, FileCheck, ShieldCheck } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
@@ -57,6 +58,12 @@ function InitialBox({ label, value, onChange }: {
 
 export function ConsentFormsPage() {
   const { profile } = useAuth()
+
+  // Artists and managers don't sign waivers — redirect them away
+  if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
+    return <Navigate to="/home" replace />
+  }
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawing = useRef(false)
   const lastPos = useRef<{ x: number; y: number } | null>(null)

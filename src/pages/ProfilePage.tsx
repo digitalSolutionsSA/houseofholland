@@ -10,11 +10,16 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './ProfilePage.css'
 
-const links = [
+const CUSTOMER_LINKS = [
   { to: '/passport',   label: 'Tattoo Passport',      icon: Award      },
   { to: '/membership', label: 'Black Card Membership', icon: CreditCard },
   { to: '/merch',      label: 'Shop Merch',            icon: Shirt      },
   { to: '/consent',    label: 'Consent Forms',         icon: FilePen    },
+]
+
+const STAFF_LINKS = [
+  { to: '/membership', label: 'Black Card Membership', icon: CreditCard },
+  { to: '/merch',      label: 'Shop Merch',            icon: Shirt      },
 ]
 
 export function ProfilePage() {
@@ -150,6 +155,9 @@ export function ProfilePage() {
   const displayName = profile?.full_name?.trim() || 'Your Profile'
   const firstName   = displayName.split(' ')[0]
   const avatarSrc   = localAvatar ?? profile?.avatar_url ?? null
+
+  const isStaff = profile?.role === 'artist' || profile?.role === 'manager'
+  const links = isStaff ? STAFF_LINKS : CUSTOMER_LINKS
 
   const roleBadge =
     profile?.role === 'manager' ? 'Store Manager'
@@ -301,8 +309,8 @@ export function ProfilePage() {
           </div>
         )}
 
-        {/* ── ID Document ── */}
-        {!editing && (
+        {/* ── ID Document (customers only) ── */}
+        {!editing && !isStaff && (
           <div className="profile-page__id-section">
             <div className="profile-page__id-header">
               <IdCard size={16} strokeWidth={1.5} />
