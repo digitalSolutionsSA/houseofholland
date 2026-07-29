@@ -28,6 +28,7 @@ export function AdminBookings() {
   const [filter, setFilter]           = useState<'pending' | 'confirmed' | 'all'>('pending')
   const [loading, setLoading]         = useState(true)
   const [acting, setActing]           = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const isManager = profile?.role === 'manager'
 
@@ -83,8 +84,19 @@ export function AdminBookings() {
 
   async function updateStatus(id: string, status: 'confirmed' | 'rejected') {
     setActing(id)
-    await supabase.from('bookings').update({ status }).eq('id', id)
-    setBookings(b => b.map(x => x.id === id ? { ...x, status } : x))
+    setActionError(null)
+    const { error } = await supabase.from('bookings').update({ status }).eq('id', id)
+    if (error) {
+      setActionError(error.message)
+      setActing(null)
+      return
+    }
+    // Remove from the filtered list so the card disappears immediately
+    if (filter !== 'all') {
+      setBookings(b => b.filter(x => x.id !== id))
+    } else {
+      setBookings(b => b.map(x => x.id === id ? { ...x, status } : x))
+    }
     setActing(null)
   }
 
@@ -119,6 +131,10 @@ export function AdminBookings() {
           </button>
         ))}
       </div>
+
+      {actionError && (
+        <p style={{ color: '#ff6b6b', fontSize: '0.85rem', marginBottom: 12 }}>{actionError}</p>
+      )}
 
       {loading ? (
         <p className="admin-empty">Loading…</p>

@@ -630,7 +630,12 @@
   }
 
   .admin-sidebar__back {
-    display: none;
+    display: flex;
+    order: -1;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 8px 16px;
+    color: var(--gold);
+    font-size: 0.8rem;
   }
 
   .admin-main {

@@ -59,11 +59,6 @@ function InitialBox({ label, value, onChange }: {
 export function ConsentFormsPage() {
   const { profile } = useAuth()
 
-  // Artists and managers don't sign waivers — redirect them away
-  if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
-    return <Navigate to="/home" replace />
-  }
-
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawing = useRef(false)
   const lastPos = useRef<{ x: number; y: number } | null>(null)
@@ -76,9 +71,11 @@ export function ConsentFormsPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const isStaff = profile?.role === 'artist' || profile?.role === 'manager'
+
   // Pre-fill from profile and load any existing submission
   useEffect(() => {
-    if (!profile) return
+    if (!profile || isStaff) return
     setForm(f => ({
       ...f,
       full_name: profile.full_name ?? '',
@@ -235,6 +232,9 @@ export function ConsentFormsPage() {
       type={opts?.type ?? 'text'}
     />
   )
+
+  // Artists and managers don't sign waivers — redirect after all hooks have run
+  if (profile && isStaff) return <Navigate to="/home" replace />
 
   if (loading) {
     return (
