@@ -58,7 +58,14 @@ export function BookingsPage() {
       })
   }, [profile?.id])
 
-  const todayConfirmed = upcoming.filter(a => a.status === 'confirmed' && isToday(a.appointment_at))
+  // Only show appointments that still need check-in in the prominent TODAY block
+  const todayActionable = upcoming.filter(a =>
+    a.status === 'confirmed' && isToday(a.appointment_at) && !a.checked_in_at
+  )
+  // Already checked-in today — show separately, less prominently
+  const todayDone = upcoming.filter(a =>
+    a.status === 'confirmed' && isToday(a.appointment_at) && !!a.checked_in_at
+  )
   const rest = upcoming.filter(a => !(a.status === 'confirmed' && isToday(a.appointment_at)))
 
   return (
@@ -71,10 +78,11 @@ export function BookingsPage() {
         </Link>
 
         {/* ── Today's appointments ── */}
-        {todayConfirmed.length > 0 && (
+        {(todayActionable.length > 0 || todayDone.length > 0) && (
           <div className="bookings-page__today">
             <h2 className="bookings-page__today-label">TODAY</h2>
-            {todayConfirmed.map(appt => (
+            {/* Appointments that still need check-in — shown prominently */}
+            {todayActionable.map(appt => (
               <div key={appt.id} className="bookings-page__today-card">
                 <div className="bookings-page__today-info">
                   {appt.avatar
@@ -86,17 +94,28 @@ export function BookingsPage() {
                     <p className="bookings-page__today-time">{appt.dateLabel}</p>
                   </div>
                 </div>
-                {appt.checked_in_at ? (
-                  <div className="bookings-page__checked-in">
-                    <CheckCircle2 size={15} strokeWidth={2} />
-                    Checked In
+                <Link to={`/bookings/checkin/${appt.id}`} className="bookings-page__checkin-btn">
+                  <LogIn size={15} strokeWidth={2} />
+                  Check In Now
+                </Link>
+              </div>
+            ))}
+            {/* Already checked-in — compact row, no further action needed */}
+            {todayDone.map(appt => (
+              <div key={appt.id} className="bookings-page__today-done">
+                <div className="bookings-page__today-info">
+                  {appt.avatar
+                    ? <img src={appt.avatar} alt="" className="bookings-page__today-avatar bookings-page__today-avatar--sm" />
+                    : <div className="bookings-page__today-avatar bookings-page__today-avatar--empty bookings-page__today-avatar--sm" />}
+                  <div>
+                    <p className="bookings-page__today-service">{appt.service}</p>
+                    <p className="bookings-page__today-artist">with {appt.artist}</p>
                   </div>
-                ) : (
-                  <Link to={`/bookings/checkin/${appt.id}`} className="bookings-page__checkin-btn">
-                    <LogIn size={15} strokeWidth={2} />
-                    Check In Now
-                  </Link>
-                )}
+                </div>
+                <div className="bookings-page__checked-in">
+                  <CheckCircle2 size={14} strokeWidth={2} />
+                  Checked In
+                </div>
               </div>
             ))}
           </div>
@@ -105,7 +124,7 @@ export function BookingsPage() {
         {/* ── Upcoming ── */}
         <h2>Upcoming</h2>
         {loading && <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Loading…</p>}
-        {!loading && rest.length === 0 && todayConfirmed.length === 0 && (
+        {!loading && rest.length === 0 && todayActionable.length === 0 && todayDone.length === 0 && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>No upcoming bookings.</p>
         )}
         {rest.map(appt => (

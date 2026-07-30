@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronLeft, Star, Camera, MessageCircle, CalendarDays } from 'lucide-react'
+import { ChevronLeft, Star, Camera, MessageCircle, CalendarDays, X } from 'lucide-react'
 import { OutlineButton } from '../components/shared/OutlineButton'
 import { supabase } from '../lib/supabase'
 import './ArtistProfilePage.css'
@@ -17,13 +17,14 @@ type Artist = {
   review_count: number
 }
 
-type Photo = { id: string; url: string; caption: string | null }
+type Photo = { id: string; url: string; caption: string | null; style: string | null }
 
 export function ArtistProfilePage() {
   const { artistId } = useParams()
   const [artist, setArtist] = useState<Artist | null>(null)
   const [portfolio, setPortfolio] = useState<Photo[]>([])
   const [loading, setLoading] = useState(true)
+  const [lightbox, setLightbox] = useState<Photo | null>(null)
 
   useEffect(() => {
     if (!artistId) return
@@ -38,7 +39,7 @@ export function ArtistProfilePage() {
         setArtist(a)
         const { data: photos } = await supabase
           .from('portfolio_photos')
-          .select('id, url, caption')
+          .select('id, url, caption, style')
           .eq('artist_id', a.id)
           .order('created_at', { ascending: false })
         setPortfolio(photos ?? [])
@@ -102,12 +103,47 @@ export function ArtistProfilePage() {
             <h2 className="artist-profile-page__portfolio-title">Portfolio</h2>
             <div className="artist-profile-page__grid">
               {portfolio.map((p) => (
-                <img key={p.id} src={p.url} alt={p.caption ?? ''} />
+                <img
+                  key={p.id}
+                  src={p.url}
+                  alt={p.caption ?? ''}
+                  className="artist-profile-page__grid-img"
+                  onClick={() => setLightbox(p)}
+                />
               ))}
             </div>
           </>
         )}
       </div>
+
+      {lightbox && (
+        <div className="artist-profile-lightbox" onClick={() => setLightbox(null)}>
+          <div className="artist-profile-lightbox__inner" onClick={e => e.stopPropagation()}>
+            <button
+              className="artist-profile-lightbox__close"
+              onClick={() => setLightbox(null)}
+              aria-label="Close"
+            >
+              <X size={22} strokeWidth={2} />
+            </button>
+            <img
+              src={lightbox.url}
+              alt={lightbox.caption ?? ''}
+              className="artist-profile-lightbox__img"
+            />
+            {(lightbox.style || lightbox.caption) && (
+              <div className="artist-profile-lightbox__info">
+                {lightbox.style && (
+                  <span className="artist-profile-lightbox__style">{lightbox.style}</span>
+                )}
+                {lightbox.caption && (
+                  <p className="artist-profile-lightbox__caption">{lightbox.caption}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

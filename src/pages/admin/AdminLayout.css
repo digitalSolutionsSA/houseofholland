@@ -194,6 +194,14 @@
   color: #ff6b6b;
 }
 
+.admin-btn--complete {
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.4);
+  color: #4ade80;
+  width: 100%;
+  justify-content: center;
+}
+
 /* Modal overlay */
 .admin-modal-overlay {
   position: fixed;

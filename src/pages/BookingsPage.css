@@ -94,6 +94,22 @@
   width: 100%;
 }
 
+.bookings-page__today-avatar--sm {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.bookings-page__today-done {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(74, 222, 128, 0.12);
+  background: rgba(74, 222, 128, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .bookings-page__checked-in {
   display: flex;
   align-items: center;

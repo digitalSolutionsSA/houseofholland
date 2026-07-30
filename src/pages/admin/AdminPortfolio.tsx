@@ -81,6 +81,7 @@ export function AdminPortfolio() {
     setStyle('')
     setShowForm(false)
     setError(null)
+    setUploading(false)
   }
 
   async function upload() {
