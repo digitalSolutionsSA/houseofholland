@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, LogIn, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -28,6 +28,25 @@ export function BookingsPage() {
   const { profile } = useAuth()
   const [upcoming, setUpcoming] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
+  const [checkinPopup, setCheckinPopup] = useState<Appointment | null>(null)
+  const [confirmPopup, setConfirmPopup] = useState<Appointment | null>(null)
+  const checkinShown = useRef(false)
+
+  function mapRow(d: any): Appointment {
+    return {
+      id: d.id,
+      appointment_at: d.appointment_at,
+      dateLabel: new Date(d.appointment_at).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      }),
+      artist: d.artists?.name ?? 'Artist',
+      service: d.service,
+      avatar: d.artists?.avatar_url ?? null,
+      status: d.status,
+      checked_in_at: d.checked_in_at ?? null,
+    }
+  }
 
   useEffect(() => {
     if (!profile?.id) return
@@ -39,23 +58,49 @@ export function BookingsPage() {
       .gte('appointment_at', new Date().toISOString())
       .order('appointment_at')
       .then(({ data }) => {
-        setUpcoming(
-          (data ?? []).map((d: any) => ({
-            id: d.id,
-            appointment_at: d.appointment_at,
-            dateLabel: new Date(d.appointment_at).toLocaleString('en-US', {
-              month: 'short', day: 'numeric', year: 'numeric',
-              hour: 'numeric', minute: '2-digit',
-            }),
-            artist: d.artists?.name ?? 'Artist',
-            service: d.service,
-            avatar: d.artists?.avatar_url ?? null,
-            status: d.status,
-            checked_in_at: d.checked_in_at ?? null,
-          }))
-        )
+        const rows = (data ?? []).map(mapRow)
+        setUpcoming(rows)
         setLoading(false)
+
+        // Show check-in popup once per session for today's uncheck-in'd appointment
+        if (!checkinShown.current) {
+          const todayAppt = rows.find(a =>
+            a.status === 'confirmed' && isToday(a.appointment_at) && !a.checked_in_at
+          )
+          if (todayAppt) {
+            setCheckinPopup(todayAppt)
+            checkinShown.current = true
+          }
+        }
       })
+  }, [profile?.id])
+
+  // Realtime: detect booking status changes (pending → confirmed)
+  useEffect(() => {
+    if (!profile?.id) return
+    const channel = supabase
+      .channel(`customer-bookings-${profile.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `profile_id=eq.${profile.id}` },
+        (payload) => {
+          const updated = payload.new as any
+          const previous = payload.old as any
+          if (updated.status === 'confirmed' && previous.status === 'pending') {
+            setUpcoming(prev => {
+              const appt = prev.find(a => a.id === updated.id)
+              if (appt) {
+                const confirmed = { ...appt, status: 'confirmed' }
+                setConfirmPopup(confirmed)
+                return prev.map(a => a.id === updated.id ? confirmed : a)
+              }
+              return prev
+            })
+          }
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [profile?.id])
 
   // Only show appointments that still need check-in in the prominent TODAY block
@@ -71,6 +116,69 @@ export function BookingsPage() {
   return (
     <div className="page bookings-page">
       <PageHeader title="Bookings" />
+
+      {/* ── Check-in day popup ── */}
+      {checkinPopup && (
+        <div className="bookings-popup-overlay">
+          <div className="bookings-popup">
+            <div className="bookings-popup__icon bookings-popup__icon--checkin">
+              <CalendarCheck size={28} strokeWidth={1.5} />
+            </div>
+            <h3 className="bookings-popup__title">Time to Check In!</h3>
+            <p className="bookings-popup__body">
+              Your <strong>{checkinPopup.service}</strong> appointment with{' '}
+              <strong>{checkinPopup.artist}</strong> is today at{' '}
+              <strong>{checkinPopup.dateLabel.split(',').slice(-1)[0].trim()}</strong>.
+            </p>
+            <p className="bookings-popup__sub">Sign your consent form and check in when you arrive.</p>
+            <div className="bookings-popup__actions">
+              <button className="bookings-popup__dismiss" onClick={() => setCheckinPopup(null)}>
+                Later
+              </button>
+              <Link
+                to={`/bookings/checkin/${checkinPopup.id}`}
+                className="bookings-popup__cta-btn"
+                onClick={() => setCheckinPopup(null)}
+              >
+                <LogIn size={15} /> Check In Now
+              </Link>
+            </div>
+            <button className="bookings-popup__close" onClick={() => setCheckinPopup(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Booking confirmed popup ── */}
+      {confirmPopup && (
+        <div className="bookings-popup-overlay">
+          <div className="bookings-popup">
+            <div className="bookings-popup__icon bookings-popup__icon--confirm">
+              <CheckCircle2 size={28} strokeWidth={1.5} />
+            </div>
+            <h3 className="bookings-popup__title">Booking Confirmed!</h3>
+            <p className="bookings-popup__body">
+              Your <strong>{confirmPopup.service}</strong> appointment with{' '}
+              <strong>{confirmPopup.artist}</strong> on{' '}
+              <strong>{confirmPopup.dateLabel}</strong> has been confirmed.
+            </p>
+            <p className="bookings-popup__sub">
+              <CreditCard size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+              Please arrange your deposit payment to secure your slot.
+            </p>
+            <div className="bookings-popup__actions">
+              <button className="bookings-popup__cta-btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setConfirmPopup(null)}>
+                Got it
+              </button>
+            </div>
+            <button className="bookings-popup__close" onClick={() => setConfirmPopup(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bookings-page__content">
         <Link to="/bookings/select-time" className="bookings-page__cta">
           Book new appointment

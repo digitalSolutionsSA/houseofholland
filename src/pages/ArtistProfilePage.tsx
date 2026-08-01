@@ -92,7 +92,7 @@ export function ArtistProfilePage() {
             <MessageCircle size={18} strokeWidth={1.5} />
             Message
           </button>
-          <Link to="/bookings/select-time">
+          <Link to={artist ? `/bookings/select-time?artist=${artist.id}` : '/bookings/select-time'}>
             <CalendarDays size={18} strokeWidth={1.5} />
             Book Now
           </Link>

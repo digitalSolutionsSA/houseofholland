@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { GradientButton } from '../components/shared/GradientButton'
@@ -16,7 +16,7 @@ const SERVICES = [
   'Consultation',
 ]
 
-type Artist = { id: string; name: string; slug: string; avatar_url: string | null; specialties: string[] }
+type Artist = { id: string; name: string; slug: string; avatar_url: string | null; specialties: string[]; profile_id: string | null }
 type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number; is_active: boolean }
 type DateOverride = { override_date: string; is_available: boolean; start_time: string | null; end_time: string | null; slot_minutes: number }
 
@@ -50,11 +50,13 @@ function fmtSlot(time: string) {
 
 export function SelectDateTimePage() {
   const navigate  = useNavigate()
+  const [searchParams] = useSearchParams()
+  const preselectedArtistId = searchParams.get('artist')
   const { profile } = useAuth()
   const today = new Date()
 
   // Steps: 0 = pick artist, 1 = pick date/time, 2 = confirm
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(preselectedArtistId ? 1 : 0)
 
   // Artist step
   const [artists, setArtists]         = useState<Artist[]>([])
@@ -80,11 +82,19 @@ export function SelectDateTimePage() {
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [done, setDone]               = useState(false)
 
-  // Load artists on mount
+  // Load artists on mount; if preselected, pick immediately and skip step 0
   useEffect(() => {
-    supabase.from('artists').select('id, name, slug, avatar_url, specialties')
+    supabase.from('artists').select('id, name, slug, avatar_url, specialties, profile_id')
       .eq('is_active', true).order('name')
-      .then(({ data }) => { setArtists(data ?? []); setArtistsLoading(false) })
+      .then(({ data }) => {
+        const list = data ?? []
+        setArtists(list)
+        setArtistsLoading(false)
+        if (preselectedArtistId) {
+          const match = list.find((a: Artist) => a.id === preselectedArtistId)
+          if (match) setSelectedArtist(match)
+        }
+      })
   }, [])
 
   // Load schedule + overrides when artist chosen
@@ -202,6 +212,20 @@ export function SelectDateTimePage() {
     })
 
     if (error) { setBookingError(error.message); setBooking(false); return }
+
+    // Notify the artist of the new request
+    if (selectedArtist.profile_id) {
+      const apptLabel = new Date(year, month, selectedDay, h, m, 0).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: selectedArtist.profile_id,
+        title: 'New Booking Request',
+        body: `${profile.full_name ?? 'A client'} requested a ${service} on ${apptLabel}.`,
+        type: 'booking',
+      })
+    }
+
     setDone(true)
     setBooking(false)
   }

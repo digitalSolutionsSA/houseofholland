@@ -62,6 +62,7 @@ export function AdminSchedule() {
   const [calSaving, setCalSaving] = useState(false)
   const [calError, setCalError]   = useState<string | null>(null)
   const [loading, setLoading]     = useState(true)
+  const [bookingCounts, setBookingCounts] = useState<Record<string, number>>({})
 
   // Load artist list once
   useEffect(() => {
@@ -88,9 +89,18 @@ export function AdminSchedule() {
   async function loadAll(aid: string) {
     setLoading(true)
 
-    const [schedRes, overRes] = await Promise.all([
+    const sixMonthsOut = new Date()
+    sixMonthsOut.setMonth(sixMonthsOut.getMonth() + 6)
+
+    const [schedRes, overRes, bookRes] = await Promise.all([
       supabase.from('artist_schedules').select('*').eq('artist_id', aid),
       supabase.from('schedule_date_overrides').select('*').eq('artist_id', aid),
+      supabase.from('bookings')
+        .select('appointment_at')
+        .eq('artist_id', aid)
+        .in('status', ['pending', 'confirmed'])
+        .gte('appointment_at', new Date().toISOString())
+        .lte('appointment_at', sixMonthsOut.toISOString()),
     ])
 
     // Weekly rows
@@ -121,6 +131,15 @@ export function AdminSchedule() {
         slot_minutes:  o.slot_minutes ?? 60,
       }))
     )
+
+    // Booking counts per date
+    const counts: Record<string, number> = {}
+    for (const b of bookRes.data ?? []) {
+      const d = new Date(b.appointment_at)
+      const key = toDateStr(d)
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+    setBookingCounts(counts)
 
     setLoading(false)
   }
@@ -407,6 +426,7 @@ export function AdminSchedule() {
                 const dateStr = toDateStr(new Date(calYear, calMonth, day))
                 const isSelected = selectedDate === dateStr
                 const hasOverride = overrides.some(o => o.override_date === dateStr)
+                const apptCount = bookingCounts[dateStr] ?? 0
 
                 const bgColor =
                   isSelected ? 'var(--gold)' :
@@ -445,7 +465,21 @@ export function AdminSchedule() {
                     }}
                   >
                     {day}
-                    {hasOverride && (
+                    {apptCount > 0 && (
+                      <span style={{
+                        position: 'absolute', top: 2, right: 3,
+                        background: isSelected ? '#000' : '#6bffb8',
+                        color: '#000',
+                        borderRadius: '50%',
+                        width: 14, height: 14,
+                        fontSize: '0.58rem', fontWeight: 800,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        lineHeight: 1,
+                      }}>
+                        {apptCount}
+                      </span>
+                    )}
+                    {hasOverride && !apptCount && (
                       <span style={{ width: 4, height: 4, borderRadius: '50%', background: isSelected ? '#000' : 'var(--gold)' }} />
                     )}
                   </button>
@@ -454,7 +488,7 @@ export function AdminSchedule() {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', gap: 16, marginTop: 16, fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16, fontSize: '0.72rem', color: 'var(--text-dim)', flexWrap: 'wrap' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(212,175,55,0.15)', border: '1px solid transparent', display: 'inline-block' }} />
                 Available
@@ -466,6 +500,10 @@ export function AdminSchedule() {
               <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 10, height: 10, borderRadius: 2, background: 'transparent', border: '1px solid var(--border-muted)', display: 'inline-block' }} />
                 Day off
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#6bffb8', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 800, color: '#000' }}>1</span>
+                Appointments
               </span>
             </div>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 8 }}>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy, Bell, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
@@ -47,6 +47,9 @@ export function AdminBookings() {
   const [cmpSuccess, setCmpSuccess] = useState<{ count: number; nextReward: string | null } | null>(null)
 
   const isManager = profile?.role === 'manager'
+
+  // New booking alert popup
+  const [newAlert, setNewAlert] = useState<{ name: string; service: string; time: string; bookingId: string } | null>(null)
 
   async function loadBookings(aid: string) {
     setLoading(true)
@@ -103,6 +106,40 @@ export function AdminBookings() {
     if (artistId) loadBookings(artistId)
   }, [artistId, filter])
 
+  // Realtime subscription for new bookings
+  useEffect(() => {
+    if (!artistId) return
+    const channel = supabase
+      .channel(`admin-bookings-${artistId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'bookings', filter: `artist_id=eq.${artistId}` },
+        async (payload) => {
+          const b = payload.new as any
+          // Fetch client name
+          let clientName = 'A client'
+          if (b.profile_id) {
+            const { data } = await supabase
+              .from('profiles').select('full_name').eq('id', b.profile_id).single()
+            clientName = data?.full_name ?? 'A client'
+          }
+          setNewAlert({
+            name: clientName,
+            service: b.service ?? 'Appointment',
+            time: new Date(b.appointment_at).toLocaleString('en-US', {
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: 'numeric', minute: '2-digit',
+            }),
+            bookingId: b.id,
+          })
+          // Reload list if on pending or all filter
+          if (filter === 'pending' || filter === 'all') loadBookings(artistId)
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [artistId, filter])
+
   async function updateStatus(id: string, status: 'confirmed' | 'rejected') {
     setActing(id)
     setActionError(null)
@@ -112,6 +149,24 @@ export function AdminBookings() {
       setActing(null)
       return
     }
+
+    // Notify the customer
+    const booking = bookings.find(b => b.id === id)
+    if (booking?.profile_id) {
+      const apptLabel = new Date(booking.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: booking.profile_id,
+        title: status === 'confirmed' ? 'Booking Confirmed!' : 'Booking Declined',
+        body: status === 'confirmed'
+          ? `Your ${booking.service} appointment on ${apptLabel} has been confirmed. Please arrange your deposit to secure your slot.`
+          : `Your ${booking.service} appointment request on ${apptLabel} was not accepted. Please book a new time.`,
+        type: 'booking',
+      })
+    }
+
     // Remove from the filtered list so the card disappears immediately
     if (filter !== 'all') {
       setBookings(b => b.filter(x => x.id !== id))
@@ -220,6 +275,43 @@ export function AdminBookings() {
       <div className="admin-page__header">
         <h1 className="admin-page__title">Appointments</h1>
       </div>
+
+      {/* ── New booking alert popup ── */}
+      {newAlert && (
+        <div className="admin-modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="admin-modal" style={{ maxWidth: 360, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Bell size={24} color="var(--gold)" />
+            </div>
+            <h2 className="admin-modal__title">New Booking Request</h2>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)', margin: '8px 0 4px' }}>{newAlert.name}</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 4 }}>{newAlert.service}</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--gold)', marginBottom: 20 }}>{newAlert.time}</p>
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => {
+                updateStatus(newAlert.bookingId, 'rejected')
+                setNewAlert(null)
+              }}>
+                <XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
+                Decline
+              </button>
+              <button className="admin-btn admin-btn--primary" onClick={() => {
+                updateStatus(newAlert.bookingId, 'confirmed')
+                setNewAlert(null)
+              }}>
+                <CheckCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
+                Confirm
+              </button>
+            </div>
+            <button
+              style={{ marginTop: 12, fontSize: '0.78rem', color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, margin: '12px auto 0' }}
+              onClick={() => setNewAlert(null)}
+            >
+              <X size={12} /> Dismiss — review in list
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         {isManager && artists.length > 1 && (

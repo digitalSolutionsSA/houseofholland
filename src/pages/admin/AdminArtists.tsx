@@ -30,10 +30,14 @@ function SpecialtyTagInput({ value, onChange }: { value: string[]; onChange: (ta
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  function normalize(s: string) {
+    return s.trim().replace(/\b\w/g, c => c.toUpperCase())
+  }
+
   function add(raw: string) {
-    const trimmed = raw.trim()
-    if (!trimmed || value.includes(trimmed)) { setInput(''); return }
-    onChange([...value, trimmed])
+    const tag = normalize(raw)
+    if (!tag || value.some(t => t.toLowerCase() === tag.toLowerCase())) { setInput(''); return }
+    onChange([...value, tag])
     setInput('')
   }
 

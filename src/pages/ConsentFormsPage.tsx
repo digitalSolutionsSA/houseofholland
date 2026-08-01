@@ -31,26 +31,33 @@ const EMPTY: FormData = {
   init_no_alcohol: '', init_no_medical: '', init_photos: '', init_age: '',
 }
 
-function InitialBox({ label, value, onChange }: {
+const INIT_KEYS: (keyof FormData)[] = [
+  'init_risks', 'init_waiver', 'init_aftercare',
+  'init_no_alcohol', 'init_no_medical', 'init_photos', 'init_age',
+]
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  return parts.map(w => w[0]).join('').toUpperCase().slice(0, 4) || 'OK'
+}
+
+function ConsentCheckbox({ label, value, onChange }: {
   label: string; value: string; onChange: (v: string) => void
 }) {
+  const checked = !!value.trim()
   return (
     <div className="consent-form__initial-row">
-      <div className="consent-form__initial-box">
-        {value ? (
-          <CheckSquare size={16} strokeWidth={2} className="consent-form__initial-check" />
-        ) : (
-          <Square size={16} strokeWidth={1.5} className="consent-form__initial-empty" />
-        )}
-        <input
-          className="consent-form__initial-input"
-          value={value}
-          onChange={e => onChange(e.target.value.slice(0, 4).toUpperCase())}
-          placeholder="Init."
-          maxLength={4}
-          aria-label={`Initials for: ${label}`}
-        />
-      </div>
+      <button
+        type="button"
+        className={`consent-form__checkbox-btn ${checked ? 'consent-form__checkbox-btn--checked' : ''}`}
+        onClick={() => onChange(checked ? '' : 'agreed')}
+        aria-label={`Agree to: ${label}`}
+      >
+        {checked
+          ? <CheckSquare size={22} strokeWidth={2} className="consent-form__initial-check" />
+          : <Square size={22} strokeWidth={1.5} className="consent-form__initial-empty" />
+        }
+      </button>
       <p className="consent-form__initial-label">{label}</p>
     </div>
   )
@@ -304,43 +311,58 @@ export function ConsentFormsPage() {
 
         {/* ── Consent checkboxes ── */}
         <section className="consent-form__section">
-          <h3 className="consent-form__section-title">Consent — Please Initial Each Item</h3>
-          <p className="consent-form__section-note">
-            Type your initials in each box to confirm you have read and understood each provision.
-          </p>
+          <h3 className="consent-form__section-title">Consent — Please Agree to Each Item</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            <p className="consent-form__section-note" style={{ marginBottom: 0 }}>
+              Check each box to confirm you have read and understood each provision.
+            </p>
+            <button
+              type="button"
+              className="consent-form__check-all-btn"
+              onClick={() => {
+                const initials = getInitials(form.full_name)
+                const patch = Object.fromEntries(INIT_KEYS.map(k => [k, initials])) as Partial<FormData>
+                setForm(f => ({ ...f, ...patch }))
+                setSaved(false)
+              }}
+            >
+              <CheckSquare size={14} strokeWidth={2} />
+              Check All
+            </button>
+          </div>
 
           <div className="consent-form__initials-list">
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_risks}
               onChange={v => set('init_risks', v)}
               label="I have been fully informed of the inherent risks associated with getting a tattoo, including but not limited to infections, scarring, difficulties in detecting melanoma and allergic reactions to tattoo pigment. I fully understand these risks, known and unknown, can lead to injury. Having been informed, I freely accept and expressly assume all risks."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_waiver}
               onChange={v => set('init_waiver', v)}
               label="I WAIVE AND RELEASE the Artist and Tattoo Studio from all liability for personal injury or otherwise, including any direct and/or consequential damages. Both the artist and the Tattoo Studio have given me the full opportunity to ask any and all questions about the application of my tattoo."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_aftercare}
               onChange={v => set('init_aftercare', v)}
               label="The Artist and the Tattoo Studio have given me instructions on the aftercare of my tattoo. I acknowledge that tattoos can become infected, particularly if I do not follow the instructions given to me. If any touch-up work is needed due to my own negligence, I agree that the work will be done at my own expense."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_no_alcohol}
               onChange={v => set('init_no_alcohol', v)}
               label="I am not under the influence of alcohol or drugs. I am voluntarily submitting to be tattooed by the Artist without duress or coercion."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_no_medical}
               onChange={v => set('init_no_medical', v)}
               label="I do not have diabetes, epilepsy, hemophilia, a heart condition, nor do I take blood thinning medication. I do not have any other medical or skin condition that may interfere with the application or healing of the tattoo. I am not the recipient of an organ or bone marrow transplant. I am not pregnant or nursing. I do not have a mental impairment that may affect my judgment in getting this tattoo. No head, neck, or face tattoos will be done."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_photos}
               onChange={v => set('init_photos', v)}
               label="I release all rights to any photographs taken of me and the tattoo and give consent in advance their reproduction in print or electronic form. If you do not wish to have photos taken, please advise the Artist and remind the Tattoo Studio NOT to take any pictures of you and your completed tattoo."
             />
-            <InitialBox
+            <ConsentCheckbox
               value={form.init_age}
               onChange={v => set('init_age', v)}
               label="I hereby declare that I am of legal age, 18 or older (and have provided valid proof of age) and am competent to sign this agreement. I HAVE READ THIS AGREEMENT as well as the grievance and complaint procedure. I UNDERSTAND IT. I AGREE TO BE BOUND BY IT."

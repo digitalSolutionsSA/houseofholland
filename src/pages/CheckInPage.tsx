@@ -15,6 +15,7 @@ type BookingDetail = {
   artist_id: string | null
   artist_name: string | null
   artist_email: string | null
+  artist_profile_id: string | null
 }
 
 type ConsentSummary = {
@@ -58,7 +59,7 @@ export function CheckInPage() {
     async function load() {
       const { data: b } = await supabase
         .from('bookings')
-        .select('id, appointment_at, service, status, checked_in_at, artist_id, artists(name, email)')
+        .select('id, appointment_at, service, status, checked_in_at, artist_id, artists(name, email, profile_id)')
         .eq('id', bookingId)
         .eq('profile_id', profile!.id)
         .single()
@@ -74,6 +75,7 @@ export function CheckInPage() {
           artist_id: b.artist_id ?? null,
           artist_name: a?.name ?? null,
           artist_email: a?.email ?? null,
+          artist_profile_id: a?.profile_id ?? null,
         })
         if (b.checked_in_at) setDone(true)
       }
@@ -157,6 +159,20 @@ export function CheckInPage() {
       .eq('id', booking.id)
 
     if (dbErr) { setError(dbErr.message); setSubmitting(false); return }
+
+    // Notify the artist via in-app notification
+    if (booking.artist_profile_id) {
+      const clientName = consent?.full_name ?? profile.full_name ?? 'Your client'
+      const apptLabel = new Date(booking.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: booking.artist_profile_id,
+        title: 'Client Checked In',
+        body: `${clientName} has checked in for their ${booking.service} on ${apptLabel}. Consent form is ready.`,
+        type: 'booking',
+      })
+    }
 
     // Call edge function to email the artist
     if (booking.artist_email) {
