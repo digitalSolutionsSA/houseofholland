@@ -394,6 +394,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               tattoo_design: b.tattoo_design ?? null,
               reference_image_urls: b.reference_image_urls ?? null,
               deposit_link: b.deposit_link ?? null,
+              checkin_signature_url: b.checkin_signature_url ?? null,
               profiles: clientProfile,
             }
             setBookings(prev => {
@@ -667,7 +668,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               </button>
               <button className="admin-btn admin-btn--primary" onClick={() => {
                 const b = bookings.find(x => x.id === newAlert.bookingId)
-                setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
+                setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, checkin_signature_url: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
                 setDepositUsername('')
                 setDepositError(null)
                 setNewAlert(null)
