@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy, Bell, X } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
@@ -14,14 +14,17 @@ type Booking = {
   checked_in_at: string | null
   tattoo_location: string | null
   tattoo_design: string | null
+  reference_image_urls: string[] | null
+  deposit_link: string | null
   profiles: { full_name: string | null; email: string | null; phone: string | null } | null
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: 'Pending',
+  pending:   'Pending',
+  accepted:  'Accepted',
   confirmed: 'Confirmed',
   cancelled: 'Cancelled',
-  rejected: 'Rejected',
+  rejected:  'Rejected',
 }
 
 export function AdminBookings() {
@@ -29,10 +32,19 @@ export function AdminBookings() {
   const [artists, setArtists]         = useState<Artist[]>([])
   const [artistId, setArtistId]       = useState<string>('')
   const [bookings, setBookings]       = useState<Booking[]>([])
-  const [filter, setFilter]           = useState<'pending' | 'confirmed' | 'all'>('pending')
+  const [filter, setFilter]           = useState<'pending' | 'accepted' | 'confirmed' | 'all'>('pending')
   const [loading, setLoading]         = useState(true)
   const [acting, setActing]           = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+
+  // Accept-with-deposit modal
+  const [depositModal, setDepositModal] = useState<Booking | null>(null)
+  const [depositLink, setDepositLink]   = useState('')
+  const [depositSaving, setDepositSaving] = useState(false)
+  const [depositError, setDepositError]   = useState<string | null>(null)
+
+  // Expanded ref images
+  const [expandedRefs, setExpandedRefs] = useState<string | null>(null)
 
   // Complete Job modal
   const cmpFileRef = useRef<HTMLInputElement>(null)
@@ -55,16 +67,13 @@ export function AdminBookings() {
     setLoading(true)
     let q = supabase
       .from('bookings')
-      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, tattoo_location, tattoo_design')
+      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, tattoo_location, tattoo_design, reference_image_urls, deposit_link')
       .eq('artist_id', aid)
       .gte('appointment_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
       .order('appointment_at')
 
     if (filter !== 'all') {
-      // When filter is 'confirmed', include confirmed AND completed (today's done jobs)
-      q = filter === 'confirmed'
-        ? q.in('status', ['confirmed'])
-        : q.eq('status', filter)
+      q = q.eq('status', filter)
     }
 
     const { data: rows } = await q
@@ -140,39 +149,73 @@ export function AdminBookings() {
     return () => { supabase.removeChannel(channel) }
   }, [artistId, filter])
 
-  async function updateStatus(id: string, status: 'confirmed' | 'rejected') {
+  async function rejectBooking(id: string) {
     setActing(id)
     setActionError(null)
-    const { error } = await supabase.from('bookings').update({ status }).eq('id', id)
-    if (error) {
-      setActionError(error.message)
-      setActing(null)
-      return
-    }
-
-    // Notify the customer
+    const { error } = await supabase.from('bookings').update({ status: 'rejected' }).eq('id', id)
+    if (error) { setActionError(error.message); setActing(null); return }
     const booking = bookings.find(b => b.id === id)
     if (booking?.profile_id) {
       const apptLabel = new Date(booking.appointment_at).toLocaleString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: '2-digit',
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
       })
       await supabase.from('notifications').insert({
         profile_id: booking.profile_id,
-        title: status === 'confirmed' ? 'Booking Confirmed!' : 'Booking Declined',
-        body: status === 'confirmed'
-          ? `Your ${booking.service} appointment on ${apptLabel} has been confirmed. Please arrange your deposit to secure your slot.`
-          : `Your ${booking.service} appointment request on ${apptLabel} was not accepted. Please book a new time.`,
+        title: 'Booking Request Declined',
+        body: `Your ${booking.service} request on ${apptLabel} was not accepted. Please book a new time.`,
         type: 'booking',
       })
     }
+    setBookings(b => filter === 'all' ? b.map(x => x.id === id ? { ...x, status: 'rejected' } : x) : b.filter(x => x.id !== id))
+    setActing(null)
+  }
 
-    // Remove from the filtered list so the card disappears immediately
-    if (filter !== 'all') {
-      setBookings(b => b.filter(x => x.id !== id))
-    } else {
-      setBookings(b => b.map(x => x.id === id ? { ...x, status } : x))
+  async function acceptBooking() {
+    if (!depositModal) return
+    if (!depositLink.trim()) { setDepositError('Please enter your Venmo or CashApp link.'); return }
+    setDepositSaving(true)
+    setDepositError(null)
+    const { error } = await supabase.from('bookings')
+      .update({ status: 'accepted', deposit_link: depositLink.trim() })
+      .eq('id', depositModal.id)
+    if (error) { setDepositError(error.message); setDepositSaving(false); return }
+    if (depositModal.profile_id) {
+      const apptLabel = new Date(depositModal.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: depositModal.profile_id,
+        title: 'Request Accepted — Deposit Required',
+        body: `Your ${depositModal.service} on ${apptLabel} has been accepted! Pay your deposit to lock in the slot: ${depositLink.trim()}`,
+        type: 'booking',
+      })
     }
+    setBookings(b => filter === 'all'
+      ? b.map(x => x.id === depositModal.id ? { ...x, status: 'accepted', deposit_link: depositLink.trim() } : x)
+      : b.filter(x => x.id !== depositModal.id))
+    setDepositModal(null)
+    setDepositLink('')
+    setDepositSaving(false)
+  }
+
+  async function lockBooking(id: string) {
+    setActing(id)
+    setActionError(null)
+    const { error } = await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', id)
+    if (error) { setActionError(error.message); setActing(null); return }
+    const booking = bookings.find(b => b.id === id)
+    if (booking?.profile_id) {
+      const apptLabel = new Date(booking.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: booking.profile_id,
+        title: 'Appointment Locked In!',
+        body: `Deposit received — your ${booking.service} on ${apptLabel} is confirmed and locked in. See you then!`,
+        type: 'booking',
+      })
+    }
+    setBookings(b => filter === 'all' ? b.map(x => x.id === id ? { ...x, status: 'confirmed' } : x) : b.filter(x => x.id !== id))
     setActing(null)
   }
 
@@ -289,18 +332,21 @@ export function AdminBookings() {
             <p style={{ fontSize: '0.85rem', color: 'var(--gold)', marginBottom: 20 }}>{newAlert.time}</p>
             <div className="admin-modal__actions">
               <button className="admin-btn admin-btn--ghost" onClick={() => {
-                updateStatus(newAlert.bookingId, 'rejected')
+                rejectBooking(newAlert.bookingId)
                 setNewAlert(null)
               }}>
                 <XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
                 Decline
               </button>
               <button className="admin-btn admin-btn--primary" onClick={() => {
-                updateStatus(newAlert.bookingId, 'confirmed')
+                const b = bookings.find(x => x.id === newAlert.bookingId)
+                setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
+                setDepositLink('')
+                setDepositError(null)
                 setNewAlert(null)
               }}>
                 <CheckCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
-                Confirm
+                Accept
               </button>
             </div>
             <button
@@ -320,7 +366,7 @@ export function AdminBookings() {
             {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         )}
-        {(['pending', 'confirmed', 'all'] as const).map(f => (
+        {(['pending', 'accepted', 'confirmed', 'all'] as const).map(f => (
           <button
             key={f}
             className={`admin-btn ${filter === f ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
@@ -352,7 +398,8 @@ export function AdminBookings() {
                     <div className="admin-booking-card__email">{client?.email}</div>
                     {client?.phone && <div className="admin-booking-card__email">{client.phone}</div>}
                   </div>
-                  <span className={`admin-badge admin-badge--${b.status === 'confirmed' ? 'active' : b.status === 'pending' ? 'upcoming' : 'inactive'}`}>
+                  <span className={`admin-badge admin-badge--${b.status === 'confirmed' ? 'active' : b.status === 'accepted' ? 'upcoming' : b.status === 'pending' ? 'upcoming' : 'inactive'}`}
+                    style={b.status === 'accepted' ? { background: 'rgba(212,175,55,0.12)', color: 'var(--gold)', border: '1px solid rgba(212,175,55,0.3)' } : undefined}>
                     {STATUS_LABEL[b.status]}
                   </span>
                 </div>
@@ -363,6 +410,30 @@ export function AdminBookings() {
                 </div>
                 <div className="admin-booking-card__service">{b.service}</div>
                 {b.notes && <div className="admin-booking-card__notes">{b.notes}</div>}
+
+                {/* Reference images */}
+                {b.reference_image_urls && b.reference_image_urls.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    <button
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      onClick={() => setExpandedRefs(expandedRefs === b.id ? null : b.id)}
+                    >
+                      <Image size={12} strokeWidth={1.5} />
+                      {b.reference_image_urls.length} reference image{b.reference_image_urls.length > 1 ? 's' : ''}
+                      {expandedRefs === b.id ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    </button>
+                    {expandedRefs === b.id && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginTop: 8 }}>
+                        {b.reference_image_urls.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                            <img src={url} alt={`Ref ${i + 1}`} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gold)' }} />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {b.checked_in_at && (
                   <div style={{ marginTop: 8, padding: '8px 10px', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 6, fontSize: '0.8rem', color: '#4ade80' }}>
                     <CheckCircle size={12} style={{ display: 'inline', marginRight: 5 }} />
@@ -376,7 +447,7 @@ export function AdminBookings() {
                   <div className="admin-booking-card__actions">
                     <button
                       className="admin-btn admin-btn--danger"
-                      onClick={() => updateStatus(b.id, 'rejected')}
+                      onClick={() => rejectBooking(b.id)}
                       disabled={acting === b.id}
                     >
                       <XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
@@ -384,11 +455,36 @@ export function AdminBookings() {
                     </button>
                     <button
                       className="admin-btn admin-btn--primary"
-                      onClick={() => updateStatus(b.id, 'confirmed')}
+                      onClick={() => { setDepositModal(b); setDepositLink(b.deposit_link ?? ''); setDepositError(null) }}
                       disabled={acting === b.id}
                     >
                       <CheckCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
-                      Confirm
+                      Accept
+                    </button>
+                  </div>
+                )}
+                {b.status === 'accepted' && (
+                  <div className="admin-booking-card__actions" style={{ marginTop: 8 }}>
+                    <div style={{ width: '100%', fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: 6 }}>
+                      Deposit link sent — waiting for payment
+                    </div>
+                    <button
+                      className="admin-btn admin-btn--danger"
+                      onClick={() => rejectBooking(b.id)}
+                      disabled={acting === b.id}
+                      style={{ flex: 1 }}
+                    >
+                      <XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
+                      Cancel
+                    </button>
+                    <button
+                      className="admin-btn admin-btn--primary"
+                      onClick={() => lockBooking(b.id)}
+                      disabled={acting === b.id}
+                      style={{ flex: 1 }}
+                    >
+                      <Lock size={13} style={{ display: 'inline', marginRight: 5 }} />
+                      Lock Appointment
                     </button>
                   </div>
                 )}
@@ -409,6 +505,45 @@ export function AdminBookings() {
           })}
         </div>
       )}
+      {/* Accept booking / deposit link modal */}
+      {depositModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setDepositModal(null)}>
+          <div className="admin-modal" style={{ maxWidth: 400 }}>
+            <h2 className="admin-modal__title">Accept Booking</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 18 }}>
+              Client: <strong style={{ color: 'var(--text)' }}>{depositModal.profiles?.full_name ?? 'Unknown'}</strong>
+              {depositModal.appointment_at && (
+                <> · <span style={{ color: 'var(--gold)' }}>{fmt(depositModal.appointment_at)}</span></>
+              )}
+            </p>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Your Venmo or CashApp deposit link *</label>
+              <input
+                className="admin-modal__input"
+                value={depositLink}
+                onChange={e => setDepositLink(e.target.value)}
+                placeholder="https://venmo.com/u/yourname  or  $yourcashapp"
+              />
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                This link will be sent to the client in a notification so they can pay the deposit.
+              </p>
+            </div>
+
+            {depositError && <p className="admin-modal__error">{depositError}</p>}
+
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setDepositModal(null)}>Cancel</button>
+              <button className="admin-btn admin-btn--primary" onClick={acceptBooking} disabled={depositSaving}>
+                {depositSaving ? 'Sending…' : (
+                  <><CheckCircle size={13} style={{ display: 'inline', marginRight: 6 }} />Accept & Send Deposit Link</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Complete Job modal */}
       {completeModal && (
         <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && !cmpSuccess && closeCmpModal()}>

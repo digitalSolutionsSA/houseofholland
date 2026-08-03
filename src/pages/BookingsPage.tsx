@@ -15,6 +15,7 @@ type Appointment = {
   avatar: string | null
   status: string
   checked_in_at: string | null
+  deposit_link: string | null
 }
 
 function isToday(dateStr: string) {
@@ -45,6 +46,7 @@ export function BookingsPage() {
       avatar: d.artists?.avatar_url ?? null,
       status: d.status,
       checked_in_at: d.checked_in_at ?? null,
+      deposit_link: d.deposit_link ?? null,
     }
   }
 
@@ -52,9 +54,9 @@ export function BookingsPage() {
     if (!profile?.id) return
     supabase
       .from('bookings')
-      .select('id, appointment_at, service, status, checked_in_at, artists(name, avatar_url)')
+      .select('id, appointment_at, service, status, checked_in_at, deposit_link, artists(name, avatar_url)')
       .eq('profile_id', profile.id)
-      .in('status', ['pending', 'confirmed'])
+      .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', new Date().toISOString())
       .order('appointment_at')
       .then(({ data }) => {
@@ -86,12 +88,25 @@ export function BookingsPage() {
         (payload) => {
           const updated = payload.new as any
           const previous = payload.old as any
-          if (updated.status === 'confirmed' && previous.status === 'pending') {
+
+          if (updated.status === 'accepted' && previous.status === 'pending') {
+            // Artist accepted — show deposit link popup
+            setUpcoming(prev => {
+              const appt = prev.find(a => a.id === updated.id)
+              if (appt) {
+                const accepted = { ...appt, status: 'accepted', deposit_link: updated.deposit_link ?? null }
+                setConfirmPopup(accepted)
+                return prev.map(a => a.id === updated.id ? accepted : a)
+              }
+              // Not in list yet — add it (may not have been loaded)
+              return prev
+            })
+          } else if (updated.status === 'confirmed' && (previous.status === 'accepted' || previous.status === 'pending')) {
+            // Artist locked the appointment
             setUpcoming(prev => {
               const appt = prev.find(a => a.id === updated.id)
               if (appt) {
                 const confirmed = { ...appt, status: 'confirmed' }
-                setConfirmPopup(confirmed)
                 return prev.map(a => a.id === updated.id ? confirmed : a)
               }
               return prev
@@ -150,23 +165,45 @@ export function BookingsPage() {
         </div>
       )}
 
-      {/* ── Booking confirmed popup ── */}
+      {/* ── Booking accepted / deposit prompt popup ── */}
       {confirmPopup && (
         <div className="bookings-popup-overlay">
           <div className="bookings-popup">
             <div className="bookings-popup__icon bookings-popup__icon--confirm">
               <CheckCircle2 size={28} strokeWidth={1.5} />
             </div>
-            <h3 className="bookings-popup__title">Booking Confirmed!</h3>
+            <h3 className="bookings-popup__title">
+              {confirmPopup.status === 'accepted' ? 'Request Accepted!' : 'Booking Locked In!'}
+            </h3>
             <p className="bookings-popup__body">
               Your <strong>{confirmPopup.service}</strong> appointment with{' '}
               <strong>{confirmPopup.artist}</strong> on{' '}
-              <strong>{confirmPopup.dateLabel}</strong> has been confirmed.
+              <strong>{confirmPopup.dateLabel}</strong> has been{' '}
+              {confirmPopup.status === 'accepted' ? 'accepted.' : 'confirmed.'}
             </p>
-            <p className="bookings-popup__sub">
-              <CreditCard size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
-              Please arrange your deposit payment to secure your slot.
-            </p>
+            {confirmPopup.status === 'accepted' && confirmPopup.deposit_link && (
+              <>
+                <p className="bookings-popup__sub">
+                  <CreditCard size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                  Pay your deposit to secure your slot:
+                </p>
+                <a
+                  href={confirmPopup.deposit_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bookings-popup__cta-btn"
+                  style={{ display: 'flex', justifyContent: 'center', marginTop: 4, marginBottom: 8 }}
+                >
+                  <CreditCard size={14} /> Pay Deposit
+                </a>
+              </>
+            )}
+            {confirmPopup.status === 'accepted' && !confirmPopup.deposit_link && (
+              <p className="bookings-popup__sub">
+                <CreditCard size={13} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                The artist will send you a deposit payment link soon.
+              </p>
+            )}
             <div className="bookings-popup__actions">
               <button className="bookings-popup__cta-btn" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setConfirmPopup(null)}>
                 Got it
@@ -245,8 +282,18 @@ export function BookingsPage() {
               <p className="appointment-card__artist">with {appt.artist}</p>
               <p className="appointment-card__service">{appt.service}</p>
               <span className={`bookings-page__status bookings-page__status--${appt.status}`}>
-                {appt.status}
+                {appt.status === 'accepted' ? 'Accepted — Deposit Required' : appt.status}
               </span>
+              {appt.status === 'accepted' && appt.deposit_link && (
+                <a
+                  href={appt.deposit_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bookings-page__deposit-btn"
+                >
+                  <CreditCard size={13} /> Pay Deposit
+                </a>
+              )}
             </div>
           </article>
         ))}

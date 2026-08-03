@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, ImagePlus, X } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { GradientButton } from '../components/shared/GradientButton'
 import { useAuth } from '../context/AuthContext'
@@ -81,6 +81,23 @@ export function SelectDateTimePage() {
   const [booking, setBooking]         = useState(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [done, setDone]               = useState(false)
+
+  // Reference images
+  const refInputRef = useRef<HTMLInputElement>(null)
+  const [refFiles, setRefFiles]       = useState<File[]>([])
+  const [refPreviews, setRefPreviews] = useState<string[]>([])
+
+  function addRefImages(files: FileList | null) {
+    if (!files) return
+    const newFiles = Array.from(files).slice(0, 4 - refFiles.length)
+    setRefFiles(prev => [...prev, ...newFiles])
+    setRefPreviews(prev => [...prev, ...newFiles.map(f => URL.createObjectURL(f))])
+  }
+
+  function removeRefImage(i: number) {
+    setRefFiles(prev => prev.filter((_, idx) => idx !== i))
+    setRefPreviews(prev => prev.filter((_, idx) => idx !== i))
+  }
 
   // Load artists on mount; if preselected, pick immediately and skip step 0
   useEffect(() => {
@@ -202,13 +219,26 @@ export function SelectDateTimePage() {
     const [h, m] = selectedTime.split(':').map(Number)
     const appointmentAt = new Date(year, month, selectedDay, h, m, 0).toISOString()
 
+    // Upload reference images first
+    const uploadedUrls: string[] = []
+    for (const file of refFiles) {
+      const ext = file.name.split('.').pop()
+      const path = `booking-refs/${profile.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true })
+      if (!upErr) {
+        const { data } = supabase.storage.from('portfolio').getPublicUrl(path)
+        uploadedUrls.push(data.publicUrl)
+      }
+    }
+
     const { error } = await supabase.from('bookings').insert({
-      profile_id:     profile.id,
-      artist_id:      selectedArtist.id,
-      appointment_at: appointmentAt,
+      profile_id:            profile.id,
+      artist_id:             selectedArtist.id,
+      appointment_at:        appointmentAt,
       service,
-      notes: notes.trim() || null,
-      status: 'pending',
+      notes:                 notes.trim() || null,
+      status:                'pending',
+      reference_image_urls:  uploadedUrls.length > 0 ? uploadedUrls : null,
     })
 
     if (error) { setBookingError(error.message); setBooking(false); return }
@@ -434,15 +464,60 @@ export function SelectDateTimePage() {
             className="admin-modal__textarea"
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="Describe your idea, reference images, placement, size…"
-            rows={4}
+            placeholder="Describe your idea, placement, size, style…"
+            rows={3}
+          />
+        </div>
+
+        {/* Reference images */}
+        <div className="admin-modal__field">
+          <label className="admin-modal__label">Reference Images (optional, max 4)</label>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginBottom: 10 }}>
+            Upload photos of your current tattoo (for cover-ups / additions) or inspiration images.
+          </p>
+
+          {refPreviews.length > 0 && (
+            <div className="select-time-page__ref-grid">
+              {refPreviews.map((src, i) => (
+                <div key={i} className="select-time-page__ref-thumb">
+                  <img src={src} alt={`Reference ${i + 1}`} />
+                  <button
+                    type="button"
+                    className="select-time-page__ref-remove"
+                    onClick={() => removeRefImage(i)}
+                    aria-label="Remove image"
+                  >
+                    <X size={12} strokeWidth={2.5} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {refFiles.length < 4 && (
+            <button
+              type="button"
+              className="select-time-page__ref-add"
+              onClick={() => refInputRef.current?.click()}
+            >
+              <ImagePlus size={16} strokeWidth={1.5} />
+              {refFiles.length === 0 ? 'Add Images' : 'Add More'}
+            </button>
+          )}
+          <input
+            ref={refInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: 'none' }}
+            onChange={e => { addRefImages(e.target.files); e.target.value = '' }}
           />
         </div>
 
         {bookingError && <p className="admin-modal__error">{bookingError}</p>}
 
         <GradientButton onClick={confirmBooking} disabled={booking}>
-          {booking ? 'SUBMITTING…' : 'REQUEST APPOINTMENT'}
+          {booking ? 'UPLOADING & SUBMITTING…' : 'REQUEST APPOINTMENT'}
         </GradientButton>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', textAlign: 'center', marginTop: 8 }}>
           The artist will confirm your appointment shortly.

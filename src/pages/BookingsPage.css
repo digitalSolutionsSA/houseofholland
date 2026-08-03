@@ -142,6 +142,31 @@
   border: 1px solid rgba(251,191,36,0.25);
 }
 
+.bookings-page__status--accepted {
+  color: var(--gold);
+  background: rgba(212,175,55,0.1);
+  border: 1px solid rgba(212,175,55,0.3);
+}
+
+.bookings-page__deposit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: var(--gold-gradient-btn);
+  color: var(--text-on-gold);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.bookings-page__deposit-btn:hover {
+  opacity: 0.88;
+}
+
 .bookings-page__status--confirmed {
   color: #4ade80;
   background: rgba(74,222,128,0.08);
