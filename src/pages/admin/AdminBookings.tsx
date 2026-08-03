@@ -46,10 +46,11 @@ export function AdminBookings() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   // Accept-with-deposit modal
-  const [depositModal, setDepositModal] = useState<Booking | null>(null)
-  const [depositLink, setDepositLink]   = useState('')
-  const [depositSaving, setDepositSaving] = useState(false)
-  const [depositError, setDepositError]   = useState<string | null>(null)
+  const [depositModal, setDepositModal]     = useState<Booking | null>(null)
+  const [depositPlatform, setDepositPlatform] = useState<'venmo' | 'cashapp'>('venmo')
+  const [depositUsername, setDepositUsername] = useState('')
+  const [depositSaving, setDepositSaving]   = useState(false)
+  const [depositError, setDepositError]     = useState<string | null>(null)
 
   // Expanded ref images
   const [expandedRefs, setExpandedRefs] = useState<string | null>(null)
@@ -290,11 +291,18 @@ export function AdminBookings() {
 
   async function acceptBooking() {
     if (!depositModal) return
-    if (!depositLink.trim()) { setDepositError('Please enter your Venmo or CashApp link.'); return }
+    const username = depositUsername.trim().replace(/^[@$]/, '')
+    if (!username) { setDepositError('Please enter your username.'); return }
+    const depositUrl = depositPlatform === 'venmo'
+      ? `https://venmo.com/u/${username}`
+      : `https://cash.app/$${username}`
+    const platformLabel = depositPlatform === 'venmo' ? 'Venmo' : 'CashApp'
+    const displayHandle = depositPlatform === 'venmo' ? `@${username}` : `$${username}`
+
     setDepositSaving(true)
     setDepositError(null)
     const { error } = await supabase.from('bookings')
-      .update({ status: 'accepted', deposit_link: depositLink.trim() })
+      .update({ status: 'accepted', deposit_link: depositUrl })
       .eq('id', depositModal.id)
     if (error) { setDepositError(error.message); setDepositSaving(false); return }
     if (depositModal.profile_id) {
@@ -304,15 +312,15 @@ export function AdminBookings() {
       await supabase.from('notifications').insert({
         profile_id: depositModal.profile_id,
         title: 'Request Accepted — Deposit Required',
-        body: `Your ${depositModal.service} on ${apptLabel} has been accepted! Pay your deposit to lock in the slot: ${depositLink.trim()}`,
+        body: `Your ${depositModal.service} on ${apptLabel} has been accepted! Send your deposit via ${platformLabel} to ${displayHandle} to lock in your slot.`,
         type: 'booking',
       })
     }
     setBookings(b => filter === 'all'
-      ? b.map(x => x.id === depositModal.id ? { ...x, status: 'accepted', deposit_link: depositLink.trim() } : x)
+      ? b.map(x => x.id === depositModal.id ? { ...x, status: 'accepted', deposit_link: depositUrl } : x)
       : b.filter(x => x.id !== depositModal.id))
     setDepositModal(null)
-    setDepositLink('')
+    setDepositUsername('')
     setDepositSaving(false)
   }
 
@@ -463,7 +471,7 @@ export function AdminBookings() {
               <button className="admin-btn admin-btn--primary" onClick={() => {
                 const b = bookings.find(x => x.id === newAlert.bookingId)
                 setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
-                setDepositLink('')
+                setDepositUsername('')
                 setDepositError(null)
                 setNewAlert(null)
               }}>
@@ -619,7 +627,7 @@ export function AdminBookings() {
                     </button>
                     <button
                       className="admin-btn admin-btn--primary"
-                      onClick={() => { setDepositModal(b); setDepositLink(b.deposit_link ?? ''); setDepositError(null) }}
+                      onClick={() => { setDepositModal(b); setDepositUsername(''); setDepositError(null) }}
                       disabled={acting === b.id}
                     >
                       <CheckCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
@@ -778,15 +786,44 @@ export function AdminBookings() {
             </p>
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Your Venmo or CashApp deposit link *</label>
-              <input
-                className="admin-modal__input"
-                value={depositLink}
-                onChange={e => setDepositLink(e.target.value)}
-                placeholder="https://venmo.com/u/yourname  or  $yourcashapp"
-              />
+              <label className="admin-modal__label">Payment platform *</label>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                {(['venmo', 'cashapp'] as const).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setDepositPlatform(p)}
+                    style={{
+                      flex: 1, padding: '9px 0', borderRadius: 8, fontWeight: 600, fontSize: '0.88rem',
+                      border: `1px solid ${depositPlatform === p ? 'var(--gold)' : 'var(--border-subtle)'}`,
+                      background: depositPlatform === p ? 'rgba(212,175,55,0.1)' : 'transparent',
+                      color: depositPlatform === p ? 'var(--gold)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {p === 'venmo' ? 'Venmo' : 'CashApp'}
+                  </button>
+                ))}
+              </div>
+              <label className="admin-modal__label">
+                {depositPlatform === 'venmo' ? 'Venmo username' : 'CashApp $cashtag'} *
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <span style={{ padding: '10px 10px 10px 14px', background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRight: 'none', borderRadius: '8px 0 0 8px', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  {depositPlatform === 'venmo' ? '@' : '$'}
+                </span>
+                <input
+                  className="admin-modal__input"
+                  style={{ borderRadius: '0 8px 8px 0', flex: 1 }}
+                  value={depositUsername}
+                  onChange={e => setDepositUsername(e.target.value.replace(/^[@$]/, ''))}
+                  placeholder={depositPlatform === 'venmo' ? 'yourname' : 'yourcashtag'}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                />
+              </div>
               <p style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginTop: 6 }}>
-                This link will be sent to the client in a notification so they can pay the deposit.
+                The client will be notified to send their deposit to this {depositPlatform === 'venmo' ? 'Venmo' : 'CashApp'} account.
               </p>
             </div>
 
