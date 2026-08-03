@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle, FileText, Download, LogIn } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
@@ -12,11 +12,36 @@ type Booking = {
   status: string
   profile_id: string | null
   checked_in_at: string | null
+  checkin_signature_url: string | null
   tattoo_location: string | null
   tattoo_design: string | null
   reference_image_urls: string[] | null
   deposit_link: string | null
   profiles: { full_name: string | null; email: string | null; phone: string | null } | null
+}
+
+type ConsentFormFull = {
+  full_name: string
+  date_of_birth: string | null
+  address: string | null
+  phone: string | null
+  email: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  init_risks: boolean
+  init_waiver: boolean
+  init_aftercare: boolean
+  init_no_alcohol: boolean
+  init_no_medical: boolean
+  init_photos: boolean
+  init_age: boolean
+  signature_data_url: string | null
+  signed_at: string | null
+  id_document_url: string | null
+  checkin_signature_url: string | null
+  checked_in_at: string | null
+  tattoo_location: string | null
+  tattoo_design: string | null
 }
 
 const CANCEL_REASON_LABEL: Record<string, string> = {
@@ -33,6 +58,26 @@ const STATUS_LABEL: Record<string, string> = {
   confirmed: 'Confirmed',
   cancelled: 'Cancelled',
   rejected:  'Rejected',
+}
+
+function WaiverSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{title}</p>
+      <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '8px 12px' }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function WaiverRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', gap: 8, padding: '4px 0', fontSize: '0.82rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+      <span style={{ color: 'var(--text-dim)', minWidth: 110, flexShrink: 0 }}>{label}</span>
+      <span style={{ color: 'var(--text)', wordBreak: 'break-word' }}>{value}</span>
+    </div>
+  )
 }
 
 export function AdminBookings() {
@@ -83,6 +128,11 @@ export function AdminBookings() {
   const [pastBookings, setPastBookings] = useState<Booking[]>([])
   const [pastLoading, setPastLoading] = useState(false)
 
+  // Waiver / check-in viewer
+  const [waiverModal, setWaiverModal] = useState<{ consent: ConsentFormFull; booking: Booking } | null>(null)
+  const [waiverLoading, setWaiverLoading] = useState<string | null>(null)
+  const [checkinAlert, setCheckinAlert] = useState<{ name: string; service: string; bookingId: string } | null>(null)
+
   const isManager = profile?.role === 'manager'
 
   // New booking alert popup
@@ -92,7 +142,7 @@ export function AdminBookings() {
     setLoading(true)
     let q = supabase
       .from('bookings')
-      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, tattoo_location, tattoo_design, reference_image_urls, deposit_link')
+      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, checkin_signature_url, tattoo_location, tattoo_design, reference_image_urls, deposit_link')
       .eq('artist_id', aid)
       .gte('appointment_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
       .order('appointment_at')
@@ -139,6 +189,98 @@ export function AdminBookings() {
     }
     setPastBookings(bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null })))
     setPastLoading(false)
+  }
+
+  async function openWaiver(booking: Booking) {
+    if (!booking.profile_id) return
+    setWaiverLoading(booking.id)
+    const [consentRes, profileRes] = await Promise.all([
+      supabase.from('consent_forms').select('*').eq('profile_id', booking.profile_id).single(),
+      supabase.from('profiles').select('id_document_url').eq('id', booking.profile_id).single(),
+    ])
+    if (consentRes.data) {
+      setWaiverModal({
+        consent: {
+          ...consentRes.data,
+          id_document_url: (profileRes.data as any)?.id_document_url ?? null,
+          checkin_signature_url: booking.checkin_signature_url,
+          checked_in_at: booking.checked_in_at,
+          tattoo_location: booking.tattoo_location,
+          tattoo_design: booking.tattoo_design,
+        },
+        booking,
+      })
+    }
+    setWaiverLoading(null)
+  }
+
+  function downloadConsentForm(consent: ConsentFormFull, booking: Booking) {
+    const clientName = (booking.profiles as any)?.full_name ?? consent.full_name
+    const apptDate = new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    const signedDate = consent.signed_at ? new Date(consent.signed_at).toLocaleString('en-US') : 'N/A'
+    const checkinDate = consent.checked_in_at ? new Date(consent.checked_in_at).toLocaleString('en-US') : 'N/A'
+    const row = (label: string, val: string) =>
+      `<tr><td style="padding:5px 12px 5px 0;color:#666;font-size:13px;width:160px;vertical-align:top">${label}</td><td style="padding:5px 0;font-size:14px;font-weight:600">${val || '—'}</td></tr>`
+    const check = (label: string, agreed: boolean) =>
+      `<tr><td colspan="2" style="padding:4px 0;font-size:13px">${agreed ? '✅' : '☐'} ${label}</td></tr>`
+    const sigImg = (url: string | null, fallback: string) =>
+      url ? `<img src="${url}" alt="Signature" style="max-width:360px;border:1px solid #ccc;border-radius:6px;padding:8px;background:#fff;display:block;" />` : `<p style="color:#999">${fallback}</p>`
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+<title>Consent Form — ${clientName}</title>
+<style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;max-width:780px;margin:0 auto;padding:32px 24px;color:#111}.section{margin-bottom:28px}.section h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#888;border-bottom:1px solid #e0e0e0;padding-bottom:6px;margin-bottom:12px}table{width:100%;border-collapse:collapse}.print-btn{display:block;margin:0 auto 24px;padding:10px 28px;background:#222;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer}@media print{.print-btn{display:none}}</style>
+</head><body>
+<button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+<h1 style="text-align:center;font-size:18px;margin:0 0 4px">HOUSE OF HOLLAND TATTOO EMPORIUM</h1>
+<h2 style="text-align:center;font-size:14px;font-weight:normal;margin:0 0 6px;color:#555">WAIVER, RELEASE AND CONSENT TO TATTOO</h2>
+<p style="text-align:center;font-size:13px;color:#777;margin:0 0 28px">Appointment: ${apptDate}</p>
+
+<div class="section"><h3>Personal Details</h3><table>
+${row('Full Name', consent.full_name)}
+${row('Date of Birth', consent.date_of_birth ?? '')}
+${row('Address', consent.address ?? '')}
+${row('Phone', consent.phone ?? '')}
+${row('Email', consent.email ?? '')}
+</table></div>
+
+<div class="section"><h3>Emergency Contact</h3><table>
+${row('Name', consent.emergency_contact_name ?? '')}
+${row('Phone', consent.emergency_contact_phone ?? '')}
+</table></div>
+
+<div class="section"><h3>Tattoo Details (Check-in)</h3><table>
+${row('Location', consent.tattoo_location ?? '')}
+${row('Design', consent.tattoo_design ?? '')}
+</table></div>
+
+<div class="section"><h3>Consent Items</h3><table>
+${check('Risks acknowledged', !!consent.init_risks)}
+${check('Waiver and release agreed', !!consent.init_waiver)}
+${check('Aftercare instructions understood', !!consent.init_aftercare)}
+${check('Not under influence of alcohol or drugs', !!consent.init_no_alcohol)}
+${check('No medical conditions that prevent tattooing', !!consent.init_no_medical)}
+${check('Photo consent granted', !!consent.init_photos)}
+${check('Age 18+ confirmed', !!consent.init_age)}
+</table></div>
+
+<div class="section"><h3>Consent Form Signature</h3>
+${sigImg(consent.signature_data_url, 'No consent signature on file')}
+<p style="font-size:12px;color:#888;margin-top:6px">Signed on ${signedDate}</p>
+</div>
+
+${consent.checkin_signature_url ? `<div class="section"><h3>Day-of Check-in Signature</h3>
+${sigImg(consent.checkin_signature_url, '')}
+<p style="font-size:12px;color:#888;margin-top:6px">Signed at check-in: ${checkinDate}</p>
+</div>` : ''}
+
+${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
+<img src="${consent.id_document_url}" alt="ID Document" style="max-width:420px;border:1px solid #ccc;border-radius:6px;display:block;" />
+</div>` : ''}
+
+</body></html>`
+
+    const win = window.open('', '_blank')
+    if (win) { win.document.write(html); win.document.close() }
   }
 
   async function markNoShow(b: Booking) {
@@ -267,6 +409,36 @@ export function AdminBookings() {
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [artistId, filter])
+
+  // Realtime: detect check-ins (booking UPDATE where checked_in_at goes from null → value)
+  useEffect(() => {
+    if (!artistId) return
+    const channel = supabase
+      .channel(`admin-checkins-${artistId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bookings' }, async (payload) => {
+        const updated = payload.new as any
+        const previous = payload.old as any
+        if (updated.artist_id !== artistId) return
+        if (!previous.checked_in_at && updated.checked_in_at) {
+          let clientName = 'A client'
+          if (updated.profile_id) {
+            const { data } = await supabase.from('profiles').select('full_name').eq('id', updated.profile_id).single()
+            clientName = data?.full_name ?? 'A client'
+          }
+          setCheckinAlert({ name: clientName, service: updated.service ?? 'appointment', bookingId: updated.id })
+          // Update booking card in-place
+          setBookings(prev => prev.map(b => b.id === updated.id ? {
+            ...b,
+            checked_in_at: updated.checked_in_at,
+            checkin_signature_url: updated.checkin_signature_url ?? null,
+            tattoo_location: updated.tattoo_location ?? null,
+            tattoo_design: updated.tattoo_design ?? null,
+          } : b))
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [artistId])
 
   async function rejectBooking(id: string) {
     setActing(id)
@@ -449,6 +621,31 @@ export function AdminBookings() {
         <h1 className="admin-page__title">Appointments</h1>
       </div>
 
+      {/* ── Check-in alert popup ── */}
+      {checkinAlert && (
+        <div className="admin-modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="admin-modal" style={{ maxWidth: 360, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(107,255,184,0.12)', border: '1px solid rgba(107,255,184,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <LogIn size={24} color="#6bffb8" />
+            </div>
+            <h2 className="admin-modal__title" style={{ color: '#6bffb8' }}>Client Checked In</h2>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text)', margin: '8px 0 4px' }}>{checkinAlert.name}</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>{checkinAlert.service}</p>
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setCheckinAlert(null)}>Dismiss</button>
+              <button className="admin-btn admin-btn--primary" style={{ background: 'rgba(107,255,184,0.15)', border: '1px solid rgba(107,255,184,0.4)', color: '#6bffb8' }}
+                onClick={() => {
+                  const b = bookings.find(x => x.id === checkinAlert.bookingId)
+                  if (b) openWaiver(b)
+                  setCheckinAlert(null)
+                }}>
+                <FileText size={13} style={{ display: 'inline', marginRight: 5 }} /> View Signed Waiver
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── New booking alert popup ── */}
       {newAlert && (
         <div className="admin-modal-overlay" style={{ zIndex: 9999 }}>
@@ -607,11 +804,23 @@ export function AdminBookings() {
                 )}
 
                 {b.checked_in_at && (
-                  <div style={{ marginTop: 8, padding: '8px 10px', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 6, fontSize: '0.8rem', color: '#4ade80' }}>
-                    <CheckCircle size={12} style={{ display: 'inline', marginRight: 5 }} />
-                    Checked in
-                    {b.tattoo_location && <span style={{ color: 'var(--text-muted)' }}> · {b.tattoo_location}</span>}
-                    {b.tattoo_design && <span style={{ display: 'block', color: 'var(--text-muted)', marginTop: 2, fontSize: '0.77rem' }}>{b.tattoo_design}</span>}
+                  <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <div style={{ fontSize: '0.8rem', color: '#4ade80' }}>
+                        <CheckCircle size={12} style={{ display: 'inline', marginRight: 5 }} />
+                        Checked in · {new Date(b.checked_in_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        {b.tattoo_location && <span style={{ color: 'var(--text-muted)' }}> · {b.tattoo_location}</span>}
+                      </div>
+                      <button
+                        onClick={() => openWaiver(b)}
+                        disabled={waiverLoading === b.id}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', flexShrink: 0 }}
+                      >
+                        <FileText size={11} />
+                        {waiverLoading === b.id ? 'Loading…' : 'View Waiver'}
+                      </button>
+                    </div>
+                    {b.tattoo_design && <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: '0.77rem' }}>{b.tattoo_design}</p>}
                   </div>
                 )}
 
@@ -769,6 +978,114 @@ export function AdminBookings() {
                 {cancelArtistSaving ? 'Saving…' : <><XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />Confirm Cancellation</>}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Signed Waiver modal ── */}
+      {waiverModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setWaiverModal(null)}
+          style={{ zIndex: 9998, alignItems: 'flex-start', paddingTop: 24, paddingBottom: 24, overflowY: 'auto' }}>
+          <div className="admin-modal" style={{ maxWidth: 560, width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 className="admin-modal__title" style={{ margin: 0 }}>
+                <FileText size={16} style={{ display: 'inline', marginRight: 8, color: 'var(--gold)' }} />
+                Signed Consent Form
+              </h2>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  className="admin-btn admin-btn--ghost"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem' }}
+                  onClick={() => downloadConsentForm(waiverModal.consent, waiverModal.booking)}
+                >
+                  <Download size={13} /> Export / Print
+                </button>
+                <button onClick={() => setWaiverModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Personal details */}
+            <WaiverSection title="Personal Details">
+              <WaiverRow label="Full Name"    value={waiverModal.consent.full_name} />
+              <WaiverRow label="Date of Birth" value={waiverModal.consent.date_of_birth ?? '—'} />
+              <WaiverRow label="Phone"        value={waiverModal.consent.phone ?? '—'} />
+              <WaiverRow label="Email"        value={waiverModal.consent.email ?? '—'} />
+              <WaiverRow label="Address"      value={waiverModal.consent.address ?? '—'} />
+            </WaiverSection>
+
+            {/* Emergency contact */}
+            <WaiverSection title="Emergency Contact">
+              <WaiverRow label="Name"  value={waiverModal.consent.emergency_contact_name ?? '—'} />
+              <WaiverRow label="Phone" value={waiverModal.consent.emergency_contact_phone ?? '—'} />
+            </WaiverSection>
+
+            {/* Tattoo details */}
+            {(waiverModal.consent.tattoo_location || waiverModal.consent.tattoo_design) && (
+              <WaiverSection title="Tattoo Details (Check-in)">
+                {waiverModal.consent.tattoo_location && <WaiverRow label="Location" value={waiverModal.consent.tattoo_location} />}
+                {waiverModal.consent.tattoo_design && <WaiverRow label="Design" value={waiverModal.consent.tattoo_design} />}
+              </WaiverSection>
+            )}
+
+            {/* Consent checkboxes */}
+            <WaiverSection title="Consent Items">
+              {[
+                ['Risks acknowledged', waiverModal.consent.init_risks],
+                ['Waiver and release agreed', waiverModal.consent.init_waiver],
+                ['Aftercare instructions understood', waiverModal.consent.init_aftercare],
+                ['Not under influence of alcohol/drugs', waiverModal.consent.init_no_alcohol],
+                ['No medical conditions', waiverModal.consent.init_no_medical],
+                ['Photo consent granted', waiverModal.consent.init_photos],
+                ['Age 18+ confirmed', waiverModal.consent.init_age],
+              ].map(([label, agreed]) => (
+                <div key={label as string} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', fontSize: '0.82rem', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                  <span style={{ color: agreed ? '#6bffb8' : '#ff6b6b', fontSize: '0.9rem' }}>{agreed ? '✓' : '✗'}</span>
+                  <span style={{ color: agreed ? 'var(--text)' : 'var(--text-dim)' }}>{label as string}</span>
+                </div>
+              ))}
+            </WaiverSection>
+
+            {/* Consent form signature */}
+            {waiverModal.consent.signature_data_url && (
+              <WaiverSection title="Consent Form Signature">
+                <img src={waiverModal.consent.signature_data_url} alt="Consent signature"
+                  style={{ maxWidth: '100%', background: '#fff', borderRadius: 6, padding: 8, border: '1px solid var(--border-gold)', display: 'block' }} />
+                {waiverModal.consent.signed_at && (
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                    Signed {new Date(waiverModal.consent.signed_at).toLocaleString('en-US')}
+                  </p>
+                )}
+              </WaiverSection>
+            )}
+
+            {/* Day-of check-in signature */}
+            {waiverModal.consent.checkin_signature_url && (
+              <WaiverSection title="Day-of Check-in Signature">
+                <img src={waiverModal.consent.checkin_signature_url} alt="Check-in signature"
+                  style={{ maxWidth: '100%', background: '#fff', borderRadius: 6, padding: 8, border: '1px solid rgba(107,255,184,0.4)', display: 'block' }} />
+                {waiverModal.consent.checked_in_at && (
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                    Signed at check-in: {new Date(waiverModal.consent.checked_in_at).toLocaleString('en-US')}
+                  </p>
+                )}
+              </WaiverSection>
+            )}
+
+            {/* ID Document */}
+            {waiverModal.consent.id_document_url && (
+              <WaiverSection title="ID Document">
+                <img src={waiverModal.consent.id_document_url} alt="ID document"
+                  style={{ maxWidth: '100%', borderRadius: 6, border: '1px solid var(--border-subtle)', display: 'block' }} />
+              </WaiverSection>
+            )}
+
+            {!waiverModal.consent.signature_data_url && !waiverModal.consent.checkin_signature_url && (
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', textAlign: 'center', padding: '16px 0' }}>
+                No signatures on file yet.
+              </p>
+            )}
           </div>
         </div>
       )}
