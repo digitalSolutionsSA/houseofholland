@@ -185,6 +185,30 @@
   color: var(--text-muted);
 }
 
+/* ── Remind button ── */
+.artist-home__remind-btn {
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid rgba(212,175,55,0.45);
+  color: var(--gold);
+  background: rgba(212,175,55,0.08);
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.artist-home__remind-btn:hover:not(:disabled) {
+  background: rgba(212,175,55,0.18);
+}
+.artist-home__remind-btn--sent {
+  border-color: rgba(107,255,184,0.4);
+  color: #6bffb8;
+  background: rgba(107,255,184,0.07);
+  cursor: default;
+  opacity: 0.8;
+}
+
 /* ── Appointment cards ── */
 .artist-home__appt-list {
   display: flex;

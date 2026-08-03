@@ -51,6 +51,7 @@ export function ArtistHomePage() {
   const [monthCount, setMonthCount] = useState(0)
   const [boothRate, setBoothRate] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reminderSent, setReminderSent] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!profile?.id) return
@@ -111,6 +112,23 @@ export function ArtistHomePage() {
     }
     load()
   }, [profile?.id])
+
+  async function sendCheckinReminder(appt: ApptRow) {
+    // We need the booking's profile_id — fetch it
+    const { data } = await supabase
+      .from('bookings')
+      .select('profile_id')
+      .eq('id', appt.id)
+      .single()
+    if (!data?.profile_id) return
+    await supabase.from('notifications').insert({
+      profile_id: data.profile_id,
+      title: 'Check-In Reminder',
+      body: `Your ${appt.service} appointment is today at ${timeLabel(appt.appointment_at)}. Please check in when you arrive at the studio.`,
+      type: 'booking',
+    })
+    setReminderSent(prev => new Set(prev).add(appt.id))
+  }
 
   const todayAppts = upcoming.filter(b => isToday(b.appointment_at))
   const tomorrowAppts = upcoming.filter(b => isTomorrow(b.appointment_at))
@@ -187,9 +205,16 @@ export function ArtistHomePage() {
               {todayNotCheckedIn.map(b => (
                 <div key={b.id} className="artist-home__reminder artist-home__reminder--info">
                   <ClipboardList size={15} strokeWidth={2} className="artist-home__rem-icon" />
-                  <div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <p className="artist-home__rem-title">{b.client} hasn't checked in yet</p>
                     <p className="artist-home__rem-sub">{b.service} · {timeLabel(b.appointment_at)} today</p>
+                    <button
+                      className={`artist-home__remind-btn${reminderSent.has(b.id) ? ' artist-home__remind-btn--sent' : ''}`}
+                      disabled={reminderSent.has(b.id)}
+                      onClick={() => sendCheckinReminder(b)}
+                    >
+                      {reminderSent.has(b.id) ? '✓ Reminder sent' : 'Send reminder'}
+                    </button>
                   </div>
                 </div>
               ))}

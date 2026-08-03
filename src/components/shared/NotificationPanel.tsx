@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
-import { Bell, X, Check, CheckCheck, Zap, CalendarCheck, Info, AlertCircle } from 'lucide-react'
+import { Bell, X, CheckCheck, Zap, CalendarCheck, Info, AlertCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import './NotificationPanel.css'
@@ -35,6 +35,7 @@ export function NotificationPanel() {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
+  const [expanded, setExpanded] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
   const unread = items.filter(n => !n.read_at).length
@@ -136,26 +137,39 @@ export function NotificationPanel() {
               <p>You're all caught up</p>
             </div>
           )}
-          {items.map(n => (
-            <div
-              key={n.id}
-              className={`notif-item notif-item--${n.type ?? 'info'}${n.read_at ? ' notif-item--read' : ''}`}
-            >
-              <span className="notif-item__icon">
-                {TYPE_ICON[n.type] ?? TYPE_ICON.info}
-              </span>
-              <div className="notif-item__body">
-                <p className="notif-item__title">{n.title}</p>
-                {n.body && <p className="notif-item__desc">{n.body}</p>}
-                <p className="notif-item__time">{timeAgo(n.created_at)}</p>
+          {items.map(n => {
+            const isExpanded = expanded === n.id
+            const hasBody = !!n.body
+            return (
+              <div
+                key={n.id}
+                className={`notif-item notif-item--${n.type ?? 'info'}${n.read_at ? ' notif-item--read' : ''}${isExpanded ? ' notif-item--expanded' : ''}`}
+                onClick={() => {
+                  setExpanded(isExpanded ? null : n.id)
+                  if (!n.read_at) markRead(n.id)
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={e => e.key === 'Enter' && setExpanded(isExpanded ? null : n.id)}
+              >
+                <span className="notif-item__icon">
+                  {TYPE_ICON[n.type] ?? TYPE_ICON.info}
+                </span>
+                <div className="notif-item__body">
+                  <p className="notif-item__title">{n.title}</p>
+                  {hasBody && (
+                    <p className={`notif-item__desc${isExpanded ? ' notif-item__desc--expanded' : ''}`}>{n.body}</p>
+                  )}
+                  <p className="notif-item__time">{timeAgo(n.created_at)}</p>
+                </div>
+                {hasBody && (
+                  <span className="notif-item__chevron" aria-hidden>
+                    {isExpanded ? '▲' : '▼'}
+                  </span>
+                )}
               </div>
-              {!n.read_at && (
-                <button className="notif-item__read-btn" onClick={() => markRead(n.id)} title="Mark as read">
-                  <Check size={13} />
-                </button>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
