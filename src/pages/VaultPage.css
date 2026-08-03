@@ -13,3 +13,100 @@
   gap: 12px;
   padding: 8px var(--page-pad) 16px;
 }
+
+/* ── Lightbox ── */
+.vault-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  animation: vault-fade-in 0.18s ease;
+}
+
+@keyframes vault-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.vault-lightbox__card {
+  position: relative;
+  background: #111010;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  animation: vault-slide-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes vault-slide-up {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.vault-lightbox__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vault-lightbox__close:hover { background: rgba(0, 0, 0, 0.8); }
+
+.vault-lightbox__img {
+  width: 100%;
+  max-height: 62vw;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 520px) {
+  .vault-lightbox__img { max-height: 320px; }
+  .vault-lightbox { align-items: center; }
+  .vault-lightbox__card { border-radius: 20px; }
+}
+
+.vault-lightbox__meta {
+  padding: 18px 20px 28px;
+}
+
+.vault-lightbox__title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.vault-lightbox__artist {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.vault-lightbox__date {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+.vault-lightbox__price {
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4ade80;
+}

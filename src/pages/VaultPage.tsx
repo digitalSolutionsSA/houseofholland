@@ -1,23 +1,16 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
-import { VaultCard } from '../components/vault/VaultCard'
+import { VaultCard, type VaultEntry } from '../components/vault/VaultCard'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import './VaultPage.css'
-
-type VaultEntry = {
-  id: string
-  title: string
-  artist: string
-  date: string
-  image: string
-  price: number | null
-}
 
 export function VaultPage() {
   const { profile } = useAuth()
   const [entries, setEntries] = useState<VaultEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState<VaultEntry | null>(null)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -58,9 +51,29 @@ export function VaultPage() {
       )}
       <div className="vault-page__list">
         {entries.map((entry) => (
-          <VaultCard key={entry.id} entry={entry} />
+          <VaultCard key={entry.id} entry={entry} onClick={() => setSelected(entry)} />
         ))}
       </div>
+
+      {/* Lightbox */}
+      {selected && (
+        <div className="vault-lightbox" onClick={() => setSelected(null)}>
+          <div className="vault-lightbox__card" onClick={e => e.stopPropagation()}>
+            <button className="vault-lightbox__close" onClick={() => setSelected(null)} aria-label="Close">
+              <X size={20} strokeWidth={1.5} />
+            </button>
+            <img src={selected.image} alt={selected.title} className="vault-lightbox__img" />
+            <div className="vault-lightbox__meta">
+              <h2 className="vault-lightbox__title">{selected.title}</h2>
+              <p className="vault-lightbox__artist">By {selected.artist}</p>
+              <p className="vault-lightbox__date">{selected.date}</p>
+              {selected.price != null && (
+                <p className="vault-lightbox__price">R{selected.price.toFixed(2)}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

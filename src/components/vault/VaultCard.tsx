@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
 import './VaultCard.css'
 
 export type VaultEntry = {
@@ -11,19 +9,19 @@ export type VaultEntry = {
   price: number | null
 }
 
-export function VaultCard({ entry }: { entry: VaultEntry }) {
+export function VaultCard({ entry, onClick }: { entry: VaultEntry; onClick: () => void }) {
   return (
-    <Link to={`/vault/${entry.id}`} className="vault-card">
+    <button type="button" className="vault-card" onClick={onClick}>
       <img src={entry.image} alt="" className="vault-card__thumb" />
       <div className="vault-card__info">
         <h3 className="vault-card__title">{entry.title}</h3>
         <p className="vault-card__artist">By {entry.artist}</p>
         <p className="vault-card__date">{entry.date}</p>
         {entry.price != null && (
-          <p className="vault-card__price">${entry.price.toFixed(2)}</p>
+          <p className="vault-card__price">R{entry.price.toFixed(2)}</p>
         )}
       </div>
-      <ChevronRight className="vault-card__chevron" size={18} strokeWidth={1.5} />
-    </Link>
+      <span className="vault-card__chevron" aria-hidden>›</span>
+    </button>
   )
 }

@@ -6,6 +6,14 @@
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vault-card:hover {
+  background: rgba(212, 175, 55, 0.04);
+  border-color: rgba(212, 175, 55, 0.25);
 }
 
 .vault-card__thumb {
@@ -44,4 +52,7 @@
 .vault-card__chevron {
   color: var(--gold);
   flex-shrink: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+  opacity: 0.7;
 }
