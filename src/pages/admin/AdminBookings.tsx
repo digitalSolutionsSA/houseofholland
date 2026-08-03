@@ -195,22 +195,36 @@ export function AdminBookings() {
     if (!booking.profile_id) return
     setWaiverLoading(booking.id)
     const [consentRes, profileRes] = await Promise.all([
-      supabase.from('consent_forms').select('*').eq('profile_id', booking.profile_id).single(),
-      supabase.from('profiles').select('id_document_url').eq('id', booking.profile_id).single(),
+      supabase.from('consent_forms').select('*').eq('profile_id', booking.profile_id).maybeSingle(),
+      supabase.from('profiles').select('id_document_url').eq('id', booking.profile_id).maybeSingle(),
     ])
-    if (consentRes.data) {
-      setWaiverModal({
-        consent: {
-          ...consentRes.data,
-          id_document_url: (profileRes.data as any)?.id_document_url ?? null,
-          checkin_signature_url: booking.checkin_signature_url,
-          checked_in_at: booking.checked_in_at,
-          tattoo_location: booking.tattoo_location,
-          tattoo_design: booking.tattoo_design,
-        },
-        booking,
-      })
-    }
+    const raw = consentRes.data as any
+    setWaiverModal({
+      consent: {
+        full_name: raw?.full_name ?? booking.profiles?.full_name ?? '',
+        date_of_birth: raw?.date_of_birth ?? null,
+        address: raw?.address ?? null,
+        phone: raw?.phone ?? booking.profiles?.phone ?? null,
+        email: raw?.email ?? booking.profiles?.email ?? null,
+        emergency_contact_name: raw?.emergency_contact_name ?? null,
+        emergency_contact_phone: raw?.emergency_contact_phone ?? null,
+        init_risks: raw?.init_risks ?? false,
+        init_waiver: raw?.init_waiver ?? false,
+        init_aftercare: raw?.init_aftercare ?? false,
+        init_no_alcohol: raw?.init_no_alcohol ?? false,
+        init_no_medical: raw?.init_no_medical ?? false,
+        init_photos: raw?.init_photos ?? false,
+        init_age: raw?.init_age ?? false,
+        signature_data_url: raw?.signature_data_url ?? null,
+        signed_at: raw?.signed_at ?? null,
+        id_document_url: (profileRes.data as any)?.id_document_url ?? null,
+        checkin_signature_url: booking.checkin_signature_url,
+        checked_in_at: booking.checked_in_at,
+        tattoo_location: booking.tattoo_location,
+        tattoo_design: booking.tattoo_design,
+      },
+      booking,
+    })
     setWaiverLoading(null)
   }
 
