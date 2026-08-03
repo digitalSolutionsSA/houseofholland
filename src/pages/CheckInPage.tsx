@@ -25,6 +25,15 @@ type ConsentSummary = {
   address: string | null
   signed_at: string | null
   id_document_url: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  init_risks: string | null
+  init_waiver: string | null
+  init_aftercare: string | null
+  init_no_alcohol: string | null
+  init_no_medical: string | null
+  init_photos: string | null
+  init_age: string | null
 }
 
 function isToday(dateStr: string) {
@@ -82,9 +91,9 @@ export function CheckInPage() {
 
       const { data: cf } = await supabase
         .from('consent_forms')
-        .select('full_name, date_of_birth, phone, address, signed_at')
+        .select('full_name, date_of_birth, phone, address, signed_at, emergency_contact_name, emergency_contact_phone, init_risks, init_waiver, init_aftercare, init_no_alcohol, init_no_medical, init_photos, init_age')
         .eq('profile_id', profile!.id)
-        .single()
+        .maybeSingle()
 
       const idUrl = (profile as any).id_document_url ?? null
 
@@ -127,13 +136,26 @@ export function CheckInPage() {
     setSigEmpty(true)
   }
 
+  function consentIncompleteReason(c: ConsentSummary | null): string | null {
+    if (!c?.signed_at) return 'Your consent form has not been signed yet.'
+    if (!c.full_name?.trim()) return 'Consent form is missing your full name.'
+    if (!c.date_of_birth?.trim()) return 'Consent form is missing your date of birth.'
+    if (!c.phone?.trim()) return 'Consent form is missing your phone number.'
+    if (!c.emergency_contact_name?.trim()) return 'Consent form is missing an emergency contact name.'
+    if (!c.emergency_contact_phone?.trim()) return 'Consent form is missing an emergency contact phone number.'
+    const allChecked = [c.init_risks, c.init_waiver, c.init_aftercare, c.init_no_alcohol, c.init_no_medical, c.init_photos, c.init_age].every(v => v?.trim())
+    if (!allChecked) return 'Not all consent boxes have been checked on your consent form.'
+    return null
+  }
+
   async function submit() {
     if (!booking || !profile) return
     if (!location.trim()) { setError('Please enter the tattoo location.'); return }
     if (!design.trim()) { setError('Please enter the tattoo design.'); return }
     if (sigEmpty) { setError('Please sign before checking in.'); return }
-    if (!consent?.signed_at) {
-      setError('You must complete your consent form on your profile before checking in.')
+    const consentIssue = consentIncompleteReason(consent)
+    if (consentIssue) {
+      setError(`${consentIssue} Please go to Profile → Consent Forms and complete all required fields before checking in.`)
       return
     }
 
@@ -277,17 +299,20 @@ export function CheckInPage() {
         </div>
 
         {/* consent status */}
-        {consent?.signed_at ? (
-          <div className="checkin__consent-ok">
-            <CheckCircle2 size={15} strokeWidth={2} />
-            <span>Consent form on file — signed {new Date(consent.signed_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-          </div>
-        ) : (
-          <div className="checkin__consent-warn">
-            <AlertCircle size={15} strokeWidth={2} />
-            <span>No consent form on file. Please complete it on your <strong>Profile → Consent Forms</strong> before checking in.</span>
-          </div>
-        )}
+        {(() => {
+          const issue = consentIncompleteReason(consent)
+          return issue ? (
+            <div className="checkin__consent-warn">
+              <AlertCircle size={15} strokeWidth={2} />
+              <span>{issue} Go to <strong>Profile → Consent Forms</strong> to complete it.</span>
+            </div>
+          ) : (
+            <div className="checkin__consent-ok">
+              <CheckCircle2 size={15} strokeWidth={2} />
+              <span>Consent form complete — signed {new Date(consent!.signed_at!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+          )
+        })()}
 
         {/* tattoo details */}
         <section className="checkin__section">

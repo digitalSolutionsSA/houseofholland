@@ -208,13 +208,13 @@ export function AdminBookings() {
         email: raw?.email ?? booking.profiles?.email ?? null,
         emergency_contact_name: raw?.emergency_contact_name ?? null,
         emergency_contact_phone: raw?.emergency_contact_phone ?? null,
-        init_risks: raw?.init_risks ?? false,
-        init_waiver: raw?.init_waiver ?? false,
-        init_aftercare: raw?.init_aftercare ?? false,
-        init_no_alcohol: raw?.init_no_alcohol ?? false,
-        init_no_medical: raw?.init_no_medical ?? false,
-        init_photos: raw?.init_photos ?? false,
-        init_age: raw?.init_age ?? false,
+        init_risks: !!(raw?.init_risks),
+        init_waiver: !!(raw?.init_waiver),
+        init_aftercare: !!(raw?.init_aftercare),
+        init_no_alcohol: !!(raw?.init_no_alcohol),
+        init_no_medical: !!(raw?.init_no_medical),
+        init_photos: !!(raw?.init_photos),
+        init_age: !!(raw?.init_age),
         signature_data_url: raw?.signature_data_url ?? null,
         signed_at: raw?.signed_at ?? null,
         id_document_url: (profileRes.data as any)?.id_document_url ?? null,
@@ -507,6 +507,52 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [profile?.id, artistId])
+
+  // Polling fallback: every 20s check for pending bookings not yet in state
+  useEffect(() => {
+    if (!artistId) return
+    const seenIds = new Set(bookings.map(b => b.id))
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from('bookings')
+        .select('id, service, appointment_at, status, profile_id, profiles(full_name, email, phone)')
+        .eq('artist_id', artistId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(5)
+      if (!data) return
+      const newOnes = data.filter((b: any) => !seenIds.has(b.id))
+      if (newOnes.length > 0) {
+        const b = newOnes[0] as any
+        // Add to bookings list
+        setBookings(prev => {
+          const fresh = newOnes.filter((x: any) => !prev.some(p => p.id === x.id)).map((x: any) => ({
+            id: x.id, appointment_at: x.appointment_at, service: x.service,
+            notes: null, status: x.status, profile_id: x.profile_id ?? null,
+            checked_in_at: null, checkin_signature_url: null, tattoo_location: null,
+            tattoo_design: null, reference_image_urls: null, deposit_link: null,
+            profiles: x.profiles ?? null,
+          }))
+          if (fresh.length === 0) return prev
+          newOnes.forEach((x: any) => seenIds.add(x.id))
+          return [...fresh, ...prev].sort((a, z) =>
+            new Date(a.appointment_at).getTime() - new Date(z.appointment_at).getTime()
+          )
+        })
+        // Show popup for the newest one
+        setNewAlert(prev => prev ?? {
+          name: (b.profiles as any)?.full_name ?? 'A client',
+          service: b.service,
+          time: new Date(b.appointment_at).toLocaleString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+          }),
+          bookingId: b.id,
+        })
+      }
+    }, 20000)
+    return () => clearInterval(interval)
+  }, [artistId])
 
   async function rejectBooking(id: string) {
     setActing(id)
