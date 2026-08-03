@@ -46,7 +46,7 @@ export function ArtistHomePage() {
   const { profile } = useAuth()
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
 
-  const [artistId, setArtistId] = useState<string | null>(null)
+  const [, setArtistId] = useState<string | null>(null)
   const [upcoming, setUpcoming] = useState<ApptRow[]>([])
   const [monthCount, setMonthCount] = useState(0)
   const [boothRate, setBoothRate] = useState<number | null>(null)
