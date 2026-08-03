@@ -67,16 +67,17 @@ export function ArtistHomePage() {
       if (!aid) { setLoading(false); return }
 
       const now = new Date()
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
       const in30 = new Date(now.getTime() + 30 * 86400000)
 
       const [bookingsRes, monthRes, rentRes] = await Promise.all([
-        // Upcoming bookings next 30 days
+        // Upcoming bookings from start of today (include earlier-today appointments)
         supabase
           .from('bookings')
           .select('id, appointment_at, service, status, checked_in_at, deposit_link, profiles(full_name)')
           .eq('artist_id', aid)
           .in('status', ['pending', 'accepted', 'confirmed'])
-          .gte('appointment_at', now.toISOString())
+          .gte('appointment_at', startOfToday)
           .lte('appointment_at', in30.toISOString())
           .order('appointment_at')
           .limit(30),

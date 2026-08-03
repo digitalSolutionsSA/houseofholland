@@ -64,12 +64,14 @@ export function BookingsPage() {
 
   useEffect(() => {
     if (!profile?.id) return
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     supabase
       .from('bookings')
       .select('id, appointment_at, service, status, checked_in_at, deposit_link, artists(name, avatar_url, profile_id)')
       .eq('profile_id', profile.id)
       .in('status', ['pending', 'accepted', 'confirmed'])
-      .gte('appointment_at', new Date().toISOString())
+      .gte('appointment_at', startOfToday)
       .order('appointment_at')
       .then(({ data }) => {
         const rows = (data ?? []).map(mapRow)
@@ -89,20 +91,20 @@ export function BookingsPage() {
       })
   }, [profile?.id])
 
-  // Realtime: detect booking status changes (pending → confirmed)
+  // Realtime: detect booking status changes — client-side filter for reliability
   useEffect(() => {
     if (!profile?.id) return
     const channel = supabase
-      .channel(`customer-bookings-${profile.id}`)
+      .channel(`customer-bookings-rt-${profile.id}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'bookings', filter: `profile_id=eq.${profile.id}` },
+        { event: 'UPDATE', schema: 'public', table: 'bookings' },
         (payload) => {
           const updated = payload.new as any
-          const previous = payload.old as any
+          // Only handle our own bookings
+          if (updated.profile_id !== profile.id) return
 
-          if (updated.status === 'accepted' && previous.status === 'pending') {
-            // Artist accepted — show deposit link popup
+          if (updated.status === 'accepted') {
             setUpcoming(prev => {
               const appt = prev.find(a => a.id === updated.id)
               if (appt) {
@@ -110,19 +112,18 @@ export function BookingsPage() {
                 setConfirmPopup(accepted)
                 return prev.map(a => a.id === updated.id ? accepted : a)
               }
-              // Not in list yet — add it (may not have been loaded)
               return prev
             })
-          } else if (updated.status === 'confirmed' && (previous.status === 'accepted' || previous.status === 'pending')) {
-            // Artist locked the appointment
+          } else if (updated.status === 'confirmed') {
             setUpcoming(prev => {
               const appt = prev.find(a => a.id === updated.id)
               if (appt) {
-                const confirmed = { ...appt, status: 'confirmed' }
-                return prev.map(a => a.id === updated.id ? confirmed : a)
+                return prev.map(a => a.id === updated.id ? { ...appt, status: 'confirmed' } : a)
               }
               return prev
             })
+          } else if (updated.status === 'cancelled' || updated.status === 'rejected') {
+            setUpcoming(prev => prev.filter(a => a.id !== updated.id))
           }
         }
       )
