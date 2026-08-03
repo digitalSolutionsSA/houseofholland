@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { PageHeader } from '../components/shared/PageHeader'
 import { OutlineButton } from '../components/shared/OutlineButton'
 import { ProgressRing3D } from '../components/three/ProgressRing3D'
@@ -64,6 +64,10 @@ export function PassportPage() {
 
   const tierRewards = rewards.filter(r => r.tier.toUpperCase() === activeTier)
   const points = tattooCount * 100
+
+  if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
+    return <Navigate to="/home" replace />
+  }
 
   return (
     <div className="page page--no-nav passport-page">

@@ -5,6 +5,7 @@ import { FlashDayCard } from '../components/home/FlashDayCard'
 import { AppointmentCard } from '../components/home/AppointmentCard'
 import { QuickActions } from '../components/home/QuickActions'
 import { NotificationPanel } from '../components/shared/NotificationPanel'
+import { ArtistHomePage } from './ArtistHomePage'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './HomePage.css'
@@ -26,6 +27,7 @@ function greeting() {
 
 export function HomePage() {
   const { profile } = useAuth()
+  const isArtist = profile?.role === 'artist' || profile?.role === 'manager'
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
   const [appointment, setAppointment] = useState<Appointment | null>(null)
 
@@ -54,6 +56,8 @@ export function HomePage() {
         })
       })
   }, [profile?.id])
+
+  if (isArtist) return <ArtistHomePage />
 
   return (
     <div className="page home-page">
