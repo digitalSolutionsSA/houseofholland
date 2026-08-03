@@ -53,6 +53,14 @@ export function SelectDateTimePage() {
   const [searchParams] = useSearchParams()
   const preselectedArtistId = searchParams.get('artist')
   const { profile } = useAuth()
+
+  // Artists cannot book as customers
+  useEffect(() => {
+    if (profile?.role === 'artist' || profile?.role === 'manager') {
+      navigate('/home', { replace: true })
+    }
+  }, [profile?.role])
+
   const today = new Date()
 
   // Steps: 0 = pick artist, 1 = pick date/time, 2 = confirm

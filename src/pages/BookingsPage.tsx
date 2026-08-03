@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard, AlertTriangle } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
@@ -28,6 +28,7 @@ function isToday(dateStr: string) {
 
 export function BookingsPage() {
   const { profile } = useAuth()
+  const navigate = useNavigate()
   const [upcoming, setUpcoming] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [checkinPopup, setCheckinPopup] = useState<Appointment | null>(null)
@@ -53,6 +54,13 @@ export function BookingsPage() {
       deposit_link: d.deposit_link ?? null,
     }
   }
+
+  // Redirect artists/managers to their admin bookings panel
+  useEffect(() => {
+    if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
+      navigate('/admin/bookings', { replace: true })
+    }
+  }, [profile?.role])
 
   useEffect(() => {
     if (!profile?.id) return
