@@ -122,16 +122,25 @@ export function AdminBookings() {
       .channel(`admin-bookings-${artistId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'bookings', filter: `artist_id=eq.${artistId}` },
+        // No server-side filter — filter client-side for reliability
+        // (server-side column filters need REPLICA IDENTITY FULL which may not be set)
+        { event: 'INSERT', schema: 'public', table: 'bookings' },
         async (payload) => {
           const b = payload.new as any
-          // Fetch client name
+          // Only handle bookings for the currently selected artist
+          if (b.artist_id !== artistId) return
+
+          // Fetch client profile
           let clientName = 'A client'
+          let clientProfile: { full_name: string | null; email: string | null; phone: string | null } | null = null
           if (b.profile_id) {
             const { data } = await supabase
-              .from('profiles').select('full_name').eq('id', b.profile_id).single()
+              .from('profiles').select('full_name, email, phone').eq('id', b.profile_id).single()
             clientName = data?.full_name ?? 'A client'
+            clientProfile = data ?? null
           }
+
+          // Show alert popup
           setNewAlert({
             name: clientName,
             service: b.service ?? 'Appointment',
@@ -141,8 +150,31 @@ export function AdminBookings() {
             }),
             bookingId: b.id,
           })
-          // Reload list if on pending or all filter
-          if (filter === 'pending' || filter === 'all') loadBookings(artistId)
+
+          // Immediately insert the new booking into the list if it matches the current filter
+          if (filter === 'pending' || filter === 'all') {
+            const newBooking: Booking = {
+              id: b.id,
+              appointment_at: b.appointment_at,
+              service: b.service,
+              notes: b.notes ?? null,
+              status: b.status,
+              profile_id: b.profile_id ?? null,
+              checked_in_at: b.checked_in_at ?? null,
+              tattoo_location: b.tattoo_location ?? null,
+              tattoo_design: b.tattoo_design ?? null,
+              reference_image_urls: b.reference_image_urls ?? null,
+              deposit_link: b.deposit_link ?? null,
+              profiles: clientProfile,
+            }
+            setBookings(prev => {
+              // Avoid duplicates
+              if (prev.some(x => x.id === b.id)) return prev
+              return [newBooking, ...prev].sort(
+                (a, z) => new Date(a.appointment_at).getTime() - new Date(z.appointment_at).getTime()
+              )
+            })
+          }
         }
       )
       .subscribe()
