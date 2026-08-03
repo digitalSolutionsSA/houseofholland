@@ -278,3 +278,45 @@
   color: var(--text-muted);
   font-size: 0.88rem;
 }
+
+/* ── Intro text ── */
+.checkin__intro {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  padding: 0 2px;
+}
+
+/* ── Consent checkbox rows ── */
+.checkin__consent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkin__consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkin__check-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.25);
+  padding: 0;
+  margin-top: 1px;
+  transition: color 0.15s;
+}
+
+.checkin__check-btn--on {
+  color: var(--gold);
+}
+
+.checkin__check-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}

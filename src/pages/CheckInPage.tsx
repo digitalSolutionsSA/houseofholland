@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Pen, RotateCcw, Loader2, CheckCircle2, AlertCircle, CalendarDays, Clock } from 'lucide-react'
+import { Pen, RotateCcw, Loader2, CheckCircle2, AlertCircle, CalendarDays, Clock, CheckSquare, Square } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -18,30 +18,20 @@ type BookingDetail = {
   artist_profile_id: string | null
 }
 
-type ConsentSummary = {
-  full_name: string
-  date_of_birth: string | null
-  phone: string | null
-  address: string | null
-  signed_at: string | null
-  id_document_url: string | null
-  emergency_contact_name: string | null
-  emergency_contact_phone: string | null
-  init_risks: string | null
-  init_waiver: string | null
-  init_aftercare: string | null
-  init_no_alcohol: string | null
-  init_no_medical: string | null
-  init_photos: string | null
-  init_age: string | null
+function isToday(dateStr: string) {
+  const d = new Date(dateStr), t = new Date()
+  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
 }
 
-function isToday(dateStr: string) {
-  const d = new Date(dateStr)
-  const t = new Date()
-  return d.getFullYear() === t.getFullYear() &&
-    d.getMonth() === t.getMonth() &&
-    d.getDate() === t.getDate()
+function ConsentCheckbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="checkin__consent-row">
+      <button type="button" className={`checkin__check-btn${checked ? ' checkin__check-btn--on' : ''}`} onClick={() => onChange(!checked)}>
+        {checked ? <CheckSquare size={20} strokeWidth={2} /> : <Square size={20} strokeWidth={1.5} />}
+      </button>
+      <p className="checkin__check-label">{label}</p>
+    </div>
+  )
 }
 
 export function CheckInPage() {
@@ -54,18 +44,36 @@ export function CheckInPage() {
   const lastPos = useRef<{ x: number; y: number } | null>(null)
 
   const [booking, setBooking] = useState<BookingDetail | null>(null)
-  const [consent, setConsent] = useState<ConsentSummary | null>(null)
-  const [location, setLocation] = useState('')
-  const [design, setDesign] = useState('')
-  const [sigEmpty, setSigEmpty] = useState(true)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sigEmpty, setSigEmpty] = useState(true)
+
+  // Form fields
+  const [fullName, setFullName] = useState('')
+  const [dob, setDob] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [address, setAddress] = useState('')
+  const [ecName, setEcName] = useState('')
+  const [ecPhone, setEcPhone] = useState('')
+  const [location, setLocation] = useState('')
+  const [design, setDesign] = useState('')
+
+  // Consent checkboxes
+  const [initRisks, setInitRisks] = useState(false)
+  const [initWaiver, setInitWaiver] = useState(false)
+  const [initAftercare, setInitAftercare] = useState(false)
+  const [initNoAlcohol, setInitNoAlcohol] = useState(false)
+  const [initNoMedical, setInitNoMedical] = useState(false)
+  const [initPhotos, setInitPhotos] = useState(false)
+  const [initAge, setInitAge] = useState(false)
 
   useEffect(() => {
     if (!profile?.id || !bookingId) return
     async function load() {
+      // Load booking
       const { data: b } = await supabase
         .from('bookings')
         .select('id, appointment_at, service, status, checked_in_at, artist_id, artists(name, email, profile_id)')
@@ -76,50 +84,62 @@ export function CheckInPage() {
       if (b) {
         const a = (b as any).artists
         setBooking({
-          id: b.id,
-          appointment_at: b.appointment_at,
-          service: b.service,
-          status: b.status,
-          checked_in_at: b.checked_in_at ?? null,
-          artist_id: b.artist_id ?? null,
-          artist_name: a?.name ?? null,
-          artist_email: a?.email ?? null,
-          artist_profile_id: a?.profile_id ?? null,
+          id: b.id, appointment_at: b.appointment_at, service: b.service,
+          status: b.status, checked_in_at: b.checked_in_at ?? null,
+          artist_id: b.artist_id ?? null, artist_name: a?.name ?? null,
+          artist_email: a?.email ?? null, artist_profile_id: a?.profile_id ?? null,
         })
         if (b.checked_in_at) setDone(true)
       }
 
+      // Pre-fill from existing consent form if available
       const { data: cf } = await supabase
         .from('consent_forms')
-        .select('full_name, date_of_birth, phone, address, signed_at, emergency_contact_name, emergency_contact_phone, init_risks, init_waiver, init_aftercare, init_no_alcohol, init_no_medical, init_photos, init_age')
+        .select('*')
         .eq('profile_id', profile!.id)
         .maybeSingle()
 
-      const idUrl = (profile as any).id_document_url ?? null
+      // Pre-fill from profile or saved consent form
+      setFullName(cf?.full_name ?? profile!.full_name ?? '')
+      setEmail(cf?.email ?? (profile as any).email ?? '')
+      setPhone(cf?.phone ?? (profile as any).phone ?? '')
+      setDob(cf?.date_of_birth ?? '')
+      setAddress(cf?.address ?? '')
+      setEcName(cf?.emergency_contact_name ?? '')
+      setEcPhone(cf?.emergency_contact_phone ?? '')
 
-      if (cf) setConsent({ ...cf, id_document_url: idUrl })
+      if (cf?.init_risks) setInitRisks(true)
+      if (cf?.init_waiver) setInitWaiver(true)
+      if (cf?.init_aftercare) setInitAftercare(true)
+      if (cf?.init_no_alcohol) setInitNoAlcohol(true)
+      if (cf?.init_no_medical) setInitNoMedical(true)
+      if (cf?.init_photos) setInitPhotos(true)
+      if (cf?.init_age) setInitAge(true)
+
+      // Pre-fill from saved signature if available
+      if (cf?.signature_data_url && canvasRef.current) {
+        const img = new Image()
+        img.onload = () => { canvasRef.current?.getContext('2d')?.drawImage(img, 0, 0) }
+        img.src = cf.signature_data_url
+        setSigEmpty(false)
+      }
 
       setLoading(false)
     }
     load()
   }, [profile?.id, bookingId])
 
-  // ── Canvas drawing ──
   function getPos(e: React.MouseEvent | React.TouchEvent) {
     const canvas = canvasRef.current!
     const rect = canvas.getBoundingClientRect()
-    const sx = canvas.width / rect.width
-    const sy = canvas.height / rect.height
+    const sx = canvas.width / rect.width, sy = canvas.height / rect.height
     if ('touches' in e) {
       const t = e.touches[0]
       return { x: (t.clientX - rect.left) * sx, y: (t.clientY - rect.top) * sy }
     }
     return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy }
   }
-
-  function startDraw(e: React.MouseEvent | React.TouchEvent) {
-    e.preventDefault(); isDrawing.current = true; lastPos.current = getPos(e); setSigEmpty(false)
-  }
+  function startDraw(e: React.MouseEvent | React.TouchEvent) { e.preventDefault(); isDrawing.current = true; lastPos.current = getPos(e); setSigEmpty(false) }
   function draw(e: React.MouseEvent | React.TouchEvent) {
     e.preventDefault()
     if (!isDrawing.current) return
@@ -131,95 +151,79 @@ export function CheckInPage() {
     ctx.stroke(); lastPos.current = pos
   }
   function endDraw(e: React.MouseEvent | React.TouchEvent) { e.preventDefault(); isDrawing.current = false }
-  function clearSig() {
-    canvasRef.current?.getContext('2d')?.clearRect(0, 0, 600, 160)
-    setSigEmpty(true)
-  }
-
-  function consentIncompleteReason(c: ConsentSummary | null): string | null {
-    if (!c?.signed_at) return 'Your consent form has not been signed yet.'
-    if (!c.full_name?.trim()) return 'Consent form is missing your full name.'
-    if (!c.date_of_birth?.trim()) return 'Consent form is missing your date of birth.'
-    if (!c.phone?.trim()) return 'Consent form is missing your phone number.'
-    if (!c.emergency_contact_name?.trim()) return 'Consent form is missing an emergency contact name.'
-    if (!c.emergency_contact_phone?.trim()) return 'Consent form is missing an emergency contact phone number.'
-    const allChecked = [c.init_risks, c.init_waiver, c.init_aftercare, c.init_no_alcohol, c.init_no_medical, c.init_photos, c.init_age].every(v => v?.trim())
-    if (!allChecked) return 'Not all consent boxes have been checked on your consent form.'
-    return null
-  }
+  function clearSig() { canvasRef.current?.getContext('2d')?.clearRect(0, 0, 600, 160); setSigEmpty(true) }
 
   async function submit() {
     if (!booking || !profile) return
+    if (!fullName.trim()) { setError('Full name is required.'); return }
+    if (!dob.trim()) { setError('Date of birth is required.'); return }
+    if (!phone.trim()) { setError('Phone number is required.'); return }
+    if (!address.trim()) { setError('Address is required.'); return }
+    if (!ecName.trim()) { setError('Emergency contact name is required.'); return }
+    if (!ecPhone.trim()) { setError('Emergency contact phone is required.'); return }
     if (!location.trim()) { setError('Please enter the tattoo location.'); return }
-    if (!design.trim()) { setError('Please enter the tattoo design.'); return }
-    if (sigEmpty) { setError('Please sign before checking in.'); return }
-    const consentIssue = consentIncompleteReason(consent)
-    if (consentIssue) {
-      setError(`${consentIssue} Please go to Profile → Consent Forms and complete all required fields before checking in.`)
-      return
+    if (!design.trim()) { setError('Please enter the tattoo design/description.'); return }
+    if (![initRisks, initWaiver, initAftercare, initNoAlcohol, initNoMedical, initPhotos, initAge].every(Boolean)) {
+      setError('You must check all consent boxes before checking in.'); return
     }
+    if (sigEmpty) { setError('Please sign the form before checking in.'); return }
 
     setSubmitting(true); setError(null)
 
-    // Upload check-in signature to storage
     const dataUrl = canvasRef.current!.toDataURL('image/png')
     const blob = await (await fetch(dataUrl)).blob()
     const sigPath = `${profile.id}/checkin-${booking.id}.png`
     await supabase.storage.from('avatars').upload(sigPath, blob, { upsert: true, contentType: 'image/png' })
     const { data: sigData } = supabase.storage.from('avatars').getPublicUrl(sigPath)
 
-    // Save check-in to booking
-    const { error: dbErr } = await supabase
-      .from('bookings')
-      .update({
-        tattoo_location: location.trim(),
-        tattoo_design: design.trim(),
-        checkin_signature_url: sigData.publicUrl,
-        checked_in_at: new Date().toISOString(),
-        status: 'confirmed',
-      })
-      .eq('id', booking.id)
+    const now = new Date().toISOString()
+
+    // Upsert full consent form so artist sees complete waiver
+    await supabase.from('consent_forms').upsert({
+      profile_id: profile.id,
+      full_name: fullName.trim(),
+      date_of_birth: dob.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      address: address.trim(),
+      emergency_contact_name: ecName.trim(),
+      emergency_contact_phone: ecPhone.trim(),
+      init_risks: initRisks ? 'agreed' : '',
+      init_waiver: initWaiver ? 'agreed' : '',
+      init_aftercare: initAftercare ? 'agreed' : '',
+      init_no_alcohol: initNoAlcohol ? 'agreed' : '',
+      init_no_medical: initNoMedical ? 'agreed' : '',
+      init_photos: initPhotos ? 'agreed' : '',
+      init_age: initAge ? 'agreed' : '',
+      signature_data_url: sigData.publicUrl,
+      signed_at: now,
+    }, { onConflict: 'profile_id' })
+
+    // Update booking with check-in details
+    const { error: dbErr } = await supabase.from('bookings').update({
+      tattoo_location: location.trim(),
+      tattoo_design: design.trim(),
+      checkin_signature_url: sigData.publicUrl,
+      checked_in_at: now,
+      status: 'confirmed',
+    }).eq('id', booking.id)
 
     if (dbErr) { setError(dbErr.message); setSubmitting(false); return }
 
-    // Notify the artist via in-app notification
+    // Notify artist
     if (booking.artist_profile_id) {
-      const clientName = consent?.full_name ?? profile.full_name ?? 'Your client'
       const apptLabel = new Date(booking.appointment_at).toLocaleString('en-US', {
         weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
       })
       await supabase.from('notifications').insert({
         profile_id: booking.artist_profile_id,
         title: 'Client Checked In',
-        body: `${clientName} has checked in for their ${booking.service} on ${apptLabel}. Consent form is ready.`,
+        body: `${fullName.trim()} has checked in for their ${booking.service} on ${apptLabel}. Consent form is ready.`,
         type: 'booking',
       })
     }
 
-    // Call edge function to email the artist
-    if (booking.artist_email) {
-      await supabase.functions.invoke('send-checkin-email', {
-        body: {
-          booking_id: booking.id,
-          artist_email: booking.artist_email,
-          artist_name: booking.artist_name,
-          customer_name: consent?.full_name ?? profile.full_name ?? 'Customer',
-          customer_dob: consent?.date_of_birth ?? '',
-          customer_phone: consent?.phone ?? '',
-          customer_address: consent?.address ?? '',
-          service: booking.service,
-          appointment_at: booking.appointment_at,
-          tattoo_location: location.trim(),
-          tattoo_design: design.trim(),
-          consent_signed_at: consent?.signed_at ?? '',
-          id_document_url: consent?.id_document_url ?? '',
-          signature_url: sigData.publicUrl,
-        },
-      })
-    }
-
-    setDone(true)
-    setSubmitting(false)
+    setDone(true); setSubmitting(false)
   }
 
   if (loading) return (
@@ -244,9 +248,7 @@ export function CheckInPage() {
         <h2>Not available yet</h2>
         <p>Check-in opens on the day of your appointment.</p>
         <p className="checkin__appt-date">
-          {new Date(booking.appointment_at).toLocaleDateString('en-US', {
-            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-          })}
+          {new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
       </div>
     </div>
@@ -258,10 +260,8 @@ export function CheckInPage() {
       <div className="checkin__done">
         <CheckCircle2 size={56} strokeWidth={1.2} className="checkin__done-icon" />
         <h2>You're checked in!</h2>
-        <p>Your consent form and ID have been sent to your artist. Please take a seat and they'll be with you shortly.</p>
-        <button type="button" className="checkin__done-btn" onClick={() => navigate('/bookings')}>
-          Back to Bookings
-        </button>
+        <p>Your signed consent form has been sent to your artist. Please take a seat and they'll be with you shortly.</p>
+        <button type="button" className="checkin__done-btn" onClick={() => navigate('/bookings')}>Back to Bookings</button>
       </div>
     </div>
   )
@@ -279,11 +279,11 @@ export function CheckInPage() {
 
   return (
     <div className="page checkin-page">
-      <PageHeader title="Check In" backTo="/bookings" />
+      <PageHeader title="Check In & Consent Form" backTo="/bookings" />
 
       <div className="checkin__body">
 
-        {/* appointment summary */}
+        {/* Appointment card */}
         <div className="checkin__appt-card">
           <p className="checkin__appt-label">TODAY'S APPOINTMENT</p>
           <p className="checkin__appt-service">{booking.service}</p>
@@ -298,65 +298,92 @@ export function CheckInPage() {
           </div>
         </div>
 
-        {/* consent status */}
-        {(() => {
-          const issue = consentIncompleteReason(consent)
-          return issue ? (
-            <div className="checkin__consent-warn">
-              <AlertCircle size={15} strokeWidth={2} />
-              <span>{issue} Go to <strong>Profile → Consent Forms</strong> to complete it.</span>
-            </div>
-          ) : (
-            <div className="checkin__consent-ok">
-              <CheckCircle2 size={15} strokeWidth={2} />
-              <span>Consent form complete — signed {new Date(consent!.signed_at!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-            </div>
-          )
-        })()}
+        <p className="checkin__intro">Please complete and sign the consent form below before checking in. All fields are required.</p>
 
-        {/* tattoo details */}
+        {/* Personal details */}
         <section className="checkin__section">
-          <h3 className="checkin__section-title">Tattoo Details</h3>
-
+          <h3 className="checkin__section-title">Personal Details</h3>
           <div className="checkin__field">
-            <label className="checkin__label">Location of Tattoo *</label>
-            <input
-              className="checkin__input"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. Left forearm, Upper back"
-            />
+            <label className="checkin__label">Full Name *</label>
+            <input className="checkin__input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full legal name" />
           </div>
-
           <div className="checkin__field">
-            <label className="checkin__label">Design *</label>
-            <input
-              className="checkin__input"
-              value={design}
-              onChange={e => setDesign(e.target.value)}
-              placeholder="e.g. Traditional rose, Geometric wolf"
-            />
+            <label className="checkin__label">Date of Birth *</label>
+            <input className="checkin__input" type="date" value={dob} onChange={e => setDob(e.target.value)} />
+          </div>
+          <div className="checkin__field">
+            <label className="checkin__label">Phone *</label>
+            <input className="checkin__input" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
+          </div>
+          <div className="checkin__field">
+            <label className="checkin__label">Email</label>
+            <input className="checkin__input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" />
+          </div>
+          <div className="checkin__field">
+            <label className="checkin__label">Address *</label>
+            <input className="checkin__input" value={address} onChange={e => setAddress(e.target.value)} placeholder="Street, City, ZIP" />
           </div>
         </section>
 
-        {/* signature */}
+        {/* Emergency contact */}
         <section className="checkin__section">
-          <h3 className="checkin__section-title">Sign to Confirm</h3>
-          <p className="checkin__section-note">
-            By signing you confirm the tattoo details above and agree to the consent form you signed on your profile.
-          </p>
+          <h3 className="checkin__section-title">Emergency Contact</h3>
+          <div className="checkin__field">
+            <label className="checkin__label">Name *</label>
+            <input className="checkin__input" value={ecName} onChange={e => setEcName(e.target.value)} placeholder="Contact full name" />
+          </div>
+          <div className="checkin__field">
+            <label className="checkin__label">Phone *</label>
+            <input className="checkin__input" type="tel" value={ecPhone} onChange={e => setEcPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
+          </div>
+        </section>
+
+        {/* Tattoo details */}
+        <section className="checkin__section">
+          <h3 className="checkin__section-title">Today's Tattoo</h3>
+          <div className="checkin__field">
+            <label className="checkin__label">Location on Body *</label>
+            <input className="checkin__input" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Left forearm, Upper back" />
+          </div>
+          <div className="checkin__field">
+            <label className="checkin__label">Design / Description *</label>
+            <input className="checkin__input" value={design} onChange={e => setDesign(e.target.value)} placeholder="e.g. Traditional rose, Geometric wolf" />
+          </div>
+        </section>
+
+        {/* Consent checkboxes */}
+        <section className="checkin__section">
+          <h3 className="checkin__section-title">Consent — Check All Items</h3>
+          <p className="checkin__section-note">All boxes must be checked to complete check-in.</p>
+          <div className="checkin__consent-list">
+            <ConsentCheckbox checked={initRisks} onChange={setInitRisks}
+              label="I have been fully informed of the inherent risks associated with getting a tattoo, including infections, scarring, and allergic reactions. I accept and assume all risks." />
+            <ConsentCheckbox checked={initWaiver} onChange={setInitWaiver}
+              label="I WAIVE AND RELEASE the artist and studio from all liability for personal injury or damages. I have had the full opportunity to ask questions about my tattoo." />
+            <ConsentCheckbox checked={initAftercare} onChange={setInitAftercare}
+              label="I have received aftercare instructions. I understand that tattoos can become infected if instructions are not followed, and any touch-up work due to my negligence is at my own expense." />
+            <ConsentCheckbox checked={initNoAlcohol} onChange={setInitNoAlcohol}
+              label="I am NOT under the influence of alcohol or drugs. I am voluntarily submitting to be tattooed without duress or coercion." />
+            <ConsentCheckbox checked={initNoMedical} onChange={setInitNoMedical}
+              label="I do not have diabetes, epilepsy, hemophilia, a heart condition, or any medical condition that may interfere with tattooing. I am not pregnant or nursing." />
+            <ConsentCheckbox checked={initPhotos} onChange={setInitPhotos}
+              label="I release all rights to any photographs taken of me and my tattoo and consent to their use in print or electronic form by the studio." />
+            <ConsentCheckbox checked={initAge} onChange={setInitAge}
+              label="I declare that I am 18 or older and have provided valid proof of age. I HAVE READ AND UNDERSTOOD this entire agreement and AGREE TO BE BOUND BY IT." />
+          </div>
+        </section>
+
+        {/* Signature */}
+        <section className="checkin__section">
+          <h3 className="checkin__section-title">Signature</h3>
+          <p className="checkin__section-note">Sign below to confirm you have read and agreed to all items above.</p>
           <div className="checkin__sig-wrap">
             <canvas
-              ref={canvasRef}
-              width={600}
-              height={150}
-              className="checkin__sig-canvas"
+              ref={canvasRef} width={600} height={150} className="checkin__sig-canvas"
               onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw}
               onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={endDraw}
             />
-            {sigEmpty && (
-              <p className="checkin__sig-placeholder"><Pen size={14} strokeWidth={1.5} /> Sign here</p>
-            )}
+            {sigEmpty && <p className="checkin__sig-placeholder"><Pen size={14} strokeWidth={1.5} /> Sign here</p>}
             <button type="button" className="checkin__sig-clear" onClick={clearSig}>
               <RotateCcw size={13} strokeWidth={1.5} /> Clear
             </button>
@@ -367,7 +394,7 @@ export function CheckInPage() {
 
         <button type="button" className="checkin__submit" onClick={submit} disabled={submitting}>
           {submitting
-            ? <><Loader2 size={16} className="checkin__spin" /> Checking in…</>
+            ? <><Loader2 size={16} className="checkin__spin" /> Submitting…</>
             : <><CheckCircle2 size={16} /> Complete Check-In</>}
         </button>
 
