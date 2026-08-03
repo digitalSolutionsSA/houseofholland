@@ -8,6 +8,7 @@ export type VaultEntry = {
   artist: string
   date: string
   image: string
+  price: number | null
 }
 
 export function VaultCard({ entry }: { entry: VaultEntry }) {
@@ -18,6 +19,9 @@ export function VaultCard({ entry }: { entry: VaultEntry }) {
         <h3 className="vault-card__title">{entry.title}</h3>
         <p className="vault-card__artist">By {entry.artist}</p>
         <p className="vault-card__date">{entry.date}</p>
+        {entry.price != null && (
+          <p className="vault-card__price">${entry.price.toFixed(2)}</p>
+        )}
       </div>
       <ChevronRight className="vault-card__chevron" size={18} strokeWidth={1.5} />
     </Link>

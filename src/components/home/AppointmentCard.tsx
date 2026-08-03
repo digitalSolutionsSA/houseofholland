@@ -12,7 +12,7 @@ type Appointment = {
 
 export function AppointmentCard({ appointment }: { appointment: Appointment }) {
   return (
-    <article className="appointment-card">
+    <Link to="/bookings" className="appointment-card appointment-card--clickable">
       {appointment.avatar
         ? <img src={appointment.avatar} alt="" className="appointment-card__avatar" />
         : <div className="appointment-card__avatar appointment-card__avatar--empty" />}
@@ -20,10 +20,10 @@ export function AppointmentCard({ appointment }: { appointment: Appointment }) {
         <p className="appointment-card__when">{appointment.dateLabel}</p>
         <p className="appointment-card__artist">with {appointment.artist}</p>
         <p className="appointment-card__service">{appointment.service}</p>
-        <Link to="/bookings" className="appointment-card__link">
+        <span className="appointment-card__link">
           View Details <ChevronRight size={14} />
-        </Link>
+        </span>
       </div>
-    </article>
+    </Link>
   )
 }

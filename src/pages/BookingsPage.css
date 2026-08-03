@@ -298,3 +298,37 @@
 .bookings-popup__cta-btn:hover {
   opacity: 0.9;
 }
+
+.bookings-popup__cta-btn--danger {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.4);
+  color: #f87171;
+}
+
+.bookings-popup__sub--warn {
+  color: #f87171;
+}
+
+.bookings-popup__icon--warn {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+  color: #f87171;
+}
+
+/* Cancel button on booking card */
+.bookings-page__cancel-btn {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.bookings-page__cancel-btn:hover {
+  color: #f87171;
+}

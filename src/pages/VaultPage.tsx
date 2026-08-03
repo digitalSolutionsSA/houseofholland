@@ -11,6 +11,7 @@ type VaultEntry = {
   artist: string
   date: string
   image: string
+  price: number | null
 }
 
 export function VaultPage() {
@@ -22,7 +23,7 @@ export function VaultPage() {
     if (!profile?.id) return
     supabase
       .from('tattoo_completions')
-      .select('id, photo_url, style, notes, completed_at, artists(name)')
+      .select('id, photo_url, style, notes, completed_at, price, artists(name)')
       .eq('profile_id', profile.id)
       .order('completed_at', { ascending: false })
       .then(({ data }) => {
@@ -35,6 +36,7 @@ export function VaultPage() {
               month: 'long', day: 'numeric', year: 'numeric',
             }),
             image: d.photo_url,
+            price: d.price ?? null,
           }))
         )
         setLoading(false)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard } from 'lucide-react'
+import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard, AlertTriangle } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,7 @@ type Appointment = {
   appointment_at: string
   dateLabel: string
   artist: string
+  artistProfileId: string | null
   service: string
   avatar: string | null
   status: string
@@ -31,6 +32,8 @@ export function BookingsPage() {
   const [loading, setLoading] = useState(true)
   const [checkinPopup, setCheckinPopup] = useState<Appointment | null>(null)
   const [confirmPopup, setConfirmPopup] = useState<Appointment | null>(null)
+  const [cancelPopup, setCancelPopup] = useState<Appointment | null>(null)
+  const [cancelling, setCancelling] = useState(false)
   const checkinShown = useRef(false)
 
   function mapRow(d: any): Appointment {
@@ -44,6 +47,7 @@ export function BookingsPage() {
       artist: d.artists?.name ?? 'Artist',
       service: d.service,
       avatar: d.artists?.avatar_url ?? null,
+      artistProfileId: d.artists?.profile_id ?? null,
       status: d.status,
       checked_in_at: d.checked_in_at ?? null,
       deposit_link: d.deposit_link ?? null,
@@ -54,7 +58,7 @@ export function BookingsPage() {
     if (!profile?.id) return
     supabase
       .from('bookings')
-      .select('id, appointment_at, service, status, checked_in_at, deposit_link, artists(name, avatar_url)')
+      .select('id, appointment_at, service, status, checked_in_at, deposit_link, artists(name, avatar_url, profile_id)')
       .eq('profile_id', profile.id)
       .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', new Date().toISOString())
@@ -117,6 +121,31 @@ export function BookingsPage() {
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [profile?.id])
+
+  async function cancelBooking(appt: Appointment) {
+    setCancelling(true)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled', cancellation_reason: 'customer_cancellation' })
+      .eq('id', appt.id)
+    if (error) { setCancelling(false); return }
+
+    if (appt.artistProfileId) {
+      const label = new Date(appt.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      await supabase.from('notifications').insert({
+        profile_id: appt.artistProfileId,
+        title: 'Booking Cancelled by Client',
+        body: `${appt.artist ? appt.artist : 'A client'} cancelled their ${appt.service} booking on ${label}.`,
+        type: 'booking',
+      })
+    }
+
+    setUpcoming(prev => prev.filter(a => a.id !== appt.id))
+    setCancelPopup(null)
+    setCancelling(false)
+  }
 
   // Only show appointments that still need check-in in the prominent TODAY block
   const todayActionable = upcoming.filter(a =>
@@ -216,6 +245,47 @@ export function BookingsPage() {
         </div>
       )}
 
+      {/* ── Cancel booking popup ── */}
+      {cancelPopup && (
+        <div className="bookings-popup-overlay">
+          <div className="bookings-popup">
+            <div className="bookings-popup__icon bookings-popup__icon--warn">
+              <AlertTriangle size={28} strokeWidth={1.5} />
+            </div>
+            <h3 className="bookings-popup__title">Cancel Appointment?</h3>
+            <p className="bookings-popup__body">
+              <strong>{cancelPopup.service}</strong> with <strong>{cancelPopup.artist}</strong> on{' '}
+              <strong>{cancelPopup.dateLabel}</strong>
+            </p>
+            {cancelPopup.status === 'confirmed' ? (
+              <p className="bookings-popup__sub bookings-popup__sub--warn">
+                This appointment has been locked in and your deposit has been paid.
+                Cancelling now means <strong>you will lose your deposit</strong>. This cannot be undone.
+              </p>
+            ) : (
+              <p className="bookings-popup__sub">
+                Are you sure you want to cancel this booking? The artist will be notified.
+              </p>
+            )}
+            <div className="bookings-popup__actions">
+              <button className="bookings-popup__dismiss" onClick={() => setCancelPopup(null)}>
+                Keep It
+              </button>
+              <button
+                className="bookings-popup__cta-btn bookings-popup__cta-btn--danger"
+                onClick={() => cancelBooking(cancelPopup)}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Cancelling…' : 'Yes, Cancel'}
+              </button>
+            </div>
+            <button className="bookings-popup__close" onClick={() => setCancelPopup(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bookings-page__content">
         <Link to="/bookings/select-time" className="bookings-page__cta">
           Book new appointment
@@ -294,6 +364,12 @@ export function BookingsPage() {
                   <CreditCard size={13} /> Pay Deposit
                 </a>
               )}
+              <button
+                className="bookings-page__cancel-btn"
+                onClick={() => setCancelPopup(appt)}
+              >
+                Cancel appointment
+              </button>
             </div>
           </article>
         ))}

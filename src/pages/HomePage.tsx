@@ -34,7 +34,7 @@ export function HomePage() {
       .from('bookings')
       .select('id, appointment_at, service, artists(name, avatar_url)')
       .eq('profile_id', profile?.id ?? '')
-      .in('status', ['pending', 'confirmed'])
+      .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', new Date().toISOString())
       .order('appointment_at')
       .limit(1)

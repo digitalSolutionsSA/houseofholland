@@ -4,6 +4,17 @@
   padding: 14px;
   border-radius: var(--radius-md);
   background: var(--bg-card);
+  text-decoration: none;
+  color: inherit;
+}
+
+.appointment-card--clickable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.appointment-card--clickable:hover {
+  background: var(--bg-elevated);
 }
 
 .appointment-card__avatar {

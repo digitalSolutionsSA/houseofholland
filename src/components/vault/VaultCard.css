@@ -34,6 +34,13 @@
   margin-top: 2px;
 }
 
+.vault-card__price {
+  font-size: 0.8rem;
+  color: #4ade80;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
 .vault-card__chevron {
   color: var(--gold);
   flex-shrink: 0;

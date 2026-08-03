@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Scissors, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
@@ -19,6 +19,14 @@ type Booking = {
   profiles: { full_name: string | null; email: string | null; phone: string | null } | null
 }
 
+const CANCEL_REASON_LABEL: Record<string, string> = {
+  no_deposit:         'No deposit received',
+  client_requested:   'Client requested cancellation',
+  artist_unavailable: 'Artist unavailable',
+  scheduling_conflict:'Scheduling conflict',
+  other:              'Other',
+}
+
 const STATUS_LABEL: Record<string, string> = {
   pending:   'Pending',
   accepted:  'Accepted',
@@ -32,7 +40,7 @@ export function AdminBookings() {
   const [artists, setArtists]         = useState<Artist[]>([])
   const [artistId, setArtistId]       = useState<string>('')
   const [bookings, setBookings]       = useState<Booking[]>([])
-  const [filter, setFilter]           = useState<'pending' | 'accepted' | 'confirmed' | 'all'>('pending')
+  const [filter, setFilter]           = useState<'pending' | 'accepted' | 'confirmed' | 'all' | 'past'>('pending')
   const [loading, setLoading]         = useState(true)
   const [acting, setActing]           = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -46,17 +54,33 @@ export function AdminBookings() {
   // Expanded ref images
   const [expandedRefs, setExpandedRefs] = useState<string | null>(null)
 
-  // Complete Job modal
+  // Done / Complete Job modal
   const cmpFileRef = useRef<HTMLInputElement>(null)
   const [completeModal, setCompleteModal] = useState<Booking | null>(null)
   const [cmpStyle, setCmpStyle]   = useState('')
   const [cmpNotes, setCmpNotes]   = useState('')
   const [cmpDate, setCmpDate]     = useState('')
+  const [cmpPrice, setCmpPrice]   = useState('')
+  const [cmpPaymentReceived, setCmpPaymentReceived] = useState(false)
   const [cmpFile, setCmpFile]     = useState<File | null>(null)
   const [cmpPreview, setCmpPreview] = useState<string | null>(null)
   const [cmpSaving, setCmpSaving] = useState(false)
   const [cmpError, setCmpError]   = useState<string | null>(null)
   const [cmpSuccess, setCmpSuccess] = useState<{ count: number; nextReward: string | null } | null>(null)
+
+  // No Show modal
+  const [noShowModal, setNoShowModal] = useState<Booking | null>(null)
+  const [noShowContacted, setNoShowContacted] = useState(false)
+  const [noShowSaving, setNoShowSaving] = useState(false)
+
+  // Artist cancellation modal
+  const [cancelArtistModal, setCancelArtistModal] = useState<Booking | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelArtistSaving, setCancelArtistSaving] = useState(false)
+
+  // Past appointments
+  const [pastBookings, setPastBookings] = useState<Booking[]>([])
+  const [pastLoading, setPastLoading] = useState(false)
 
   const isManager = profile?.role === 'manager'
 
@@ -94,6 +118,66 @@ export function AdminBookings() {
     setLoading(false)
   }
 
+  async function loadPastBookings(aid: string) {
+    setPastLoading(true)
+    const { data: rows } = await supabase
+      .from('bookings')
+      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, tattoo_location, tattoo_design, reference_image_urls, deposit_link, cancellation_reason, no_show_contacted')
+      .eq('artist_id', aid)
+      .in('status', ['completed', 'no_show', 'cancelled'])
+      .order('appointment_at', { ascending: false })
+      .limit(30)
+
+    const bookingRows = rows ?? []
+    const profileIds = [...new Set(bookingRows.map((b: any) => b.profile_id).filter(Boolean))]
+    let profileMap: Record<string, { full_name: string | null; email: string | null; phone: string | null }> = {}
+    if (profileIds.length > 0) {
+      const { data: profileData } = await supabase
+        .from('profiles').select('id, full_name, email, phone').in('id', profileIds)
+      for (const p of profileData ?? []) profileMap[p.id] = p
+    }
+    setPastBookings(bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null })))
+    setPastLoading(false)
+  }
+
+  async function markNoShow(b: Booking) {
+    setNoShowSaving(true)
+    await supabase.from('bookings').update({ status: 'no_show', no_show_contacted: noShowContacted }).eq('id', b.id)
+    if (b.profile_id) {
+      const label = new Date(b.appointment_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+      await supabase.from('notifications').insert({
+        profile_id: b.profile_id,
+        title: 'Appointment Marked as No-Show',
+        body: `Your ${b.service} appointment on ${label} was marked as a no-show. Please contact the studio.`,
+        type: 'booking',
+      })
+    }
+    setBookings(prev => prev.filter(x => x.id !== b.id))
+    setPastBookings(prev => [{ ...b, status: 'no_show', no_show_contacted: noShowContacted } as any, ...prev])
+    setNoShowModal(null)
+    setNoShowSaving(false)
+  }
+
+  async function markCancelledByArtist(b: Booking) {
+    if (!cancelReason) return
+    setCancelArtistSaving(true)
+    await supabase.from('bookings').update({ status: 'cancelled', cancellation_reason: cancelReason }).eq('id', b.id)
+    if (b.profile_id) {
+      const label = new Date(b.appointment_at).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+      await supabase.from('notifications').insert({
+        profile_id: b.profile_id,
+        title: 'Appointment Cancelled by Artist',
+        body: `Your ${b.service} appointment on ${label} has been cancelled. Please contact the studio to reschedule.`,
+        type: 'booking',
+      })
+    }
+    setBookings(prev => prev.filter(x => x.id !== b.id))
+    setPastBookings(prev => [{ ...b, status: 'cancelled', cancellation_reason: cancelReason } as any, ...prev])
+    setCancelArtistModal(null)
+    setCancelReason('')
+    setCancelArtistSaving(false)
+  }
+
   useEffect(() => {
     async function init() {
       const { data: list } = await supabase
@@ -112,7 +196,9 @@ export function AdminBookings() {
   }, [profile?.id])
 
   useEffect(() => {
-    if (artistId) loadBookings(artistId)
+    if (!artistId) return
+    if (filter === 'past') loadPastBookings(artistId)
+    else loadBookings(artistId)
   }, [artistId, filter])
 
   // Realtime subscription for new bookings
@@ -256,6 +342,8 @@ export function AdminBookings() {
     setCmpStyle(b.service)
     setCmpNotes('')
     setCmpDate(new Date().toISOString().split('T')[0])
+    setCmpPrice('')
+    setCmpPaymentReceived(false)
     setCmpFile(null)
     setCmpPreview(null)
     setCmpError(null)
@@ -282,6 +370,7 @@ export function AdminBookings() {
   async function completeJob() {
     if (!completeModal || !completeModal.profile_id) { setCmpError('No client found on this booking.'); return }
     if (!cmpFile) { setCmpError('Please upload a photo of the completed work.'); return }
+    if (!cmpPaymentReceived) { setCmpError('Please confirm that full payment has been received.'); return }
     if (!artistId) { setCmpError('No artist selected.'); return }
 
     setCmpSaving(true)
@@ -305,6 +394,7 @@ export function AdminBookings() {
       style: cmpStyle.trim() || null,
       notes: cmpNotes.trim() || null,
       completed_at: cmpDate,
+      price: cmpPrice.trim() ? parseFloat(cmpPrice) : null,
     })
     if (dbErr) { setCmpError(dbErr.message); setCmpSaving(false); return }
 
@@ -398,14 +488,14 @@ export function AdminBookings() {
             {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         )}
-        {(['pending', 'accepted', 'confirmed', 'all'] as const).map(f => (
+        {(['pending', 'accepted', 'confirmed', 'all', 'past'] as const).map(f => (
           <button
             key={f}
             className={`admin-btn ${filter === f ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
             onClick={() => setFilter(f)}
             style={{ textTransform: 'capitalize' }}
           >
-            {f === 'all' ? 'All Upcoming' : STATUS_LABEL[f]}
+            {f === 'all' ? 'All Upcoming' : f === 'past' ? 'Past' : STATUS_LABEL[f]}
           </button>
         ))}
       </div>
@@ -414,7 +504,49 @@ export function AdminBookings() {
         <p style={{ color: '#ff6b6b', fontSize: '0.85rem', marginBottom: 12 }}>{actionError}</p>
       )}
 
-      {loading ? (
+      {filter === 'past' ? (
+        pastLoading ? (
+          <p className="admin-empty">Loading past appointments…</p>
+        ) : pastBookings.length === 0 ? (
+          <p className="admin-empty">No past appointments found.</p>
+        ) : (
+          <div className="admin-booking-list">
+            {pastBookings.map(b => {
+              const client = b.profiles as any
+              const statusColor = b.status === 'completed' ? '#4ade80' : b.status === 'no_show' ? '#fbbf24' : '#f87171'
+              const statusLabel = b.status === 'completed' ? 'Completed' : b.status === 'no_show' ? 'No Show' : 'Cancelled'
+              return (
+                <div key={b.id} className="admin-booking-card" style={{ borderLeft: `3px solid ${statusColor}` }}>
+                  <div className="admin-booking-card__top">
+                    <div>
+                      <div className="admin-booking-card__name">{client?.full_name ?? 'Unknown client'}</div>
+                      <div className="admin-booking-card__email">{client?.email}</div>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: statusColor, background: `${statusColor}18`, border: `1px solid ${statusColor}40`, borderRadius: 6, padding: '3px 9px' }}>
+                      {statusLabel}
+                    </span>
+                  </div>
+                  <div className="admin-booking-card__detail">
+                    <Clock size={13} strokeWidth={1.5} />
+                    {fmt(b.appointment_at)}
+                  </div>
+                  <div className="admin-booking-card__service">{b.service}</div>
+                  {b.status === 'no_show' && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                      {(b as any).no_show_contacted ? '✓ Artist attempted to contact client' : 'No contact attempt recorded'}
+                    </p>
+                  )}
+                  {b.status === 'cancelled' && (b as any).cancellation_reason && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                      Reason: {CANCEL_REASON_LABEL[(b as any).cancellation_reason] ?? (b as any).cancellation_reason}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )
+      ) : loading ? (
         <p className="admin-empty">Loading…</p>
       ) : bookings.length === 0 ? (
         <p className="admin-empty">No {filter === 'all' ? 'upcoming' : filter} appointments.</p>
@@ -521,14 +653,33 @@ export function AdminBookings() {
                   </div>
                 )}
                 {b.status === 'confirmed' && (
-                  <div className="admin-booking-card__actions" style={{ marginTop: 8 }}>
+                  <div className="admin-booking-card__actions" style={{ marginTop: 8, flexWrap: 'wrap', gap: 6 }}>
                     <button
                       className="admin-btn admin-btn--complete"
                       onClick={() => openCompleteModal(b)}
                       disabled={acting === b.id}
+                      style={{ flex: '1 1 auto' }}
                     >
-                      <Scissors size={13} style={{ display: 'inline', marginRight: 5 }} />
-                      Complete Job
+                      <CheckCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
+                      Done
+                    </button>
+                    <button
+                      className="admin-btn admin-btn--ghost"
+                      onClick={() => { setNoShowModal(b); setNoShowContacted(false) }}
+                      disabled={acting === b.id}
+                      style={{ flex: '1 1 auto' }}
+                    >
+                      <UserX size={13} style={{ display: 'inline', marginRight: 5 }} />
+                      No Show
+                    </button>
+                    <button
+                      className="admin-btn admin-btn--danger"
+                      onClick={() => { setCancelArtistModal(b); setCancelReason('') }}
+                      disabled={acting === b.id}
+                      style={{ flex: '1 1 auto' }}
+                    >
+                      <XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />
+                      Cancellation
                     </button>
                   </div>
                 )}
@@ -537,6 +688,83 @@ export function AdminBookings() {
           })}
         </div>
       )}
+
+      {/* ── No Show modal ── */}
+      {noShowModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setNoShowModal(null)}>
+          <div className="admin-modal" style={{ maxWidth: 400 }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <UserX size={36} color="#fbbf24" />
+            </div>
+            <h2 className="admin-modal__title">Mark as No Show</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>
+              Client: <strong style={{ color: 'var(--text)' }}>{noShowModal.profiles?.full_name ?? 'Unknown'}</strong>
+              {' · '}<span style={{ color: 'var(--gold)' }}>{fmt(noShowModal.appointment_at)}</span>
+            </p>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text)', marginBottom: 14, lineHeight: 1.5 }}>
+              Before marking as a no-show, have you attempted to contact the client? This record will be saved to your past appointments for reference.
+            </p>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 20 }}>
+              <input
+                type="checkbox"
+                checked={noShowContacted}
+                onChange={e => setNoShowContacted(e.target.checked)}
+                style={{ marginTop: 2, accentColor: 'var(--gold)', width: 16, height: 16, flexShrink: 0 }}
+              />
+              <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+                I attempted to contact the client and received no response.
+              </span>
+            </label>
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setNoShowModal(null)}>Cancel</button>
+              <button
+                className="admin-btn admin-btn--primary"
+                style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.4)', color: '#fbbf24' }}
+                onClick={() => markNoShow(noShowModal)}
+                disabled={noShowSaving}
+              >
+                {noShowSaving ? 'Saving…' : <><UserX size={13} style={{ display: 'inline', marginRight: 5 }} />Mark No Show</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Artist cancellation modal ── */}
+      {cancelArtistModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setCancelArtistModal(null)}>
+          <div className="admin-modal" style={{ maxWidth: 400 }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <AlertTriangle size={36} color="#f87171" />
+            </div>
+            <h2 className="admin-modal__title">Cancel Appointment</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>
+              Client: <strong style={{ color: 'var(--text)' }}>{cancelArtistModal.profiles?.full_name ?? 'Unknown'}</strong>
+              {' · '}<span style={{ color: 'var(--gold)' }}>{fmt(cancelArtistModal.appointment_at)}</span>
+            </p>
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Reason for cancellation *</label>
+              {Object.entries(CANCEL_REASON_LABEL).map(([val, label]) => (
+                <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', marginBottom: 6, borderRadius: 8, border: `1px solid ${cancelReason === val ? 'var(--gold)' : 'var(--border-subtle)'}`, background: cancelReason === val ? 'rgba(212,175,55,0.07)' : 'transparent', cursor: 'pointer' }}>
+                  <input type="radio" name="cancel_reason" value={val} checked={cancelReason === val} onChange={() => setCancelReason(val)} style={{ accentColor: 'var(--gold)' }} />
+                  <span style={{ fontSize: '0.85rem' }}>{label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="admin-modal__actions" style={{ marginTop: 16 }}>
+              <button className="admin-btn admin-btn--ghost" onClick={() => setCancelArtistModal(null)}>Back</button>
+              <button
+                className="admin-btn admin-btn--danger"
+                onClick={() => markCancelledByArtist(cancelArtistModal)}
+                disabled={cancelArtistSaving || !cancelReason}
+              >
+                {cancelArtistSaving ? 'Saving…' : <><XCircle size={13} style={{ display: 'inline', marginRight: 5 }} />Confirm Cancellation</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Accept booking / deposit link modal */}
       {depositModal && (
         <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setDepositModal(null)}>
@@ -612,7 +840,7 @@ export function AdminBookings() {
             ) : (
               /* Form */
               <>
-                <h2 className="admin-modal__title">Complete Job</h2>
+                <h2 className="admin-modal__title">Mark as Done</h2>
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
                   Client: <strong style={{ color: 'var(--text)' }}>
                     {(completeModal.profiles as any)?.full_name ?? 'Unknown'}
@@ -653,6 +881,31 @@ export function AdminBookings() {
                 </div>
 
                 <div className="admin-modal__field">
+                  <label className="admin-modal__label">Total Price Charged (optional)</label>
+                  <input
+                    className="admin-modal__input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={cmpPrice}
+                    placeholder="e.g. 350"
+                    onChange={e => setCmpPrice(e.target.value)}
+                  />
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 18, padding: '12px 14px', borderRadius: 8, border: `1px solid ${cmpPaymentReceived ? 'var(--gold)' : 'var(--border-subtle)'}`, background: cmpPaymentReceived ? 'rgba(212,175,55,0.07)' : 'transparent' }}>
+                  <input
+                    type="checkbox"
+                    checked={cmpPaymentReceived}
+                    onChange={e => setCmpPaymentReceived(e.target.checked)}
+                    style={{ marginTop: 2, accentColor: 'var(--gold)', width: 16, height: 16, flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 600 }}>
+                    Full payment has been received from the client *
+                  </span>
+                </label>
+
+                <div className="admin-modal__field">
                   <label className="admin-modal__label">Photo of Completed Work *</label>
                   <button
                     type="button"
@@ -689,7 +942,7 @@ export function AdminBookings() {
                     disabled={cmpSaving}
                   >
                     {cmpSaving ? 'Saving…' : (
-                      <><Scissors size={13} style={{ display: 'inline', marginRight: 6 }} />Mark Complete</>
+                      <><CheckCircle size={13} style={{ display: 'inline', marginRight: 6 }} />Mark Done</>
                     )}
                   </button>
                 </div>
