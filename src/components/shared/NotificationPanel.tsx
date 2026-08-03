@@ -56,14 +56,16 @@ export function NotificationPanel() {
     if (!profile?.id) return
     load()
 
-    // Realtime subscription
+    // Realtime subscription — no server-side filter, client-side check for reliability
     const channel = supabase
-      .channel('notifications')
+      .channel(`notifications-${profile.id}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `profile_id=eq.${profile.id}` },
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
         (payload) => {
-          setItems(prev => [payload.new as Notification, ...prev])
+          const n = payload.new as Notification & { profile_id: string }
+          if (n.profile_id !== profile.id) return
+          setItems(prev => [n, ...prev])
         }
       )
       .subscribe()

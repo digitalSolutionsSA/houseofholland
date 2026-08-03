@@ -455,6 +455,59 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
     return () => { supabase.removeChannel(channel) }
   }, [artistId])
 
+  // Realtime: new booking notification → show popup as a reliable fallback
+  // (catches cases where the bookings INSERT event is missed, e.g. artist navigated to page after booking was made)
+  useEffect(() => {
+    if (!profile?.id || !artistId) return
+    const channel = supabase
+      .channel(`admin-booking-notifs-${profile.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, async (payload) => {
+        const n = payload.new as any
+        if (n.profile_id !== profile.id) return
+        if (n.type !== 'booking' || !n.title?.includes('New Booking')) return
+
+        // Only show popup if we don't already have it open
+        setNewAlert(prev => {
+          if (prev) return prev // already showing one
+          return null          // will be populated by bookings INSERT or below
+        })
+
+        // Fetch the most recent pending booking so we have the bookingId for accept/reject
+        const { data } = await supabase
+          .from('bookings')
+          .select('id, service, appointment_at, profile_id, profiles(full_name)')
+          .eq('artist_id', artistId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (!data) return
+
+        setNewAlert(prev => {
+          if (prev) return prev // bookings INSERT already fired — don't overwrite
+          return {
+            name: (data.profiles as any)?.full_name ?? 'A client',
+            service: data.service,
+            time: new Date(data.appointment_at).toLocaleString('en-US', {
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: 'numeric', minute: '2-digit',
+            }),
+            bookingId: data.id,
+          }
+        })
+
+        // Also refresh the list so the booking appears even if INSERT event was missed
+        setBookings(prev => {
+          if (prev.some(b => b.id === data.id)) return prev
+          loadBookings(artistId)
+          return prev
+        })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [profile?.id, artistId])
+
   async function rejectBooking(id: string) {
     setActing(id)
     setActionError(null)
