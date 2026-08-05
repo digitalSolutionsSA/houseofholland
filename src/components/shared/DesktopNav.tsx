@@ -14,23 +14,33 @@ import { Logo } from './Logo'
 import { useAuth } from '../../context/AuthContext'
 import './DesktopNav.css'
 
-const primary = [
-  { to: '/home', label: 'Home', icon: Home },
-  { to: '/artists', label: 'Artists', icon: Users },
+const CUSTOMER_PRIMARY = [
+  { to: '/home',     label: 'Home',     icon: Home },
+  { to: '/artists',  label: 'Artists',  icon: Users },
   { to: '/bookings', label: 'Bookings', icon: CalendarDays },
-  { to: '/vault', label: 'Vault', icon: Archive },
-  { to: '/merch', label: 'Merch', icon: Shirt },
-  { to: '/profile', label: 'Profile', icon: User },
-] as const
+  { to: '/vault',    label: 'Vault',    icon: Archive },
+  { to: '/merch',    label: 'Merch',    icon: Shirt },
+  { to: '/profile',  label: 'Profile',  icon: User },
+]
 
-const secondary = [
-  { to: '/passport', label: 'Passport', icon: Award },
+const CUSTOMER_SECONDARY = [
+  { to: '/passport',   label: 'Passport',   icon: Award },
   { to: '/membership', label: 'Membership', icon: CreditCard },
-] as const
+]
+
+const ARTIST_PRIMARY = [
+  { to: '/home',     label: 'Home',       icon: Home },
+  { to: '/artists',  label: 'Artists',    icon: Users },
+  { to: '/membership', label: 'Membership', icon: CreditCard },
+  { to: '/profile',  label: 'Profile',    icon: User },
+]
 
 export function DesktopNav() {
   const { profile } = useAuth()
-  const isAdmin = profile?.role === 'manager' || profile?.role === 'artist'
+  const isArtist = profile?.role === 'manager' || profile?.role === 'artist'
+
+  const primary   = isArtist ? ARTIST_PRIMARY   : CUSTOMER_PRIMARY
+  const secondary = isArtist ? []               : CUSTOMER_SECONDARY
 
   return (
     <aside className="desktop-nav" aria-label="Main">
@@ -53,7 +63,7 @@ export function DesktopNav() {
         ))}
       </nav>
 
-      {isAdmin && (
+      {isArtist && (
         <div className="desktop-nav__section">
           <p className="desktop-nav__section-label">Admin</p>
           <NavLink
@@ -68,21 +78,23 @@ export function DesktopNav() {
         </div>
       )}
 
-      <div className="desktop-nav__section">
-        <p className="desktop-nav__section-label">Rewards</p>
-        {secondary.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              `desktop-nav__link ${isActive ? 'desktop-nav__link--active' : ''}`
-            }
-          >
-            <Icon size={20} strokeWidth={1.5} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
-      </div>
+      {secondary.length > 0 && (
+        <div className="desktop-nav__section">
+          <p className="desktop-nav__section-label">Rewards</p>
+          {secondary.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `desktop-nav__link ${isActive ? 'desktop-nav__link--active' : ''}`
+              }
+            >
+              <Icon size={20} strokeWidth={1.5} />
+              <span>{label}</span>
+            </NavLink>
+          ))}
+        </div>
+      )}
     </aside>
   )
 }
