@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import { Navigate } from 'react-router-dom'
 import { PageHeader } from '../components/shared/PageHeader'
 import { VaultCard, type VaultEntry } from '../components/vault/VaultCard'
 import { supabase } from '../lib/supabase'
@@ -8,6 +9,7 @@ import './VaultPage.css'
 
 export function VaultPage() {
   const { profile } = useAuth()
+  if (profile?.role === 'artist' || profile?.role === 'manager') return <Navigate to="/home" replace />
   const [entries, setEntries] = useState<VaultEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<VaultEntry | null>(null)
