@@ -17,6 +17,8 @@ type Appointment = {
   status: string
   checked_in_at: string | null
   deposit_link: string | null
+  notes: string | null
+  reference_image_urls: string[] | null
 }
 
 function isToday(dateStr: string) {
@@ -35,6 +37,10 @@ export function BookingsPage() {
   const [confirmPopup, setConfirmPopup] = useState<Appointment | null>(null)
   const [cancelPopup, setCancelPopup] = useState<Appointment | null>(null)
   const [cancelling, setCancelling] = useState(false)
+  const [detailAppt, setDetailAppt] = useState<Appointment | null>(null)
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [editNotes, setEditNotes] = useState('')
+  const [savingNotes, setSavingNotes] = useState(false)
   const checkinShown = useRef(false)
 
   function mapRow(d: any): Appointment {
@@ -52,6 +58,8 @@ export function BookingsPage() {
       status: d.status,
       checked_in_at: d.checked_in_at ?? null,
       deposit_link: d.deposit_link ?? null,
+      notes: d.notes ?? null,
+      reference_image_urls: d.reference_image_urls ?? null,
     }
   }
 
@@ -68,7 +76,7 @@ export function BookingsPage() {
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     supabase
       .from('bookings')
-      .select('id, appointment_at, service, status, checked_in_at, deposit_link, artists(name, avatar_url, profile_id)')
+      .select('id, appointment_at, service, status, checked_in_at, deposit_link, notes, reference_image_urls, artists(name, avatar_url, profile_id)')
       .eq('profile_id', profile.id)
       .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', startOfToday)
@@ -154,6 +162,22 @@ export function BookingsPage() {
     setUpcoming(prev => prev.filter(a => a.id !== appt.id))
     setCancelPopup(null)
     setCancelling(false)
+  }
+
+  async function saveNotes() {
+    if (!detailAppt) return
+    setSavingNotes(true)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ notes: editNotes.trim() || null })
+      .eq('id', detailAppt.id)
+    if (!error) {
+      const updated = { ...detailAppt, notes: editNotes.trim() || null }
+      setUpcoming(prev => prev.map(a => a.id === detailAppt.id ? updated : a))
+      setDetailAppt(updated)
+      setEditingNotes(false)
+    }
+    setSavingNotes(false)
   }
 
   // Only show appointments that still need check-in in the prominent TODAY block
@@ -295,6 +319,105 @@ export function BookingsPage() {
         </div>
       )}
 
+      {/* ── Booking detail / edit modal ── */}
+      {detailAppt && (
+        <div className="bookings-popup-overlay" onClick={() => { setDetailAppt(null); setEditingNotes(false) }}>
+          <div className="bookings-detail-sheet" onClick={e => e.stopPropagation()}>
+            <div className="bookings-detail-sheet__handle" />
+            <div className="bookings-detail-sheet__head">
+              <h3 className="bookings-detail-sheet__title">{detailAppt.service}</h3>
+              <button className="bookings-popup__close" style={{ position: 'static' }} onClick={() => { setDetailAppt(null); setEditingNotes(false) }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="bookings-detail-sheet__body">
+              <p className="bookings-detail-sheet__meta">with <strong>{detailAppt.artist}</strong></p>
+              <p className="bookings-detail-sheet__meta">{detailAppt.dateLabel}</p>
+              <span className={`bookings-page__status bookings-page__status--${detailAppt.status}`} style={{ display: 'inline-block', marginTop: 6 }}>
+                {detailAppt.status === 'accepted' ? 'Accepted — Deposit Required' : detailAppt.status}
+              </span>
+
+              {/* Notes section */}
+              <div className="bookings-detail-sheet__section">
+                <div className="bookings-detail-sheet__section-head">
+                  <p className="bookings-detail-sheet__label">Your notes / request</p>
+                  {detailAppt.status === 'pending' && !editingNotes && (
+                    <button className="bookings-detail-sheet__edit-btn" onClick={() => { setEditNotes(detailAppt.notes ?? ''); setEditingNotes(true) }}>
+                      Edit
+                    </button>
+                  )}
+                </div>
+                {editingNotes ? (
+                  <div>
+                    <textarea
+                      className="bookings-detail-sheet__textarea"
+                      value={editNotes}
+                      onChange={e => setEditNotes(e.target.value)}
+                      rows={4}
+                      placeholder="Describe your tattoo idea…"
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <button className="bookings-popup__dismiss" onClick={() => setEditingNotes(false)}>Cancel</button>
+                      <button className="bookings-popup__cta-btn" onClick={saveNotes} disabled={savingNotes} style={{ flex: 1, justifyContent: 'center' }}>
+                        {savingNotes ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="bookings-detail-sheet__value">
+                    {detailAppt.notes || <span style={{ color: 'var(--text-dim)', fontStyle: 'italic' }}>No notes added</span>}
+                  </p>
+                )}
+              </div>
+
+              {/* Reference images */}
+              {detailAppt.reference_image_urls && detailAppt.reference_image_urls.length > 0 && (
+                <div className="bookings-detail-sheet__section">
+                  <p className="bookings-detail-sheet__label">Reference images you uploaded</p>
+                  <div className="bookings-detail-sheet__refs">
+                    {detailAppt.reference_image_urls.map((url, i) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt={`Reference ${i + 1}`} className="bookings-detail-sheet__ref-img" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Deposit link */}
+              {detailAppt.status === 'accepted' && detailAppt.deposit_link && (
+                <a href={detailAppt.deposit_link} target="_blank" rel="noopener noreferrer" className="bookings-popup__cta-btn" style={{ display: 'flex', justifyContent: 'center', marginTop: 8 }}>
+                  <CreditCard size={14} /> Pay Deposit
+                </a>
+              )}
+
+              {/* View waiver for checked-in */}
+              {detailAppt.checked_in_at && (
+                <Link
+                  to={`/bookings/checkin/${detailAppt.id}`}
+                  className="bookings-detail-sheet__waiver-btn"
+                  onClick={() => setDetailAppt(null)}
+                >
+                  View Signed Consent Form
+                </Link>
+              )}
+
+              {/* Cancel */}
+              {detailAppt.status !== 'cancelled' && (
+                <button
+                  className="bookings-page__cancel-btn"
+                  style={{ width: '100%', marginTop: 8 }}
+                  onClick={() => { setCancelPopup(detailAppt); setDetailAppt(null) }}
+                >
+                  Cancel appointment
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bookings-page__content">
         <Link to="/bookings/select-time" className="bookings-page__cta">
           Book new appointment
@@ -352,7 +475,11 @@ export function BookingsPage() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>No upcoming bookings.</p>
         )}
         {rest.map(appt => (
-          <article key={appt.id} className="appointment-card">
+          <article
+            key={appt.id}
+            className="appointment-card appointment-card--clickable"
+            onClick={() => setDetailAppt(appt)}
+          >
             {appt.avatar
               ? <img src={appt.avatar} alt="" className="appointment-card__avatar" />
               : <div className="appointment-card__avatar appointment-card__avatar--empty" />}
@@ -363,23 +490,8 @@ export function BookingsPage() {
               <span className={`bookings-page__status bookings-page__status--${appt.status}`}>
                 {appt.status === 'accepted' ? 'Accepted — Deposit Required' : appt.status}
               </span>
-              {appt.status === 'accepted' && appt.deposit_link && (
-                <a
-                  href={appt.deposit_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bookings-page__deposit-btn"
-                >
-                  <CreditCard size={13} /> Pay Deposit
-                </a>
-              )}
-              <button
-                className="bookings-page__cancel-btn"
-                onClick={() => setCancelPopup(appt)}
-              >
-                Cancel appointment
-              </button>
             </div>
+            <ChevronRight size={18} strokeWidth={1.5} style={{ color: 'var(--gold)', flexShrink: 0 }} />
           </article>
         ))}
       </div>

@@ -12,6 +12,7 @@ type BookingDetail = {
   service: string
   status: string
   checked_in_at: string | null
+  checkin_signature_url: string | null
   artist_id: string | null
   artist_name: string | null
   artist_email: string | null
@@ -76,7 +77,7 @@ export function CheckInPage() {
       // Load booking
       const { data: b } = await supabase
         .from('bookings')
-        .select('id, appointment_at, service, status, checked_in_at, artist_id, artists(name, email, profile_id)')
+        .select('id, appointment_at, service, status, checked_in_at, checkin_signature_url, tattoo_location, tattoo_design, artist_id, artists(name, email, profile_id)')
         .eq('id', bookingId)
         .eq('profile_id', profile!.id)
         .single()
@@ -86,10 +87,16 @@ export function CheckInPage() {
         setBooking({
           id: b.id, appointment_at: b.appointment_at, service: b.service,
           status: b.status, checked_in_at: b.checked_in_at ?? null,
+          checkin_signature_url: (b as any).checkin_signature_url ?? null,
           artist_id: b.artist_id ?? null, artist_name: a?.name ?? null,
           artist_email: a?.email ?? null, artist_profile_id: a?.profile_id ?? null,
         })
-        if (b.checked_in_at) setDone(true)
+        if (b.checked_in_at) {
+          // Pre-fill tattoo details from booking record
+          if ((b as any).tattoo_location) setLocation((b as any).tattoo_location)
+          if ((b as any).tattoo_design) setDesign((b as any).tattoo_design)
+          setDone(true)
+        }
       }
 
       // Pre-fill from existing consent form if available
@@ -256,11 +263,72 @@ export function CheckInPage() {
 
   if (done) return (
     <div className="page checkin-page">
-      <PageHeader title="Check In" backTo="/bookings" />
-      <div className="checkin__done">
-        <CheckCircle2 size={56} strokeWidth={1.2} className="checkin__done-icon" />
-        <h2>You're checked in!</h2>
-        <p>Your signed consent form has been sent to your artist. Please take a seat and they'll be with you shortly.</p>
+      <PageHeader title="Consent Form" backTo="/bookings" />
+      <div className="checkin__body">
+        <div className="checkin__done-banner">
+          <CheckCircle2 size={22} strokeWidth={2} />
+          <span>Checked in — form signed and submitted</span>
+        </div>
+
+        {/* Read-only summary of what was signed */}
+        {fullName && (
+          <>
+            <section className="checkin__section">
+              <h3 className="checkin__section-title">Personal Details</h3>
+              <div className="checkin__ro-row"><span>Name</span><span>{fullName}</span></div>
+              {dob && <div className="checkin__ro-row"><span>Date of Birth</span><span>{dob}</span></div>}
+              {phone && <div className="checkin__ro-row"><span>Phone</span><span>{phone}</span></div>}
+              {email && <div className="checkin__ro-row"><span>Email</span><span>{email}</span></div>}
+              {address && <div className="checkin__ro-row"><span>Address</span><span>{address}</span></div>}
+            </section>
+            {(ecName || ecPhone) && (
+              <section className="checkin__section">
+                <h3 className="checkin__section-title">Emergency Contact</h3>
+                {ecName && <div className="checkin__ro-row"><span>Name</span><span>{ecName}</span></div>}
+                {ecPhone && <div className="checkin__ro-row"><span>Phone</span><span>{ecPhone}</span></div>}
+              </section>
+            )}
+            {(location || design) && (
+              <section className="checkin__section">
+                <h3 className="checkin__section-title">Today's Tattoo</h3>
+                {location && <div className="checkin__ro-row"><span>Location</span><span>{location}</span></div>}
+                {design && <div className="checkin__ro-row"><span>Design</span><span>{design}</span></div>}
+              </section>
+            )}
+            <section className="checkin__section">
+              <h3 className="checkin__section-title">Consent — All Agreed</h3>
+              <div className="checkin__consent-list">
+                {[
+                  [initRisks,      'Risks acknowledged'],
+                  [initWaiver,     'Waiver and release agreed'],
+                  [initAftercare,  'Aftercare instructions understood'],
+                  [initNoAlcohol,  'Not under influence of alcohol or drugs'],
+                  [initNoMedical,  'No medical conditions disclosed'],
+                  [initPhotos,     'Photo release agreed'],
+                  [initAge,        'Age 18+ confirmed'],
+                ].map(([checked, label], i) => (
+                  <div key={i} className="checkin__consent-row" style={{ opacity: checked ? 1 : 0.45 }}>
+                    <CheckSquare size={18} strokeWidth={2} style={{ color: checked ? 'var(--gold)' : 'var(--text-dim)', flexShrink: 0 }} />
+                    <p className="checkin__check-label" style={{ fontSize: '0.82rem' }}>{label as string}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section className="checkin__section">
+              <h3 className="checkin__section-title">Signature</h3>
+              {booking?.checkin_signature_url ? (
+                <img src={booking.checkin_signature_url} alt="Signature" className="checkin__sig-img" />
+              ) : !sigEmpty && canvasRef.current ? (
+                <img src={canvasRef.current.toDataURL()} alt="Signature" className="checkin__sig-img" />
+              ) : null}
+              {booking?.checked_in_at && (
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 6 }}>
+                  Signed {new Date(booking.checked_in_at).toLocaleString('en-US')}
+                </p>
+              )}
+            </section>
+          </>
+        )}
         <button type="button" className="checkin__done-btn" onClick={() => navigate('/bookings')}>Back to Bookings</button>
       </div>
     </div>
@@ -396,6 +464,10 @@ export function CheckInPage() {
           {submitting
             ? <><Loader2 size={16} className="checkin__spin" /> Submitting…</>
             : <><CheckCircle2 size={16} /> Complete Check-In</>}
+        </button>
+
+        <button type="button" className="checkin__cancel-link" onClick={() => navigate('/bookings')}>
+          Cancel — go back to bookings
         </button>
 
       </div>

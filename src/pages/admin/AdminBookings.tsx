@@ -91,11 +91,12 @@ export function AdminBookings() {
   const [actionError, setActionError] = useState<string | null>(null)
 
   // Accept-with-deposit modal
-  const [depositModal, setDepositModal]     = useState<Booking | null>(null)
+  const [depositModal, setDepositModal]       = useState<Booking | null>(null)
   const [depositPlatform, setDepositPlatform] = useState<'venmo' | 'cashapp'>('venmo')
   const [depositUsername, setDepositUsername] = useState('')
-  const [depositSaving, setDepositSaving]   = useState(false)
-  const [depositError, setDepositError]     = useState<string | null>(null)
+  const [depositAmount, setDepositAmount]     = useState<100 | 150>(100)
+  const [depositSaving, setDepositSaving]     = useState(false)
+  const [depositError, setDepositError]       = useState<string | null>(null)
 
   // Expanded ref images
   const [expandedRefs, setExpandedRefs] = useState<string | null>(null)
@@ -598,7 +599,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       await supabase.from('notifications').insert({
         profile_id: depositModal.profile_id,
         title: 'Request Accepted — Deposit Required',
-        body: `Your ${depositModal.service} on ${apptLabel} has been accepted! Send your deposit via ${platformLabel} to ${displayHandle} to lock in your slot.`,
+        body: `Your ${depositModal.service} on ${apptLabel} has been accepted! Please send a $${depositAmount} deposit via ${platformLabel} to ${displayHandle} to lock in your slot.`,
         type: 'booking',
       })
     }
@@ -607,6 +608,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       : b.filter(x => x.id !== depositModal.id))
     setDepositModal(null)
     setDepositUsername('')
+    setDepositAmount(100)
     setDepositSaving(false)
   }
 
@@ -1215,6 +1217,31 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                 <> · <span style={{ color: 'var(--gold)' }}>{fmt(depositModal.appointment_at)}</span></>
               )}
             </p>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Deposit amount *</label>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {([100, 150] as const).map(amt => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => setDepositAmount(amt)}
+                    style={{
+                      flex: 1, padding: '10px 0', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem',
+                      border: `1px solid ${depositAmount === amt ? 'var(--gold)' : 'var(--border-subtle)'}`,
+                      background: depositAmount === amt ? 'rgba(212,175,55,0.12)' : 'transparent',
+                      color: depositAmount === amt ? 'var(--gold)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ${amt}
+                    <span style={{ display: 'block', fontSize: '0.68rem', fontWeight: 500, marginTop: 2 }}>
+                      {amt === 100 ? 'Small tattoo' : 'Standard tattoo'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="admin-modal__field">
               <label className="admin-modal__label">Payment platform *</label>
