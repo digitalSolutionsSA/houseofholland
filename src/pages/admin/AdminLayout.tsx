@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Users, Shirt, Zap, LayoutDashboard, ArrowLeft, CheckCircle,
   Images, CalendarDays, CalendarCheck, UserCheck, Bell, DollarSign,
-  FileText, UserCog, type LucideIcon,
+  FileText, UserCog, GitBranch, type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
 import { BottomNav } from '../../components/shared/BottomNav'
@@ -27,6 +27,8 @@ const MANAGER_LINKS: NavLink[] = [
   { to: '/admin/notifications', label: 'Notifications',    icon: Bell },
 ]
 
+const REFERRAL_EMAILS = ['info@digitalsolutionssa.co.za', 'armandgroesbeek@gmail.com']
+
 const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/bookings',       label: 'Appointments',    icon: CalendarCheck },
   { to: '/admin/schedule',       label: 'My Schedule',     icon: CalendarDays },
@@ -39,7 +41,11 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
-  const links = isManager ? MANAGER_LINKS : ARTIST_LINKS
+  const canSeeReferrals = REFERRAL_EMAILS.includes((profile?.email ?? '').toLowerCase())
+  const links = [
+    ...(isManager ? MANAGER_LINKS : ARTIST_LINKS),
+    ...(canSeeReferrals ? [{ to: '/admin/referrals', label: 'Referrals', icon: GitBranch }] : []),
+  ]
 
   return (
     <div className="admin-shell">

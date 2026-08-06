@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X, Copy, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type ArtistProfile = {
@@ -17,7 +17,13 @@ type Artist = {
   avatar_url: string | null
   is_active: boolean
   profile_id: string | null
+  referral_code: string | null
   profiles: ArtistProfile | null
+}
+
+function generateReferralCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
 const EMPTY_FORM = {
@@ -103,7 +109,7 @@ export function AdminArtists() {
 
     const { data: artistData } = await supabase
       .from('artists')
-      .select('id, name, slug, bio, specialties, avatar_url, is_active, profile_id')
+      .select('id, name, slug, bio, specialties, avatar_url, is_active, profile_id, referral_code')
       .order('name')
 
     const rows = artistData ?? []
@@ -125,6 +131,7 @@ export function AdminArtists() {
     setArtists(rows.map(a => ({
       ...a,
       profiles: a.profile_id ? (profileMap[a.profile_id] ?? null) : null,
+      referral_code: a.referral_code ?? null,
     })))
     setLoading(false)
   }
@@ -261,6 +268,19 @@ export function AdminArtists() {
     setAccountModal(null)
   }
 
+  async function regenerateCode(a: Artist) {
+    let code = generateReferralCode()
+    // Keep generating until unique (very unlikely to collide but safe)
+    let attempts = 0
+    while (attempts < 10) {
+      const { error } = await supabase.from('artists').update({ referral_code: code }).eq('id', a.id)
+      if (!error) break
+      code = generateReferralCode()
+      attempts++
+    }
+    load()
+  }
+
   async function unlinkAccount(a: Artist) {
     const email = a.profiles?.email ?? a.profile_id
     if (!confirm(`Remove login access for ${a.name} (${email})? Their account will be demoted to a regular user.`)) return
@@ -304,6 +324,7 @@ export function AdminArtists() {
               <th>Photo</th>
               <th>Name</th>
               <th>Specialties</th>
+              <th>Referral Code</th>
               <th>Status</th>
               <th>Login</th>
               <th>Actions</th>
@@ -320,6 +341,31 @@ export function AdminArtists() {
                 <td>{a.name}</td>
                 <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                   {a.specialties.join(', ') || '—'}
+                </td>
+                <td>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <code style={{ fontSize: '0.85rem', color: 'var(--gold)', letterSpacing: '0.1em', fontWeight: 600 }}>
+                      {a.referral_code ?? '—'}
+                    </code>
+                    {a.referral_code && (
+                      <button
+                        className="admin-btn admin-btn--ghost"
+                        style={{ fontSize: '0.7rem', padding: '2px 6px' }}
+                        title="Copy code"
+                        onClick={() => navigator.clipboard.writeText(a.referral_code!)}
+                      >
+                        <Copy size={11} />
+                      </button>
+                    )}
+                    <button
+                      className="admin-btn admin-btn--ghost"
+                      style={{ fontSize: '0.7rem', padding: '2px 6px' }}
+                      title="Regenerate code"
+                      onClick={() => regenerateCode(a)}
+                    >
+                      <RefreshCw size={11} />
+                    </button>
+                  </div>
                 </td>
                 <td>
                   <span className={`admin-badge admin-badge--${a.is_active ? 'active' : 'inactive'}`}>

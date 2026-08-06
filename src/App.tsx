@@ -29,6 +29,7 @@ import { AdminNotifications } from './pages/admin/AdminNotifications'
 import { AdminRent } from './pages/admin/AdminRent'
 import { AdminWaivers } from './pages/admin/AdminWaivers'
 import { AdminArtistProfile } from './pages/admin/AdminArtistProfile'
+import { AdminReferrals } from './pages/admin/AdminReferrals'
 import { BoothRentPage } from './pages/BoothRentPage'
 import { useAuth } from './context/AuthContext'
 
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="rent"             element={<AdminRent />} />
           <Route path="waivers"          element={<AdminWaivers />} />
           <Route path="artist-profile"   element={<AdminArtistProfile />} />
+          <Route path="referrals"        element={<AdminReferrals />} />
         </Route>
 
         {/* Public app */}

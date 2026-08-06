@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, User, Tag } from 'lucide-react'
 import { Logo } from '../components/shared/Logo'
 import { DiamondDivider } from '../components/shared/DiamondDivider'
 import { InputField } from '../components/shared/InputField'
@@ -24,6 +24,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,7 +51,7 @@ export function LoginPage() {
         setLoading(false)
         return
       }
-      const err = await signUp(email, password, fullName)
+      const err = await signUp(email, password, fullName, referralCode || undefined)
       setLoading(false)
       if (err) { setError(err); return }
       setSuccess('Account created! Check your email to confirm, then sign in.')
@@ -137,15 +138,25 @@ export function LoginPage() {
               />
 
               {tab === 'register' && (
-                <InputField
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Confirm Password"
-                  leftIcon={<Lock size={18} strokeWidth={1.5} />}
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                <>
+                  <InputField
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Confirm Password"
+                    leftIcon={<Lock size={18} strokeWidth={1.5} />}
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <InputField
+                    type="text"
+                    placeholder="Artist Referral Code (optional)"
+                    leftIcon={<Tag size={18} strokeWidth={1.5} />}
+                    autoComplete="off"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                  />
+                </>
               )}
             </>
           )}

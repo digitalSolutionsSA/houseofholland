@@ -8,7 +8,7 @@ type AuthContextValue = {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<string | null>
-  signUp: (email: string, password: string, fullName: string) => Promise<string | null>
+  signUp: (email: string, password: string, fullName: string, referralCode?: string) => Promise<string | null>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<string | null>
   refreshProfile: () => Promise<void>
@@ -58,13 +58,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error?.message ?? null
   }
 
-  async function signUp(email: string, password: string, fullName: string): Promise<string | null> {
-    const { error } = await supabase.auth.signUp({
+  async function signUp(email: string, password: string, fullName: string, referralCode?: string): Promise<string | null> {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName } },
     })
-    return error?.message ?? null
+    if (error) return error.message
+    if (referralCode && data.user) {
+      const code = referralCode.trim().toUpperCase()
+      // Verify the code exists before saving it
+      const { data: artist } = await supabase
+        .from('artists')
+        .select('id')
+        .eq('referral_code', code)
+        .single()
+      if (artist) {
+        await supabase.from('profiles').update({ referred_by_code: code }).eq('id', data.user.id)
+      }
+    }
+    return null
   }
 
   async function signOut() {

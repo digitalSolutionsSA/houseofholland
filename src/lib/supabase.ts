@@ -7,6 +7,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 export type UserRole = 'public' | 'artist' | 'manager'
 
+export type MembershipPlan = 'free' | 'black-card' | 'elite'
+
 export type Profile = {
   id: string
   role: UserRole
@@ -15,5 +17,7 @@ export type Profile = {
   email: string | null
   phone: string | null
   avatar_url: string | null
+  referred_by_code: string | null
+  membership_plan: MembershipPlan
   created_at: string
 }
