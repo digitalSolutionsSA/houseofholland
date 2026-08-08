@@ -22,7 +22,7 @@ export function ArtistCard({ artist }: { artist: ArtistSummary }) {
       {isEmpty ? (
         <div className="artist-card__avatar artist-card__avatar--empty" aria-hidden />
       ) : (
-        <img src={storageImg(artist.avatar_url, 200) ?? artist.avatar_url!} alt="" className="artist-card__avatar" loading="lazy" decoding="async" />
+        <img src={artist.avatar_url!} alt="" className="artist-card__avatar" loading="lazy" decoding="async" />
       )}
       <div className="artist-card__info">
         <h3 className="artist-card__name">{artist.name}</h3>
