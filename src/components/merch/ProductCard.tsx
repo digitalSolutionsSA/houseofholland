@@ -12,7 +12,7 @@ export function ProductCard({ product }: { product: ProductItem }) {
     <article className="product-card">
       <div className="product-card__media">
         {product.image_url
-          ? <img src={product.image_url} alt={product.name} />
+          ? <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
           : <div className="product-card__media-empty" />}
         <span className="product-card__crest" aria-hidden>HH</span>
       </div>

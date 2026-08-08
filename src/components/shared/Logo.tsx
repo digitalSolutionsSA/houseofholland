@@ -1,5 +1,5 @@
-const logoWhite = '/Logo-white.png'
-const logoBlack = '/logo-black.png'
+const logoWhite = '/logo-white.webp'
+const logoBlack = '/logo-black.webp'
 import './Logo.css'
 
 type LogoProps = {

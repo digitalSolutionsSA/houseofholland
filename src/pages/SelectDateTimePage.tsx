@@ -5,6 +5,7 @@ import { PageHeader } from '../components/shared/PageHeader'
 import { GradientButton } from '../components/shared/GradientButton'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { storageImg } from '../lib/storageImg'
 import './SelectDateTimePage.css'
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -311,7 +312,7 @@ export function SelectDateTimePage() {
                 onClick={() => { setSelectedArtist(a); setStep(1) }}
               >
                 {a.avatar_url
-                  ? <img src={a.avatar_url} alt={a.name} className="select-time-page__artist-avatar" />
+                  ? <img src={storageImg(a.avatar_url, 100) ?? a.avatar_url} alt={a.name} className="select-time-page__artist-avatar" loading="lazy" decoding="async" />
                   : <div className="select-time-page__artist-avatar select-time-page__artist-avatar--empty" />
                 }
                 <div className="select-time-page__artist-info">
@@ -344,7 +345,7 @@ export function SelectDateTimePage() {
         {/* Artist strip */}
         <div className="select-time-page__artist-strip">
           {selectedArtist?.avatar_url && (
-            <img src={selectedArtist.avatar_url} alt="" className="select-time-page__strip-avatar" />
+            <img src={storageImg(selectedArtist.avatar_url, 60) ?? selectedArtist.avatar_url} alt="" className="select-time-page__strip-avatar" decoding="async" />
           )}
           <span>{selectedArtist?.name}</span>
         </div>
@@ -449,7 +450,7 @@ export function SelectDateTimePage() {
       <div className="select-time-page__confirm">
         <div className="select-time-page__confirm-summary">
           {selectedArtist?.avatar_url && (
-            <img src={selectedArtist.avatar_url} alt="" className="select-time-page__confirm-avatar" />
+            <img src={storageImg(selectedArtist.avatar_url, 100) ?? selectedArtist.avatar_url} alt="" className="select-time-page__confirm-avatar" decoding="async" />
           )}
           <div>
             <div className="select-time-page__confirm-artist">{selectedArtist?.name}</div>

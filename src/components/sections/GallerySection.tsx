@@ -36,7 +36,7 @@ export default function GallerySection() {
 
       <ScrollReveal as="div" className="gallery__grid" stagger={0.06} y={30}>
         {images.map((src, i) => (
-          <img key={i} src={src} alt="Tattoo studio work" />
+          <img key={i} src={src} alt="Tattoo studio work" loading="lazy" decoding="async" />
         ))}
       </ScrollReveal>
     </section>

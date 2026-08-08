@@ -10,9 +10,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Max display widths — nothing on the site renders wider than these, so
 // there's no reason to ship 2500px source files.
 const targets = [
-  { dir: 'public/Graphics', maxWidth: 1600, quality: 78 }, // full-bleed section art
+  { dir: 'public/Graphics', maxWidth: 1600, quality: 78 }, // full-bleed section art (incl. footer)
   { dir: 'public/Graphics/Artists', maxWidth: 900, quality: 80 }, // portraits
   { dir: 'src/assets/images', maxWidth: 1200, quality: 80 }, // gallery/artwork
+  { dir: 'public', maxWidth: 512, quality: 80 }, // root-level logos / favicon
 ];
 
 async function walk(dir) {

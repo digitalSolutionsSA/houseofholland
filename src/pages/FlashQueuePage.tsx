@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Bell, ChevronLeft, Clock, CalendarDays, User, Zap } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { storageImg } from '../lib/storageImg'
 import { useAuth } from '../context/AuthContext'
 import './FlashQueuePage.css'
 
@@ -181,7 +182,7 @@ export function FlashQueuePage() {
               {artists.map(a => (
                 <div key={a.id} className="flash-queue-page__artist">
                   {a.avatar_url ? (
-                    <img src={a.avatar_url} alt={a.name} className="flash-queue-page__artist-avatar" />
+                    <img src={storageImg(a.avatar_url, 80) ?? a.avatar_url} alt={a.name} className="flash-queue-page__artist-avatar" loading="lazy" decoding="async" />
                   ) : (
                     <div className="flash-queue-page__artist-avatar--empty">
                       <User size={26} strokeWidth={1.5} />

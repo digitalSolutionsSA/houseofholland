@@ -19,9 +19,9 @@ export default function Footer() {
       <FlashlightReveal
         className="footer__bg"
         imgClassName="footer__bg-img"
-        base="/Graphics/footer.png"
+        base="/Graphics/footer.webp"
         baseAlt="House of Holland Tattoo Emporium"
-        reveal="/Graphics/footer-alternative.png"
+        reveal="/Graphics/footer-alternative.webp"
         revealAlt="House of Holland Tattoo Emporium"
         loading="lazy"
         radius={240}

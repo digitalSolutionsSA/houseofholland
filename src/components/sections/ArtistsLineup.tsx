@@ -33,6 +33,8 @@ export default function ArtistsLineup({ showViewAll = true }: ArtistsLineupProps
           className="artists-lineup__photo"
           src="/Graphics/artists-cropped.webp"
           alt="The seven House of Holland tattoo artists"
+          loading="lazy"
+          decoding="async"
         />
 
         <div className="artists-lineup__hotspots">

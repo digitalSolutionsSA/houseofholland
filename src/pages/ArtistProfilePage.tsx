@@ -56,7 +56,7 @@ export function ArtistProfilePage() {
   return (
     <div className="page page--flush artist-profile-page">
       <div className="artist-profile-page__hero">
-        {heroSrc && <img src={heroSrc} alt="" className="artist-profile-page__hero-img" />}
+        {heroSrc && <img src={heroSrc} alt="" className="artist-profile-page__hero-img" loading="eager" fetchPriority="high" decoding="async" />}
         <div className="artist-profile-page__hero-nav">
           <Link to="/artists" className="artist-profile-page__icon-btn" aria-label="Go back">
             <ChevronLeft size={24} strokeWidth={1.5} />
@@ -106,6 +106,8 @@ export function ArtistProfilePage() {
                   src={p.url}
                   alt={p.caption ?? ''}
                   className="artist-profile-page__grid-img"
+                  loading="lazy"
+                  decoding="async"
                   onClick={() => setLightbox(p)}
                 />
               ))}

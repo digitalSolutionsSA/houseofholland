@@ -12,7 +12,7 @@ export type VaultEntry = {
 export function VaultCard({ entry, onClick }: { entry: VaultEntry; onClick: () => void }) {
   return (
     <button type="button" className="vault-card" onClick={onClick}>
-      <img src={entry.image} alt="" className="vault-card__thumb" />
+      <img src={entry.image} alt="" className="vault-card__thumb" loading="lazy" decoding="async" />
       <div className="vault-card__info">
         <h3 className="vault-card__title">{entry.title}</h3>
         <p className="vault-card__artist">By {entry.artist}</p>

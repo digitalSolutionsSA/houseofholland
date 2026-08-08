@@ -68,6 +68,8 @@ export function HomePage() {
               src={`${profile.avatar_url}?t=${profile.id}`}
               alt="Profile"
               className="home-page__avatar"
+              loading="eager"
+              decoding="async"
             />
           ) : (
             <div className="home-page__avatar home-page__avatar--empty">

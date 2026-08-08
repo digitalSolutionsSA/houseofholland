@@ -433,7 +433,7 @@ export function BookingsPage() {
               <div key={appt.id} className="bookings-page__today-card">
                 <div className="bookings-page__today-info">
                   {appt.avatar
-                    ? <img src={appt.avatar} alt="" className="bookings-page__today-avatar" />
+                    ? <img src={appt.avatar} alt="" className="bookings-page__today-avatar" loading="lazy" decoding="async" />
                     : <div className="bookings-page__today-avatar bookings-page__today-avatar--empty" />}
                   <div>
                     <p className="bookings-page__today-service">{appt.service}</p>
@@ -452,7 +452,7 @@ export function BookingsPage() {
               <div key={appt.id} className="bookings-page__today-done">
                 <div className="bookings-page__today-info">
                   {appt.avatar
-                    ? <img src={appt.avatar} alt="" className="bookings-page__today-avatar bookings-page__today-avatar--sm" />
+                    ? <img src={appt.avatar} alt="" className="bookings-page__today-avatar bookings-page__today-avatar--sm" loading="lazy" decoding="async" />
                     : <div className="bookings-page__today-avatar bookings-page__today-avatar--empty bookings-page__today-avatar--sm" />}
                   <div>
                     <p className="bookings-page__today-service">{appt.service}</p>
@@ -481,7 +481,7 @@ export function BookingsPage() {
             onClick={() => setDetailAppt(appt)}
           >
             {appt.avatar
-              ? <img src={appt.avatar} alt="" className="appointment-card__avatar" />
+              ? <img src={appt.avatar} alt="" className="appointment-card__avatar" loading="lazy" decoding="async" />
               : <div className="appointment-card__avatar appointment-card__avatar--empty" />}
             <div className="appointment-card__body">
               <p className="appointment-card__when">{appt.dateLabel}</p>
