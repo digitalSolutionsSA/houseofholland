@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import { storageImg } from '../../lib/storageImg'
 import './ArtistCard.css'
 
 export type ArtistSummary = {
