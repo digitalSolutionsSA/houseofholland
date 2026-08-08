@@ -52,7 +52,7 @@
 }
 
 .bottom-nav__label {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -65,5 +65,13 @@
 @media (min-width: 768px) {
   .bottom-nav {
     display: none !important;
+  }
+}
+
+/* Landscape: respect left/right safe areas (notched phones rotated) */
+@media (orientation: landscape) {
+  .bottom-nav {
+    padding-left: calc(4px + env(safe-area-inset-left));
+    padding-right: calc(4px + env(safe-area-inset-right));
   }
 }

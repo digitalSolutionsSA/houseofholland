@@ -662,6 +662,15 @@
     padding: 16px;
     /* Reserve space so content clears the bottom nav */
     padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 16px);
+    /* Prevent horizontal overflow from tables */
+    overflow-x: hidden;
+  }
+
+  /* Make wide tables horizontally scrollable on mobile */
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

@@ -206,13 +206,15 @@
 
 .bookings-popup__close {
   position: absolute;
-  top: 12px;
-  right: 14px;
+  top: 8px;
+  right: 10px;
   color: var(--text-dim);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -392,7 +394,7 @@
 }
 
 .bookings-detail-sheet__body {
-  padding: 0 18px 32px;
+  padding: 0 18px calc(32px + env(safe-area-inset-bottom));
   overflow-y: auto;
   flex: 1;
 }

@@ -82,13 +82,14 @@
 
 .home-page__welcome h1 {
   font-family: var(--font-serif);
-  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-size: clamp(1.4rem, 5vw, 2rem);
   font-weight: 600;
   color: var(--gold);
-  line-height: 1.1;
-  white-space: nowrap;
+  line-height: 1.15;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .home-page__section {

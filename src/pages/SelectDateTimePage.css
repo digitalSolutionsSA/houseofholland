@@ -342,12 +342,12 @@
 
 .select-time-page__ref-remove {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.75);
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 0 8px 0 8px;
+  background: rgba(0, 0, 0, 0.8);
   color: #fff;
   border: none;
   cursor: pointer;
