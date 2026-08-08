@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ChevronLeft, Star, Camera, MessageCircle, CalendarDays, X } from 'lucide-react'
-import { OutlineButton } from '../components/shared/OutlineButton'
 import { supabase } from '../lib/supabase'
 import './ArtistProfilePage.css'
 
@@ -80,7 +79,6 @@ export function ArtistProfilePage() {
       </div>
 
       <div className="artist-profile-page__body">
-        <OutlineButton>View Portfolio</OutlineButton>
         {artist.bio && <p className="artist-profile-page__bio">{artist.bio}</p>}
 
         <div className="artist-profile-page__actions">

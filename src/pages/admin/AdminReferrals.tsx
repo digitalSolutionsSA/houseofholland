@@ -15,6 +15,7 @@ const PLAN_PRICES: Record<MembershipPlan, number> = {
 
 // Tiered commission based on number of paid customers per artist
 function getCommissionRate(paidCustomers: number): number {
+  if (paidCustomers >= 2500) return 0.10  // 10%
   if (paidCustomers >= 1000) return 0.075 // 7.5%
   if (paidCustomers >= 500)  return 0.05  // 5%
   if (paidCustomers >= 250)  return 0.025 // 2.5%
@@ -22,6 +23,7 @@ function getCommissionRate(paidCustomers: number): number {
 }
 
 function getTierLabel(paidCustomers: number): string {
+  if (paidCustomers >= 2500) return '10% (2500+ paid)'
   if (paidCustomers >= 1000) return '7.5% (1000+ paid)'
   if (paidCustomers >= 500)  return '5% (500+ paid)'
   if (paidCustomers >= 250)  return '2.5% (250+ paid)'
@@ -29,6 +31,7 @@ function getTierLabel(paidCustomers: number): string {
 }
 
 function getTierColor(paidCustomers: number): string {
+  if (paidCustomers >= 2500) return '#e8c97e'
   if (paidCustomers >= 1000) return '#c8a96e'
   if (paidCustomers >= 500)  return 'var(--gold)'
   if (paidCustomers >= 250)  return '#8ab4a0'
@@ -183,6 +186,7 @@ export function AdminReferrals() {
           { label: '250+ paid', rate: '2.5%', color: '#8ab4a0' },
           { label: '500+ paid', rate: '5%', color: 'var(--gold)' },
           { label: '1000+ paid', rate: '7.5%', color: '#c8a96e' },
+          { label: '2500+ paid', rate: '10%', color: '#e8c97e' },
         ].map(t => (
           <div key={t.label} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${t.color}`, fontSize: '0.75rem', display: 'flex', gap: 6, alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)' }}>{t.label}</span>
