@@ -1,4 +1,4 @@
-import { Check, Star, Zap, Crown, Smartphone } from 'lucide-react'
+import { Check, Star, Zap, Crown, Smartphone, Clock } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './MembershipPage.css'
 
@@ -137,59 +137,36 @@ export function MembershipPage() {
 
       <div className="membership-page__intro">
         <p className="membership-page__brand">HOUSE OF HOLLAND</p>
-        <h1 className="membership-page__title">Choose Your Tier</h1>
-        <p className="membership-page__sub">Upgrade anytime. Cancel anytime.</p>
+        <h1 className="membership-page__title">Membership</h1>
       </div>
 
-      <div className="membership-page__tiers">
-        {TIERS.map(({ id, name, Icon, priceLabel, tagline, badge, benefits, cta, ctaDisabled, featured }) => (
-          <div
-            key={id}
-            className={[
-              'membership-tier',
-              featured ? 'membership-tier--featured' : '',
-              id === 'elite' ? 'membership-tier--elite' : '',
-            ].filter(Boolean).join(' ')}
-          >
-            {badge && <span className="membership-tier__badge">{badge}</span>}
-
-            <div className="membership-tier__top">
-              <div className="membership-tier__icon-wrap">
-                <Icon size={20} strokeWidth={1.5} />
-              </div>
-              <div>
-                <div className="membership-tier__name">{name}</div>
-                <div className="membership-tier__tagline">{tagline}</div>
-              </div>
-              <div className="membership-tier__price">{priceLabel}</div>
-            </div>
-
-            <ul className="membership-tier__benefits">
-              {benefits.map((b, i) => (
-                <li key={i}>
-                  <Check size={14} strokeWidth={2.5} />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-
-            <button
-              className={[
-                'membership-tier__cta',
-                ctaDisabled ? 'membership-tier__cta--disabled' : '',
-                featured ? 'membership-tier__cta--featured' : '',
-              ].filter(Boolean).join(' ')}
-              disabled={ctaDisabled}
-            >
-              {cta}
-            </button>
+      <div className="membership-page__coming-soon">
+        <div className="membership-page__cs-icon">
+          <Clock size={36} strokeWidth={1.2} />
+        </div>
+        <h2 className="membership-page__cs-title">Coming Soon</h2>
+        <p className="membership-page__cs-body">
+          Exclusive membership tiers are on their way. Black Card and Elite members will unlock
+          priority booking, flash event early access, merchandise discounts, and full VIP perks.
+        </p>
+        <div className="membership-page__cs-tiers">
+          <div className="membership-page__cs-tier">
+            <Star size={16} strokeWidth={1.5} />
+            <span>Member</span>
+            <span className="membership-page__cs-price">Free</span>
           </div>
-        ))}
+          <div className="membership-page__cs-tier membership-page__cs-tier--gold">
+            <Zap size={16} strokeWidth={1.5} />
+            <span>Black Card</span>
+            <span className="membership-page__cs-price">$6.99 / mo</span>
+          </div>
+          <div className="membership-page__cs-tier membership-page__cs-tier--elite">
+            <Crown size={16} strokeWidth={1.5} />
+            <span>Elite</span>
+            <span className="membership-page__cs-price">$9.99 / mo</span>
+          </div>
+        </div>
       </div>
-
-      <p className="membership-page__legal">
-        Paid plans billed monthly. Cancel at any time from your profile.
-      </p>
     </div>
   )
 }
