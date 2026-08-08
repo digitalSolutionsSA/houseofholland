@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X, Copy, RefreshCw } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X, Copy, RefreshCw, Mail } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type ArtistProfile = {
@@ -30,7 +30,7 @@ const EMPTY_FORM = {
   name: '', slug: '', bio: '', specialties: [] as string[], avatar_url: null as string | null, is_active: true,
 }
 
-type AccountModalMode = 'assign' | 'change_password'
+type AccountModalMode = 'assign' | 'change_password' | 'change_email'
 
 function SpecialtyTagInput({ value, onChange }: { value: string[]; onChange: (tags: string[]) => void }) {
   const [input, setInput] = useState('')
@@ -214,6 +214,39 @@ export function AdminArtists() {
     setAccountModal('change_password')
   }
 
+  function openChangeEmail(a: Artist) {
+    setAccountArtist(a)
+    setAccountEmail(a.profiles?.email ?? '')
+    setAccountError(null)
+    setAccountModal('change_email')
+  }
+
+  async function changeEmail() {
+    if (!accountEmail.trim()) { setAccountError('Email is required.'); return }
+    if (!accountArtist?.profile_id) { setAccountError('No linked account found.'); return }
+
+    setAccountSaving(true)
+    setAccountError(null)
+
+    const { data, error } = await supabase.functions.invoke('manage-artist-account', {
+      body: {
+        action: 'update_email',
+        userId: accountArtist.profile_id,
+        email: accountEmail.trim(),
+      },
+    })
+
+    setAccountSaving(false)
+
+    if (error || data?.error) {
+      setAccountError(data?.error ?? error?.message ?? 'Something went wrong.')
+      return
+    }
+
+    setAccountModal(null)
+    load()
+  }
+
   async function assignAccount() {
     if (!accountEmail.trim()) { setAccountError('Email is required.'); return }
     if (accountPassword.length < 8) { setAccountError('Password must be at least 8 characters.'); return }
@@ -384,6 +417,9 @@ export function AdminArtists() {
                           <KeyRound size={11} style={{ marginRight: 3 }} />
                           Change PW
                         </button>
+                        <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.75rem', padding: '2px 8px' }} onClick={() => openChangeEmail(a)} title="Change email">
+                          <Mail size={11} />
+                        </button>
                         <button className="admin-btn admin-btn--danger" style={{ fontSize: '0.75rem', padding: '2px 8px' }} onClick={() => unlinkAccount(a)} title="Remove login">
                           <UserX size={11} />
                         </button>
@@ -521,6 +557,34 @@ export function AdminArtists() {
               <button className="admin-btn admin-btn--ghost" onClick={() => setAccountModal(null)}>Cancel</button>
               <button className="admin-btn admin-btn--primary" onClick={assignAccount} disabled={accountSaving}>
                 {accountSaving ? 'Creating…' : 'Create Login'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Change email modal */}
+      {accountModal === 'change_email' && accountArtist && (
+        <div className="admin-modal-overlay" onClick={(e) => e.target === e.currentTarget && setAccountModal(null)}>
+          <div className="admin-modal">
+            <h2 className="admin-modal__title">Change Email — {accountArtist.name}</h2>
+            <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+              Current: <strong style={{ color: 'var(--gold)' }}>{accountArtist.profiles?.email}</strong>
+            </p>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">New Email *</label>
+              <input className="admin-modal__input" type="email" value={accountEmail}
+                autoComplete="off"
+                onChange={(e) => setAccountEmail(e.target.value)} />
+            </div>
+
+            {accountError && <p className="admin-modal__error">{accountError}</p>}
+
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setAccountModal(null)}>Cancel</button>
+              <button className="admin-btn admin-btn--primary" onClick={changeEmail} disabled={accountSaving}>
+                {accountSaving ? 'Updating…' : 'Update Email'}
               </button>
             </div>
           </div>
