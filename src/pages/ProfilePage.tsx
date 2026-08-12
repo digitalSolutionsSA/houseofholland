@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
+import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
 import './ProfilePage.css'
 
@@ -24,6 +25,7 @@ const STAFF_LINKS = [
 
 export function ProfilePage() {
   const { profile, signOut, refreshProfile } = useAuth()
+  const { tier } = useMembership()
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -164,6 +166,13 @@ export function ProfilePage() {
     : profile?.role === 'artist' ? 'Artist'
     : 'Member'
 
+  const membershipBadge =
+    !isStaff
+      ? tier === 'black-card' ? '◆ Black Card'
+      : tier === 'premium'   ? '★ Premium'
+      : null
+    : null
+
   return (
     <div className="page profile-page">
       <PageHeader
@@ -218,6 +227,9 @@ export function ProfilePage() {
           <div className="profile-page__hero-text">
             <h2>{firstName}</h2>
             <span className="profile-page__role">{roleBadge}</span>
+            {membershipBadge && (
+              <span className="profile-page__membership-badge">{membershipBadge}</span>
+            )}
             <span className="profile-page__avatar-hint">Tap photo to change</span>
           </div>
         </div>

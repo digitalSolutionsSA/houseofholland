@@ -443,6 +443,77 @@
   margin-bottom: 8px;
 }
 
+/* ── Tier badge (above hero) ── */
+.flash-queue-page__tier-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #C9A84C;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+/* ── Early access locked state ── */
+.flash-queue-page__early-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 12px 0 24px;
+}
+
+.flash-queue-page__early-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.06);
+  border: 1px solid rgba(201,168,76,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C9A84C;
+}
+
+.flash-queue-page__early-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #F0EDE6;
+}
+
+.flash-queue-page__early-body {
+  font-size: 0.84rem;
+  color: #6B6059;
+  line-height: 1.6;
+  max-width: 300px;
+}
+
+.flash-queue-page__early-body strong {
+  color: #C9A84C;
+}
+
+.flash-queue-page__early-cta {
+  display: inline-block;
+  padding: 11px 24px;
+  background: #C9A84C;
+  color: #0a0808;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  transition: opacity 0.15s;
+}
+
+.flash-queue-page__early-cta:hover {
+  opacity: 0.88;
+}
+
 /* ── Loading ── */
 .flash-queue-page__loading {
   display: flex;

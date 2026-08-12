@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronLeft, Clock, CalendarDays, User, Zap } from 'lucide-react'
+import { Bell, ChevronLeft, Clock, CalendarDays, User, Zap, Lock } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { storageImg } from '../lib/storageImg'
 import { useAuth } from '../context/AuthContext'
+import { useMembership } from '../hooks/useMembership'
 import './FlashQueuePage.css'
 
 type FlashEvent = {
@@ -25,9 +26,17 @@ type Reservation = {
   reserved_at: string
 }
 
+function daysUntilDate(dateStr: string): number {
+  const eventDay = new Date(dateStr + 'T00:00:00')
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.ceil((eventDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+}
+
 export function FlashQueuePage() {
   const { eventId } = useParams<{ eventId: string }>()
   const { profile } = useAuth()
+  const { flashNoticeDays, tier } = useMembership()
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [artists, setArtists] = useState<ArtistChip[]>([])
@@ -116,6 +125,13 @@ export function FlashQueuePage() {
   const spotsLeft = event ? Math.max(0, event.max_spots - queueSize) : 0
   const fillPct   = event ? Math.min(100, (queueSize / event.max_spots) * 100) : 0
 
+  // Tier-based early access check
+  const days = event ? daysUntilDate(event.date) : 0
+  const earlyAccessLocked = event && days > flashNoticeDays && event.status !== 'closed'
+
+  // Which tier unlocks early access for this event
+  const unlockTierLabel = days > 7 ? null : days > 2 ? 'Black Card' : 'Premium'
+
   if (loading) return (
     <div className="page flash-queue-page">
       <Link to="/home" className="flash-queue-page__back" aria-label="Go back">
@@ -136,6 +152,12 @@ export function FlashQueuePage() {
 
   const statusLabel = event.status === 'open' ? '● Queue Open' : event.status === 'upcoming' ? '◆ Coming Soon' : '✕ Closed'
 
+  // Early access tier badge
+  const tierNoticeLabel =
+    tier === 'black-card' ? '◆ Black Card — 7-day VIP access'
+    : tier === 'premium'  ? '★ Premium — 2-day early access'
+    : null
+
   return (
     <div className="page flash-queue-page">
 
@@ -153,6 +175,9 @@ export function FlashQueuePage() {
         <span className={`flash-queue-page__status-pill flash-queue-page__status-pill--${event.status}`}>
           {statusLabel}
         </span>
+        {tierNoticeLabel && (
+          <div className="flash-queue-page__tier-badge">{tierNoticeLabel}</div>
+        )}
       </div>
 
       {/* ── Meta ── */}
@@ -198,85 +223,108 @@ export function FlashQueuePage() {
 
       <hr className="flash-queue-page__rule" />
 
-      {/* ── Queue section ── */}
-      <div className="flash-queue-page__card">
+      {/* ── Early access locked ── */}
+      {earlyAccessLocked ? (
+        <div className="flash-queue-page__card">
+          <div className="flash-queue-page__early-locked">
+            <div className="flash-queue-page__early-icon">
+              <Lock size={28} strokeWidth={1.2} />
+            </div>
+            <p className="flash-queue-page__early-title">Queue not open yet for your plan</p>
+            <p className="flash-queue-page__early-body">
+              {days === 1
+                ? 'The queue opens tomorrow for Free members.'
+                : `The queue opens in ${days} day${days === 1 ? '' : 's'} for Free members.`}
+              {unlockTierLabel && (
+                <> Upgrade to <strong>{unlockTierLabel}</strong> for early access.</>
+              )}
+            </p>
+            <Link to="/membership" className="flash-queue-page__early-cta">
+              View Membership Plans
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* ── Queue section ── */
+        <div className="flash-queue-page__card">
 
-        {/* ── Spots urgency block ── */}
-        {event.status !== 'closed' && (() => {
-          const pct = spotsLeft / event.max_spots
-          const urgency = pct === 0 ? 'none' : pct <= 0.2 ? 'critical' : pct <= 0.5 ? 'low' : 'ok'
-          const urgencyMsg =
-            urgency === 'none'     ? 'All spots are taken — join the waitlist below.' :
-            urgency === 'critical' ? `Only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left — secure yours now.` :
-            urgency === 'low'      ? `${spotsLeft} spots remaining — filling fast.` :
-                                     `${spotsLeft} of ${event.max_spots} spots still available.`
-          return (
-            <div className={`flash-queue-page__spots-block flash-queue-page__spots-block--${urgency}`}>
-              <div className="flash-queue-page__spots-top">
-                <div className="flash-queue-page__spots-number">{spotsLeft}</div>
-                <div className="flash-queue-page__spots-meta">
-                  <span className="flash-queue-page__spots-label">Spots Remaining</span>
-                  <span className="flash-queue-page__spots-total">out of {event.max_spots}</span>
+          {/* ── Spots urgency block ── */}
+          {event.status !== 'closed' && (() => {
+            const pct = spotsLeft / event.max_spots
+            const urgency = pct === 0 ? 'none' : pct <= 0.2 ? 'critical' : pct <= 0.5 ? 'low' : 'ok'
+            const urgencyMsg =
+              urgency === 'none'     ? 'All spots are taken — join the waitlist below.' :
+              urgency === 'critical' ? `Only ${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left — secure yours now.` :
+              urgency === 'low'      ? `${spotsLeft} spots remaining — filling fast.` :
+                                       `${spotsLeft} of ${event.max_spots} spots still available.`
+            return (
+              <div className={`flash-queue-page__spots-block flash-queue-page__spots-block--${urgency}`}>
+                <div className="flash-queue-page__spots-top">
+                  <div className="flash-queue-page__spots-number">{spotsLeft}</div>
+                  <div className="flash-queue-page__spots-meta">
+                    <span className="flash-queue-page__spots-label">Spots Remaining</span>
+                    <span className="flash-queue-page__spots-total">out of {event.max_spots}</span>
+                  </div>
                 </div>
+                <div className="flash-queue-page__bar-track">
+                  <div className="flash-queue-page__bar-fill" style={{ width: `${fillPct}%` }} />
+                </div>
+                <p className="flash-queue-page__spots-msg">{urgencyMsg}</p>
               </div>
-              <div className="flash-queue-page__bar-track">
-                <div className="flash-queue-page__bar-fill" style={{ width: `${fillPct}%` }} />
+            )
+          })()}
+
+          {event.status === 'closed' && (
+            <p className="flash-queue-page__state-copy">
+              This flash day has ended.<br />Keep an eye out for the next one.
+            </p>
+          )}
+
+          {event.status === 'upcoming' && (
+            <p className="flash-queue-page__state-copy">
+              Queue opens on the day. Check back soon.
+            </p>
+          )}
+
+          {event.status === 'open' && reservation && (
+            <>
+              <div className="flash-queue-page__number-block">
+                <p className="flash-queue-page__number">#{reservation.position ?? queueSize}</p>
+                <p className="flash-queue-page__number-label">Your Queue Position</p>
               </div>
-              <p className="flash-queue-page__spots-msg">{urgencyMsg}</p>
-            </div>
-          )
-        })()}
 
-        {event.status === 'closed' && (
-          <p className="flash-queue-page__state-copy">
-            This flash day has ended.<br />Keep an eye out for the next one.
-          </p>
-        )}
+              <div className="flash-queue-page__notice">
+                <Bell size={14} strokeWidth={1.5} />
+                <span>You'll be notified an hour before it's your turn. Show up on time — spots pass to the next person if you're late.</span>
+              </div>
 
-        {event.status === 'upcoming' && (
-          <p className="flash-queue-page__state-copy">
-            Queue opens on the day. Check back soon.
-          </p>
-        )}
+              {error && <p className="flash-queue-page__error">{error}</p>}
 
-        {event.status === 'open' && reservation && (
-          <>
-            <div className="flash-queue-page__number-block">
-              <p className="flash-queue-page__number">#{reservation.position ?? queueSize}</p>
-              <p className="flash-queue-page__number-label">Your Queue Position</p>
-            </div>
+              <button className="flash-queue-page__cta flash-queue-page__cta--ghost" onClick={leaveQueue} disabled={acting}>
+                {acting ? 'Leaving…' : 'Leave Queue'}
+              </button>
+            </>
+          )}
 
-            <div className="flash-queue-page__notice">
-              <Bell size={14} strokeWidth={1.5} />
-              <span>You'll be notified an hour before it's your turn. Show up on time — spots pass to the next person if you're late.</span>
-            </div>
+          {event.status === 'open' && !reservation && (
+            <>
+              <div className="flash-queue-page__number-block">
+                <p className="flash-queue-page__number">{queueSize + 1}</p>
+                <p className="flash-queue-page__number-label">
+                  {spotsLeft > 0 ? 'You would be position' : 'Waitlist position'}
+                </p>
+              </div>
 
-            {error && <p className="flash-queue-page__error">{error}</p>}
+              {error && <p className="flash-queue-page__error">{error}</p>}
 
-            <button className="flash-queue-page__cta flash-queue-page__cta--ghost" onClick={leaveQueue} disabled={acting}>
-              {acting ? 'Leaving…' : 'Leave Queue'}
-            </button>
-          </>
-        )}
+              <button className="flash-queue-page__cta" onClick={joinQueue} disabled={acting}>
+                {acting ? 'Joining…' : spotsLeft > 0 ? 'Join Queue' : 'Join Waitlist'}
+              </button>
+            </>
+          )}
 
-        {event.status === 'open' && !reservation && (
-          <>
-            <div className="flash-queue-page__number-block">
-              <p className="flash-queue-page__number">{queueSize + 1}</p>
-              <p className="flash-queue-page__number-label">
-                {spotsLeft > 0 ? 'You would be position' : 'Waitlist position'}
-              </p>
-            </div>
-
-            {error && <p className="flash-queue-page__error">{error}</p>}
-
-            <button className="flash-queue-page__cta" onClick={joinQueue} disabled={acting}>
-              {acting ? 'Joining…' : spotsLeft > 0 ? 'Join Queue' : 'Join Waitlist'}
-            </button>
-          </>
-        )}
-
-      </div>
+        </div>
+      )}
     </div>
   )
 }

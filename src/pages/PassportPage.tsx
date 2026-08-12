@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import { Award } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { OutlineButton } from '../components/shared/OutlineButton'
 import { ProgressRing3D } from '../components/three/ProgressRing3D'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useMembership } from '../hooks/useMembership'
 import './PassportPage.css'
 
 type Reward = {
@@ -25,13 +27,15 @@ const TIERS = ['BRONZE', 'SILVER', 'GOLD', 'BLACK'] as const
 
 export function PassportPage() {
   const { profile } = useAuth()
+  const { isPremium, isBlackCard, pointsMultiplier } = useMembership()
+
   const [tattooCount, setTattooCount] = useState(0)
   const [rewards, setRewards] = useState<Reward[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTier, setActiveTier] = useState<typeof TIERS[number]>('BRONZE')
 
   useEffect(() => {
-    if (!profile?.id) return
+    if (!profile?.id || !isPremium) { setLoading(false); return }
     async function load() {
       const [{ count }, { data: rw }] = await Promise.all([
         supabase
@@ -51,7 +55,39 @@ export function PassportPage() {
       setLoading(false)
     }
     load()
-  }, [profile?.id])
+  }, [profile?.id, isPremium])
+
+  if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
+    return <Navigate to="/home" replace />
+  }
+
+  // Free tier: passport is locked
+  if (!loading && !isPremium) {
+    return (
+      <div className="page page--no-nav passport-page">
+        <PageHeader
+          title="Tattoo Passport"
+          backTo="/profile"
+          align="center"
+          goldTitle
+          serif
+        />
+        <div className="passport-page__locked">
+          <div className="passport-page__locked-icon">
+            <Award size={36} strokeWidth={1.2} />
+          </div>
+          <h2 className="passport-page__locked-title">Premium Feature</h2>
+          <p className="passport-page__locked-body">
+            The Tattoo Passport tracks your loyalty journey and unlocks rewards as you collect tattoos at House of Holland.
+            Upgrade to <strong>Premium</strong> to start earning — or get <strong>Black Card</strong> for a 1.5× points multiplier.
+          </p>
+          <Link to="/membership" className="passport-page__locked-cta">
+            View Membership Plans
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   // Next reward after current count
   const nextReward = rewards.find(r => r.tattoo_count > tattooCount)
@@ -63,11 +99,8 @@ export function PassportPage() {
     : 1
 
   const tierRewards = rewards.filter(r => r.tier.toUpperCase() === activeTier)
-  const points = tattooCount * 100
-
-  if (profile && (profile.role === 'artist' || profile.role === 'manager')) {
-    return <Navigate to="/home" replace />
-  }
+  const rawPoints = tattooCount * 100
+  const points = Math.floor(rawPoints * pointsMultiplier)
 
   return (
     <div className="page page--no-nav passport-page">
@@ -83,6 +116,12 @@ export function PassportPage() {
         <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>Loading…</p>
       ) : (
         <>
+          {isBlackCard && (
+            <div className="passport-page__multiplier-badge">
+              ◆ Black Card — 1.5× points multiplier active
+            </div>
+          )}
+
           <ProgressRing3D
             value={tattooCount}
             label="Tattoos Completed"
@@ -128,7 +167,7 @@ export function PassportPage() {
             </div>
             <div>
               <strong>{points.toLocaleString()}</strong>
-              <span>Points</span>
+              <span>Points{isBlackCard ? ' (1.5×)' : ''}</span>
             </div>
             <div>
               <strong className="is-gold">{getTier(tattooCount)}</strong>

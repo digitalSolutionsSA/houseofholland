@@ -307,84 +307,174 @@
   color: var(--text-muted);
 }
 
-/* ── Coming Soon banner ── */
-.membership-page__coming-soon {
-  margin: 0 var(--page-pad);
-  padding: 48px 28px;
-  border: 1px solid rgba(212,175,55,0.35);
-  border-radius: 20px;
-  background: linear-gradient(160deg, rgba(212,175,55,0.07) 0%, rgba(0,0,0,0.3) 100%);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
+/* ── Black Card (top tier) ── */
+.membership-tier--top {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: linear-gradient(
+    160deg,
+    rgba(212, 175, 55, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
 }
 
-.membership-page__cs-icon {
-  width: 72px;
-  height: 72px;
+.membership-tier--top .membership-tier__name {
+  background: linear-gradient(90deg, #d4af37 0%, #f5e27a 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.membership-tier--top .membership-tier__icon-wrap {
+  border-color: rgba(212, 175, 55, 0.65);
+  background: rgba(212, 175, 55, 0.14);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+/* ── Dual price (USD + ZAR) ── */
+.membership-tier__price-col {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.membership-tier__price-zar {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ── Payment return banners ── */
+.membership-page__payment-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.membership-page__payment-banner--success {
+  background: rgba(74, 222, 128, 0.06);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  color: #4ade80;
+}
+
+.membership-page__payment-banner--success svg { flex-shrink: 0; margin-top: 1px; }
+
+.membership-page__payment-banner--success div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.membership-page__payment-banner--success strong { font-weight: 700; }
+.membership-page__payment-banner--success span   { color: var(--text-muted); }
+
+.membership-page__payment-banner--cancelled {
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  align-items: center;
+}
+
+.membership-page__payment-banner--cancelled svg { flex-shrink: 0; }
+
+/* ── Upgrade error ── */
+.membership-page__error {
+  font-size: 0.82rem;
+  color: #ff6b6b;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ── Spinner on upgrade button ── */
+.membership-page__spinner {
+  animation: membership-spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes membership-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── Current plan banner (customer view) ── */
+.membership-page__current {
+  margin: 0 0 24px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.membership-page__current-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.membership-page__current-icon {
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(212,175,55,0.1);
-  border: 1px solid rgba(212,175,55,0.3);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--gold);
-  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
-.membership-page__cs-title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.6rem, 5vw, 2.2rem);
-  font-weight: 700;
-  color: var(--gold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.membership-page__cs-body {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.65;
-  max-width: 420px;
-}
-
-.membership-page__cs-tiers {
+.membership-page__current-text {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 340px;
-  margin-top: 8px;
+  gap: 2px;
 }
 
-.membership-page__cs-tier {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  font-size: 0.88rem;
-  color: var(--text-muted);
+.membership-page__current-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 600;
 }
 
-.membership-page__cs-tier--gold {
-  border-color: rgba(212,175,55,0.3);
-  background: rgba(212,175,55,0.06);
+.membership-page__current-name {
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--gold);
 }
 
-.membership-page__cs-tier--elite {
-  border-color: rgba(200,169,110,0.4);
-  background: rgba(200,169,110,0.08);
-  color: #c8a96e;
+.membership-page__current-price {
+  margin-left: auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  white-space: nowrap;
 }
 
-.membership-page__cs-price {
-  margin-left: auto;
-  font-weight: 700;
-  font-size: 0.82rem;
+/* ── Active plan badge variant ── */
+.membership-tier--current {
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.membership-tier__badge--active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+}
+
+/* ── Legal note ── */
+.membership-page__legal {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 24px;
+  line-height: 1.5;
+  padding: 0 8px;
 }

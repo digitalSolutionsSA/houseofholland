@@ -7,6 +7,20 @@
   justify-content: center;
 }
 
+.merch-page__discount-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 var(--page-pad) 0;
+  padding: 10px 14px;
+  background: rgba(74, 222, 128, 0.06);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4ade80;
+}
+
 .merch-page__grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

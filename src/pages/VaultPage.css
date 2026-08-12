@@ -1,3 +1,106 @@
+/* ── Membership-gated states ── */
+.vault-page__locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 56px var(--page-pad) 40px;
+  gap: 16px;
+}
+
+.vault-page__locked-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.07);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.vault-page__locked-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.vault-page__locked-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 340px;
+}
+
+.vault-page__locked-body strong {
+  color: var(--gold);
+}
+
+.vault-page__locked-cta {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--gold-gradient-btn, linear-gradient(135deg, #d4af37, #f5e27a));
+  color: #0a0a0a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
+}
+
+/* ── Limit bar (premium tier) ── */
+.vault-page__limit-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--page-pad);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.vault-page__limit-count {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.vault-page__limit-upgrade {
+  font-size: 0.78rem;
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Overflow note (premium, more entries than limit) ── */
+.vault-page__overflow-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px var(--page-pad) 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.vault-page__overflow-note svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.vault-page__overflow-note a {
+  margin-left: auto;
+  color: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .vault-page__add {
   color: var(--gold);
   width: 40px;

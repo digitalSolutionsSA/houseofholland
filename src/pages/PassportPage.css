@@ -2,6 +2,75 @@
   padding-bottom: 32px;
 }
 
+/* ── Free-tier locked state ── */
+.passport-page__locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px var(--page-pad) 40px;
+  gap: 16px;
+}
+
+.passport-page__locked-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.07);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.passport-page__locked-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.passport-page__locked-body {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 340px;
+}
+
+.passport-page__locked-body strong {
+  color: var(--gold);
+}
+
+.passport-page__locked-cta {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--gold-gradient-btn, linear-gradient(135deg, #d4af37, #f5e27a));
+  color: #0a0a0a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
+}
+
+/* ── Black Card multiplier banner ── */
+.passport-page__multiplier-badge {
+  margin: 8px var(--page-pad) 0;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm, 8px);
+  background: rgba(212, 175, 55, 0.07);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-align: center;
+}
+
 .passport-page__more {
   color: var(--gold);
 }

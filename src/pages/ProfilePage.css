@@ -112,6 +112,19 @@
   font-weight: 600;
 }
 
+.profile-page__membership-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0a0a0a;
+  background: var(--gold-gradient-btn, linear-gradient(135deg, #d4af37, #f5e27a));
+}
+
 .profile-page__avatar-hint {
   font-size: 0.7rem;
   color: var(--text-dim);
