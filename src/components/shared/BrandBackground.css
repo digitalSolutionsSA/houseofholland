@@ -12,20 +12,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-color: #000;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-html[data-tier="black-card"] .brand-bg {
-  background-image: url('/NAVBAR BANNERS/banner-gold.png');
-}
-html[data-tier="premium"] .brand-bg {
-  background-image: url('/NAVBAR BANNERS/banner-red.png');
-}
-html[data-tier="free"] .brand-bg {
-  background-image: url('/NAVBAR BANNERS/banner-white.png');
+  background: transparent;
 }
 
 .brand-bg--vignette::after {

@@ -18,7 +18,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,12 +61,23 @@ ol {
   40%, 60% { transform: translateX(110%); }
 }
 
+/* ── Tier banner backgrounds on html root ── */
+html[data-tier] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+html[data-tier="black-card"] { background-image: url('/NAVBAR BANNERS/banner-gold.png'); }
+html[data-tier="premium"]    { background-image: url('/NAVBAR BANNERS/banner-red.png'); }
+html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-white.png'); }
+
 /* ── App shell ── */
 .app-shell {
   min-height: 100%;
   min-height: 100dvh;
   position: relative;
-  background: var(--bg);
+  background: transparent;
 }
 
 .app-shell__marble {
@@ -74,14 +85,14 @@ ol {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
 }
 
 /* ── App frame: mobile first ── */
 .app-frame {
   width: 100%;
   min-height: 100dvh;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.55);
   position: relative;
   z-index: 1;
   display: flex;
@@ -137,7 +148,7 @@ ol {
   .app-frame {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.55);
     min-height: 100dvh;
   }
 
@@ -243,8 +254,12 @@ ol {
 /* App frame at tablet+ */
 @media (min-width: 768px) {
   [data-tier="free"] .app-frame {
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.55);
   }
+}
+
+[data-tier="free"] .app-frame {
+  background: rgba(255, 255, 255, 0.55);
 }
 
 /* Form inputs (base is rgba(255,255,255,0.04) = invisible on white) */
@@ -308,6 +323,10 @@ ol {
 
 @media (min-width: 768px) {
   [data-tier="premium"] .app-frame {
-    background: rgba(15, 15, 15, 0.92);
+    background: rgba(15, 15, 15, 0.55);
   }
+}
+
+[data-tier="premium"] .app-frame {
+  background: rgba(15, 15, 15, 0.55);
 }
