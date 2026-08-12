@@ -210,10 +210,10 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 /* ── Free tier ── */
 
 [data-tier="free"] .bottom-nav {
-  background: rgba(245, 244, 242, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.20);
 }
 [data-tier="free"] .bottom-nav__item        { color: rgba(0, 0, 0, 0.40); }
 [data-tier="free"] .bottom-nav__item--active { color: rgba(0, 0, 0, 0.88); }
