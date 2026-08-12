@@ -14,7 +14,6 @@ const HIDE_MOBILE_NAV = [
   '/login',
   '/consent',
   '/passport',
-  '/membership',
   '/bookings/select-time',
 ]
 
