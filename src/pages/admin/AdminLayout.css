@@ -2,14 +2,16 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: #0a0a0a;
+  background: rgba(0, 0, 0, 0.38);
+  position: relative;
+  z-index: 1;
   color: var(--text);
 }
 
 .admin-sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: rgba(0,0,0,0.6);
+  background: #000000;
   border-right: 1px solid var(--border-gold);
   display: flex;
   flex-direction: column;
@@ -215,7 +217,7 @@
 }
 
 .admin-modal {
-  background: #111;
+  background: var(--bg-card);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
   padding: 28px;
@@ -274,7 +276,7 @@
 }
 
 .admin-modal__select option {
-  background: #111;
+  background: var(--bg-card);
 }
 
 .admin-modal__actions {
@@ -684,7 +686,7 @@
   border: 1px solid rgba(var(--accent-rgb),0.15);
   border-radius: 8px;
   padding: 6px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(var(--accent-rgb),0.03);
 }
 
 .admin-flash__artist-row {
@@ -798,6 +800,48 @@
 
 .specialty-tag-input__field::placeholder {
   color: var(--text-dim);
+}
+
+/* ── Tier overrides ── */
+
+[data-tier="free"] .admin-shell {
+  background: rgba(255, 255, 255, 0.42);
+}
+[data-tier="free"] .admin-sidebar {
+  background: #ffffff;
+  border-right-color: rgba(0, 0, 0, 0.10);
+}
+[data-tier="free"] .admin-sidebar__badge {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.20);
+}
+[data-tier="free"] .admin-sidebar__link {
+  color: rgba(0, 0, 0, 0.55);
+}
+[data-tier="free"] .admin-sidebar__link:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.88);
+}
+[data-tier="free"] .admin-sidebar__link--active {
+  background: rgba(0, 0, 0, 0.10);
+  color: rgba(0, 0, 0, 0.90);
+  border-left-color: rgba(0, 0, 0, 0.80);
+}
+[data-tier="free"] .admin-sidebar__back {
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-tier="free"] .admin-sidebar__back:hover {
+  color: rgba(0, 0, 0, 0.70);
+}
+/* Mobile tab strip in free tier */
+@media (max-width: 767px) {
+  [data-tier="free"] .admin-sidebar {
+    border-bottom-color: rgba(0, 0, 0, 0.10);
+  }
+  [data-tier="free"] .admin-sidebar__link--active {
+    border-bottom-color: rgba(0, 0, 0, 0.80);
+    border-left-color: transparent;
+  }
 }
 
 /* ── Tablet admin: narrower sidebar ── */

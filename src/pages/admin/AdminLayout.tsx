@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
 import { BottomNav } from '../../components/shared/BottomNav'
+import { BrandBackground } from '../../components/shared/BrandBackground'
 import { useAuth } from '../../context/AuthContext'
 import './AdminLayout.css'
 
@@ -48,6 +49,8 @@ export function AdminLayout() {
   ]
 
   return (
+    <>
+    <BrandBackground className="app-shell__marble" />
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
@@ -91,5 +94,6 @@ export function AdminLayout() {
       {/* Renders only on mobile (≤767px) via BottomNav CSS */}
       <BottomNav />
     </div>
+    </>
   )
 }
