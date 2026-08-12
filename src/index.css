@@ -56,21 +56,72 @@ ol {
   list-style: none;
 }
 
-/* ── Mobile topbar (logo, hidden on tablet+) ── */
+/* ── Mobile topbar (logo, fixed at top, hidden on tablet+) ── */
+:root {
+  --topbar-height: 62px;
+}
+
+@keyframes tier-gleam {
+  0%, 100% { transform: translateX(-110%); }
+  40%, 60% { transform: translateX(110%); }
+}
+
 .mobile-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topbar-height);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px 8px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg);
-  position: sticky;
-  top: 0;
+  padding: 0 16px;
   z-index: 30;
+  overflow: hidden;
+  /* Black Card marble: dark base + thin diagonal gold veins */
+  background:
+    repeating-linear-gradient(
+      125deg,
+      transparent 0px, transparent 42px,
+      rgba(212, 175, 55, 0.07) 42px, rgba(212, 175, 55, 0.07) 44px,
+      transparent 44px, transparent 115px,
+      rgba(180, 140, 20, 0.045) 115px, rgba(180, 140, 20, 0.045) 118px
+    ),
+    repeating-linear-gradient(
+      38deg,
+      transparent 0px, transparent 75px,
+      rgba(212, 175, 55, 0.035) 75px, rgba(212, 175, 55, 0.035) 77px
+    ),
+    linear-gradient(180deg, #161616 0%, #0c0c0c 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+/* Sweeping gold gleam */
+.mobile-topbar::before {
+  content: '';
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%, transparent 30%,
+    rgba(212, 175, 55, 0.14) 50%,
+    transparent 70%, transparent 100%
+  );
+  animation: tier-gleam 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Spacer so fixed topbar doesn't overlap page content */
+.mobile-topbar-spacer {
+  height: var(--topbar-height);
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
-  .mobile-topbar {
+  .mobile-topbar,
+  .mobile-topbar-spacer {
     display: none;
   }
 }
@@ -212,10 +263,34 @@ ol {
 
 /* ── Free tier ── */
 
-/* Nav */
-[data-tier="free"] .bottom-nav {
-  background: rgba(255, 255, 255, 0.97);
-  border-top: 1px solid rgba(0, 0, 0, 0.15);
+/* Nav + topbar: white marble with dark grey veins */
+[data-tier="free"] .bottom-nav,
+[data-tier="free"] .mobile-topbar {
+  background:
+    repeating-linear-gradient(
+      125deg,
+      transparent 0px, transparent 42px,
+      rgba(70, 70, 70, 0.09) 42px, rgba(70, 70, 70, 0.09) 44px,
+      transparent 44px, transparent 115px,
+      rgba(50, 50, 50, 0.06) 115px, rgba(50, 50, 50, 0.06) 118px
+    ),
+    repeating-linear-gradient(
+      38deg,
+      transparent 0px, transparent 75px,
+      rgba(60, 60, 60, 0.045) 75px, rgba(60, 60, 60, 0.045) 77px
+    ),
+    linear-gradient(180deg, #f8f8f8 0%, #eeeeee 100%);
+  border-color: rgba(0, 0, 0, 0.13);
+}
+
+[data-tier="free"] .mobile-topbar::before,
+[data-tier="free"] .bottom-nav::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%, transparent 30%,
+    rgba(40, 40, 40, 0.08) 50%,
+    transparent 70%, transparent 100%
+  );
 }
 
 [data-tier="free"] .desktop-nav {
@@ -255,6 +330,37 @@ ol {
 }
 
 /* ── Premium tier ── */
+
+/* Nav + topbar: dark marble with red veins */
+[data-tier="premium"] .bottom-nav,
+[data-tier="premium"] .mobile-topbar {
+  background:
+    repeating-linear-gradient(
+      125deg,
+      transparent 0px, transparent 42px,
+      rgba(220, 38, 38, 0.12) 42px, rgba(220, 38, 38, 0.12) 44px,
+      transparent 44px, transparent 115px,
+      rgba(180, 20, 20, 0.07) 115px, rgba(180, 20, 20, 0.07) 118px
+    ),
+    repeating-linear-gradient(
+      38deg,
+      transparent 0px, transparent 75px,
+      rgba(220, 38, 38, 0.05) 75px, rgba(220, 38, 38, 0.05) 77px
+    ),
+    linear-gradient(180deg, #181818 0%, #0e0e0e 100%);
+  border-color: rgba(220, 38, 38, 0.22);
+}
+
+[data-tier="premium"] .mobile-topbar::before,
+[data-tier="premium"] .bottom-nav::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%, transparent 30%,
+    rgba(220, 38, 38, 0.16) 50%,
+    transparent 70%, transparent 100%
+  );
+}
+
 [data-tier="premium"] .desktop-nav__link:hover {
   background: rgba(220, 38, 38, 0.08);
   color: var(--text);

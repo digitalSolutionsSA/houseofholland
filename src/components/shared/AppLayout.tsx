@@ -46,9 +46,12 @@ export function AppLayout() {
         {showDesktopNav && <DesktopNav />}
         <div className="app-main">
           {showMobileNav && (
-            <header className="mobile-topbar">
-              <Logo variant="full" height={44} />
-            </header>
+            <>
+              <header className="mobile-topbar">
+                <Logo variant="full" height={44} />
+              </header>
+              <div className="mobile-topbar-spacer" />
+            </>
           )}
           <Outlet />
           {showMobileNav && <BottomNav />}

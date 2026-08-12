@@ -8,10 +8,42 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-around;
-  background: rgba(12, 12, 12, 0.97);
-  border-top: 1px solid var(--border-subtle);
+  /* Black Card marble: dark base + thin diagonal gold veins */
+  background:
+    repeating-linear-gradient(
+      125deg,
+      transparent 0px, transparent 42px,
+      rgba(212, 175, 55, 0.07) 42px, rgba(212, 175, 55, 0.07) 44px,
+      transparent 44px, transparent 115px,
+      rgba(180, 140, 20, 0.045) 115px, rgba(180, 140, 20, 0.045) 118px
+    ),
+    repeating-linear-gradient(
+      38deg,
+      transparent 0px, transparent 75px,
+      rgba(212, 175, 55, 0.035) 75px, rgba(212, 175, 55, 0.035) 77px
+    ),
+    linear-gradient(180deg, #0c0c0c 0%, #161616 100%);
+  border-top: 1px solid rgba(212, 175, 55, 0.18);
   backdrop-filter: blur(12px);
   z-index: 40;
+  overflow: hidden;
+}
+
+/* Sweeping gleam */
+.bottom-nav::before {
+  content: '';
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%, transparent 30%,
+    rgba(212, 175, 55, 0.14) 50%,
+    transparent 70%, transparent 100%
+  );
+  animation: tier-gleam 7s ease-in-out 3.5s infinite;
+  pointer-events: none;
 }
 
 .app-main {
@@ -26,6 +58,7 @@
   gap: 3px;
   color: var(--text-dim);
   position: relative;
+  z-index: 1;
   padding-top: 6px;
   transition: color 0.2s ease;
   min-width: 0;
