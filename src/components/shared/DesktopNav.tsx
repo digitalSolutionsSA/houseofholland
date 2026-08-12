@@ -45,7 +45,7 @@ export function DesktopNav() {
   return (
     <aside className="desktop-nav" aria-label="Main">
       <div className="desktop-nav__brand">
-        <Logo variant="full" height={88} />
+        <Logo variant="full" height={110} />
       </div>
 
       <nav className="desktop-nav__links">

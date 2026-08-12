@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import marbleBg from '../../assets/brand/marble-bg.png'
 import './BrandBackground.css'
 
 type BrandBackgroundProps = {
@@ -112,7 +111,6 @@ export function BrandBackground({ className = '', vignette = true }: BrandBackgr
   return (
     <div
       className={`brand-bg ${vignette ? 'brand-bg--vignette' : ''} ${className}`}
-      style={{ backgroundImage: `url(${marbleBg})` }}
       aria-hidden
     >
       <canvas ref={canvasRef} className="brand-bg__dust" />
