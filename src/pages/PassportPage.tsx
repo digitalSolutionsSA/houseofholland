@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import { Award, CheckCircle, Lock, RotateCcw } from 'lucide-react'
+import { Award, CheckCircle, Lock, RotateCcw, Download } from 'lucide-react'
+import { toPng } from 'html-to-image'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -23,6 +24,9 @@ type Claim = { reward_id: string; fulfilled_at: string | null }
 export function PassportPage() {
   const { profile } = useAuth()
   const { isPremium, isBlackCard } = useMembership()
+
+  const passportRef = useRef<HTMLDivElement>(null)
+  const [downloading, setDownloading] = useState(false)
 
   const [tattooCount, setTattooCount] = useState(0)
   const [totalHours, setTotalHours] = useState(0)
@@ -56,6 +60,29 @@ export function PassportPage() {
     setLoading(false)
   }
 
+  async function downloadPassport() {
+    if (!passportRef.current || downloading) return
+    setDownloading(true)
+    try {
+      const node = passportRef.current
+      const opts = {
+        pixelRatio: 3,
+        backgroundColor: isBlackCard ? '#0c0a05' : '#0a0707',
+        cacheBust: true,
+      }
+      // First call primes font/image caches; second produces the clean result
+      await toPng(node, opts)
+      const dataUrl = await toPng(node, opts)
+      const a = document.createElement('a')
+      a.download = `HOH-Passport-${(profile?.full_name ?? 'Member').replace(/\s+/g, '-')}.png`
+      a.href = dataUrl
+      a.click()
+    } catch (err) {
+      console.error('Passport download failed', err)
+    }
+    setDownloading(false)
+  }
+
   async function claimReward(reward: BattleReward) {
     if (!profile?.id) return
     setClaiming(reward.id)
@@ -80,7 +107,7 @@ export function PassportPage() {
 
   if (!loading && !isPremium) {
     return (
-      <div className="page page--no-nav passport-page">
+      <div className="page passport-page">
         <PageHeader title="Tattoo Passport" backTo="/profile" align="center" goldTitle serif />
         <div className="passport-page__locked">
           <div className="passport-page__locked-icon">
@@ -89,7 +116,7 @@ export function PassportPage() {
           <h2 className="passport-page__locked-title">Premium Feature</h2>
           <p className="passport-page__locked-body">
             The Tattoo Passport tracks your loyalty journey and unlocks rewards as you collect tattoos at House of Holland.
-            Upgrade to <strong>Premium</strong> to start earning — or get <strong>Black Card</strong> for 2× points per R10 spent.
+            Upgrade to <strong>Premium</strong> to start earning — or get <strong>Black Card</strong> for 2× points per $10 spent.
           </p>
           <Link to="/membership" className="passport-page__locked-cta">
             View Membership Plans
@@ -106,8 +133,17 @@ export function PassportPage() {
       : totalHours.toFixed(1)
 
   const spentDisplay = totalSpent >= 1000
-    ? `R${(totalSpent / 1000).toFixed(1)}k`
-    : `R${Math.round(totalSpent).toLocaleString()}`
+    ? `$${(totalSpent / 1000).toFixed(1)}k`
+    : `$${Math.round(totalSpent).toLocaleString()}`
+
+  const memberSince = profile?.created_at
+    ? new Date((profile as any).created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : '—'
+
+  const passportNo = `HOH-${(profile?.id ?? '').slice(0, 8).toUpperCase()}`
+
+  const tierLabel = isBlackCard ? 'BLACK CARD' : 'PREMIUM'
+  const logoSrc   = isBlackCard ? '/logo-gold.png' : '/logo-red.png'
 
   const nextReward = rewards.find(r => loyaltyPoints < r.points_required)
   const progressToNext = nextReward
@@ -115,31 +151,103 @@ export function PassportPage() {
     : 1
 
   return (
-    <div className="page page--no-nav passport-page">
-
-      {/* Hero stats strip */}
-      <div className="passport-page__hero">
-        <div className="passport-page__hero-stat">
-          <strong>{hoursDisplay}</strong>
-          <span>hours in the chair</span>
-        </div>
-        <div className="passport-page__hero-stat">
-          <strong>{spentDisplay}</strong>
-          <span>spent at House of Holland</span>
-        </div>
-        <div className="passport-page__hero-stat">
-          <strong>{tattooCount}</strong>
-          <span>tattoos</span>
-        </div>
-      </div>
-
+    <div className="page passport-page">
       <PageHeader title="Tattoo Passport" backTo="/profile" align="center" goldTitle serif />
 
       {loading ? (
-        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>Loading…</p>
+        <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 32 }}>Loading…</p>
       ) : (
         <>
-          {/* Season + points summary */}
+          {/* ── Passport Card ── */}
+          <div className="passport-card" ref={passportRef}>
+            {/* Security texture */}
+            <div className="passport-card__texture" aria-hidden />
+
+            {/* Corner ornaments */}
+            <span className="passport-card__corner passport-card__corner--tl" aria-hidden />
+            <span className="passport-card__corner passport-card__corner--tr" aria-hidden />
+            <span className="passport-card__corner passport-card__corner--bl" aria-hidden />
+            <span className="passport-card__corner passport-card__corner--br" aria-hidden />
+
+            {/* Header: logo + issuer */}
+            <div className="passport-card__head">
+              <img src={logoSrc} alt="House of Holland" className="passport-card__logo" />
+              <div className="passport-card__issuer">
+                <span className="passport-card__country">HOUSE OF HOLLAND</span>
+                <span className="passport-card__studio">◆ TATTOO EMPORIUM ◆</span>
+              </div>
+            </div>
+
+            {/* Document type */}
+            <div className="passport-card__type-row">
+              <span className="passport-card__rule" />
+              <span className="passport-card__type">TATTOO PASSPORT</span>
+              <span className="passport-card__rule" />
+            </div>
+
+            {/* Bearer + tier */}
+            <div className="passport-card__bearer-row">
+              <div>
+                <p className="passport-card__field-label">BEARER</p>
+                <p className="passport-card__field-name">
+                  {(profile?.full_name ?? 'MEMBER').toUpperCase()}
+                </p>
+              </div>
+              <div className="passport-card__tier-pill">
+                ◆ {tierLabel}
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="passport-card__stats">
+              <div className="passport-card__stat">
+                <strong>{tattooCount}</strong>
+                <span>tattoos</span>
+              </div>
+              <div className="passport-card__stat passport-card__stat--center">
+                <strong>{spentDisplay}</strong>
+                <span>spent at House of Holland</span>
+              </div>
+              <div className="passport-card__stat">
+                <strong>{hoursDisplay}</strong>
+                <span>hours in the chair</span>
+              </div>
+            </div>
+
+            {/* MRZ-style footer */}
+            <div className="passport-card__mrz">
+              <div className="passport-card__mrz-inner">
+                <span className="passport-card__mrz-field">
+                  <span className="passport-card__mrz-label">NO.</span>
+                  {passportNo}
+                </span>
+                <span className="passport-card__mrz-sep" />
+                <span className="passport-card__mrz-field">
+                  <span className="passport-card__mrz-label">SINCE</span>
+                  {memberSince}
+                </span>
+                <span className="passport-card__mrz-sep" />
+                <span className="passport-card__mrz-field">
+                  <span className="passport-card__mrz-label">SEASON</span>
+                  {CURRENT_SEASON}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Download button ── */}
+          <div className="passport-page__download-row">
+            <button
+              className="passport-page__download-btn"
+              onClick={downloadPassport}
+              disabled={downloading}
+            >
+              <Download size={14} strokeWidth={2} />
+              {downloading ? 'Generating…' : 'Save Passport Image'}
+            </button>
+          </div>
+
+          {/* ── Points summary ── */}
           <div className="passport-page__points-card">
             <div className="passport-page__points-header">
               <span className="passport-page__points-season">Season {CURRENT_SEASON}</span>
@@ -151,7 +259,7 @@ export function PassportPage() {
             <div className="passport-page__points-value">{loyaltyPoints.toLocaleString()}</div>
             <div className="passport-page__points-label">Loyalty Points</div>
             <div className="passport-page__points-rate">
-              {isBlackCard ? '2 pts per R10 spent · Black Card' : '1 pt per R10 spent · Premium'}
+              {isBlackCard ? '2 pts per $10 spent · Black Card' : '1 pt per $10 spent · Premium'}
             </div>
             {nextReward && (
               <div className="passport-page__points-progress">
@@ -171,7 +279,7 @@ export function PassportPage() {
             )}
           </div>
 
-          {/* Member loyalty rewards */}
+          {/* ── Member loyalty rewards ── */}
           <div className="passport-page__rewards">
             <h2 className="passport-page__rewards-heading">Member Loyalty Rewards</h2>
             <div className="passport-page__rewards-list">
@@ -208,7 +316,6 @@ export function PassportPage() {
                       <div className="passport-page__reward-stock">
                         {r.quantity_total - r.quantity_claimed} / {r.quantity_total} remaining
                       </div>
-
                       {unlocked && !claimed && !soldOut && (
                         <button
                           className="passport-page__reward-claim"

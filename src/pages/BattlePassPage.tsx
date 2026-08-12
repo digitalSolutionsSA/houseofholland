@@ -160,8 +160,8 @@ export function BattlePassPage() {
             <div className="bp-points-card__label">Points this season</div>
             <div className="bp-points-card__rate">
               {isBlackCard
-                ? '2 pts per R10 spent (Black Card)'
-                : '1 pt per R10 spent (Premium)'}
+                ? '2 pts per $10 spent (Black Card)'
+                : '1 pt per $10 spent (Premium)'}
             </div>
             {nextReward && (
               <div className="bp-points-card__progress">
@@ -255,7 +255,7 @@ export function BattlePassPage() {
                 <Star size={18} className="bp-earn__icon" />
                 <div>
                   <strong>Spend at HOH</strong>
-                  <span>{spendPointsRate} pt{spendPointsRate !== 1 ? 's' : ''} per R10 on tattoos or merch</span>
+                  <span>{spendPointsRate} pt{spendPointsRate !== 1 ? 's' : ''} per $10 on tattoos or merch</span>
                 </div>
               </div>
               <div className="bp-earn__item">
@@ -284,7 +284,7 @@ export function BattlePassPage() {
                   <Trophy size={18} className="bp-earn__icon" />
                   <div>
                     <strong>Upgrade to Black Card</strong>
-                    <span>100 pts bonus + earn 2× per R10</span>
+                    <span>100 pts bonus + earn 2× per $10</span>
                   </div>
                 </div>
               )}

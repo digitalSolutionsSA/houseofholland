@@ -1,8 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ChevronLeft, Star, Camera, MessageCircle, CalendarDays, X } from 'lucide-react'
+import { ChevronLeft, Star, MessageCircle, CalendarDays, X, StarHalf } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import './ArtistProfilePage.css'
+
+function TikTokIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z" />
+    </svg>
+  )
+}
+
+function InstagramIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+      <circle cx="12" cy="12" r="4"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+  )
+}
 
 type Artist = {
   id: string
@@ -14,6 +32,10 @@ type Artist = {
   hero_url: string | null
   rating: number
   review_count: number
+  instagram_url: string | null
+  tiktok_url: string | null
+  review_url: string | null
+  message_url: string | null
 }
 
 type Photo = { id: string; url: string; caption: string | null; style: string | null }
@@ -30,7 +52,7 @@ export function ArtistProfilePage() {
     async function load() {
       const { data: a } = await supabase
         .from('artists')
-        .select('*')
+        .select('id, name, slug, specialties, bio, avatar_url, hero_url, rating, review_count, instagram_url, tiktok_url, review_url, message_url')
         .eq('slug', artistId!)
         .single()
 
@@ -82,15 +104,51 @@ export function ArtistProfilePage() {
         {artist.bio && <p className="artist-profile-page__bio">{artist.bio}</p>}
 
         <div className="artist-profile-page__actions">
-          <button type="button">
-            <Camera size={18} strokeWidth={1.5} />
-            Instagram
-          </button>
-          <button type="button">
-            <MessageCircle size={18} strokeWidth={1.5} />
-            Message
-          </button>
-          <Link to={artist ? `/bookings/select-time?artist=${artist.id}` : '/bookings/select-time'}>
+          {artist.instagram_url ? (
+            <a href={artist.instagram_url} target="_blank" rel="noopener noreferrer">
+              <InstagramIcon size={18} />
+              Instagram
+            </a>
+          ) : (
+            <button type="button" disabled className="artist-profile-page__action--disabled">
+              <InstagramIcon size={18} />
+              Instagram
+            </button>
+          )}
+          {artist.tiktok_url ? (
+            <a href={artist.tiktok_url} target="_blank" rel="noopener noreferrer">
+              <TikTokIcon size={17} />
+              TikTok
+            </a>
+          ) : (
+            <button type="button" disabled className="artist-profile-page__action--disabled">
+              <TikTokIcon size={17} />
+              TikTok
+            </button>
+          )}
+          {artist.message_url ? (
+            <a href={artist.message_url} target="_blank" rel="noopener noreferrer">
+              <MessageCircle size={18} strokeWidth={1.5} />
+              Message
+            </a>
+          ) : (
+            <button type="button" disabled className="artist-profile-page__action--disabled">
+              <MessageCircle size={18} strokeWidth={1.5} />
+              Message
+            </button>
+          )}
+          {artist.review_url ? (
+            <a href={artist.review_url} target="_blank" rel="noopener noreferrer">
+              <StarHalf size={18} strokeWidth={1.5} />
+              Review
+            </a>
+          ) : (
+            <button type="button" disabled className="artist-profile-page__action--disabled">
+              <StarHalf size={18} strokeWidth={1.5} />
+              Review
+            </button>
+          )}
+          <Link to={`/bookings/select-time?artist=${artist.id}`}>
             <CalendarDays size={18} strokeWidth={1.5} />
             Book Now
           </Link>

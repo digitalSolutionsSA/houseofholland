@@ -18,7 +18,7 @@ export function VaultCard({ entry, onClick }: { entry: VaultEntry; onClick: () =
         <p className="vault-card__artist">By {entry.artist}</p>
         <p className="vault-card__date">{entry.date}</p>
         {entry.price != null && (
-          <p className="vault-card__price">R{entry.price.toFixed(2)}</p>
+          <p className="vault-card__price">${entry.price.toFixed(2)}</p>
         )}
       </div>
       <span className="vault-card__chevron" aria-hidden>›</span>

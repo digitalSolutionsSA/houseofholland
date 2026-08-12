@@ -132,7 +132,7 @@ export function VaultPage() {
               <p className="vault-lightbox__artist">By {selected.artist}</p>
               <p className="vault-lightbox__date">{selected.date}</p>
               {selected.price != null && (
-                <p className="vault-lightbox__price">R{selected.price.toFixed(2)}</p>
+                <p className="vault-lightbox__price">${selected.price.toFixed(2)}</p>
               )}
             </div>
           </div>

@@ -29,7 +29,7 @@ export async function awardSpendPoints(opts: {
     points,
     reason: 'spend',
     reference_id: referenceId ?? null,
-    note: `R${Math.round(price)} spent`,
+    note: `$${Math.round(price)} spent`,
     awarded_by: awardedBy,
     season: CURRENT_SEASON,
   })

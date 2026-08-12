@@ -38,7 +38,7 @@ const TIERS = [
     name: 'Premium',
     Icon: Zap,
     priceLabel: '$4.99 / mo',
-    zarLabel: 'R91.83 / mo',
+    zarLabel: null,
     tagline: 'Early access & rewards',
     badge: 'Most Popular',
     benefits: [
@@ -58,7 +58,7 @@ const TIERS = [
     name: 'Black Card',
     Icon: Crown,
     priceLabel: '$6.99 / mo',
-    zarLabel: 'R128.65 / mo',
+    zarLabel: null,
     tagline: 'Full VIP treatment',
     badge: undefined as string | undefined,
     benefits: [
@@ -297,7 +297,7 @@ export function MembershipPage() {
       </div>
 
       <p className="membership-page__legal">
-        Billed monthly in ZAR via PayFast. Cancel any time — your plan downgrades to Free at the end of the billing period.
+        Billed monthly in USD. Cancel any time — your plan downgrades to Free at the end of the billing period.
       </p>
     </div>
   )
