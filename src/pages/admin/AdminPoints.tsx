@@ -83,7 +83,7 @@ export function AdminPoints() {
     setTotalPoints(pts)
     setHistory(txs ?? [])
     setRewards(rws ?? [])
-    setClaims((cls ?? []) as Claim[])
+    setClaims((cls ?? []) as unknown as Claim[])
     setLoadingClient(false)
   }
 

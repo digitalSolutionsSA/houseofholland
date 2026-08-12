@@ -9,8 +9,8 @@ const ALLOWED_EMAILS = ['info@digitalsolutionssa.co.za', 'armandgroesbeek@gmail.
 
 const PLAN_PRICES: Record<MembershipPlan, number> = {
   free: 0,
-  'black-card': 6.99,
-  elite: 9.99,
+  premium: 1.00,
+  'black-card': 2.00,
 }
 
 // Tiered commission based on number of paid customers per artist
@@ -40,19 +40,19 @@ function getTierColor(paidCustomers: number): string {
 
 const PLAN_LABELS: Record<MembershipPlan, string> = {
   free: 'Member (Free)',
+  premium: 'Premium',
   'black-card': 'Black Card',
-  elite: 'Elite',
 }
 
 const PLAN_ICONS: Record<MembershipPlan, typeof Star> = {
   free: Star,
-  'black-card': Zap,
-  elite: Crown,
+  premium: Zap,
+  'black-card': Crown,
 }
 
 function planColor(plan: MembershipPlan) {
-  if (plan === 'elite') return '#c8a96e'
   if (plan === 'black-card') return 'var(--gold)'
+  if (plan === 'premium') return '#8ab4a0'
   return 'var(--text-muted)'
 }
 

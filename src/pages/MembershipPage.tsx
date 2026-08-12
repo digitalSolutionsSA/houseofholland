@@ -21,6 +21,7 @@ const TIERS = [
     priceLabel: 'Free',
     zarLabel: null,
     tagline: 'Essential studio access',
+    badge: undefined as string | undefined,
     benefits: [
       'Artist appointments',
       'Appointment reminders — 1 day & 2 hours before',
@@ -59,6 +60,7 @@ const TIERS = [
     priceLabel: '$2.00 / mo',
     zarLabel: 'R37.00 / mo',
     tagline: 'Full VIP treatment',
+    badge: undefined as string | undefined,
     benefits: [
       'Everything in Premium',
       'Flash queue VIP — week notice of flash days',

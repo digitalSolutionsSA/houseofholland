@@ -132,7 +132,6 @@ export function BattlePassPage() {
     )
   }
 
-  const highestUnlocked = rewards.filter(r => totalPoints >= r.points_required).pop()
   const nextReward = rewards.find(r => totalPoints < r.points_required)
   const progressToNext = nextReward
     ? Math.min(1, totalPoints / nextReward.points_required)
