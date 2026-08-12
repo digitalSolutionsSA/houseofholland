@@ -1,27 +1,10 @@
-import { useState, useEffect } from 'react'
 import './Logo.css'
+import { useDisplayTier } from '../../hooks/useDisplayTier'
 
 const TIER_LOGOS: Record<string, string> = {
   'black-card': '/logo-gold.png',
   'premium':    '/logo-red.png',
   'free':       '/logo-black.webp',
-}
-
-function useDisplayTier() {
-  const [tier, setTier] = useState(
-    () => document.documentElement.dataset.tier ?? 'black-card'
-  )
-  useEffect(() => {
-    const obs = new MutationObserver(() => {
-      setTier(document.documentElement.dataset.tier ?? 'black-card')
-    })
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-tier'],
-    })
-    return () => obs.disconnect()
-  }, [])
-  return tier
 }
 
 type LogoProps = {

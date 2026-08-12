@@ -209,60 +209,59 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 
 /* ── Free tier ── */
 
-/* Nav: white marble with dark grey veins */
 [data-tier="free"] .bottom-nav {
-  background:
-    repeating-linear-gradient(
-      125deg,
-      transparent 0px, transparent 42px,
-      rgba(70, 70, 70, 0.09) 42px, rgba(70, 70, 70, 0.09) 44px,
-      transparent 44px, transparent 115px,
-      rgba(50, 50, 50, 0.06) 115px, rgba(50, 50, 50, 0.06) 118px
-    ),
-    repeating-linear-gradient(
-      38deg,
-      transparent 0px, transparent 75px,
-      rgba(60, 60, 60, 0.045) 75px, rgba(60, 60, 60, 0.045) 77px
-    ),
-    linear-gradient(180deg, #f8f8f8 0%, #eeeeee 100%);
-  border-top-color: rgba(0, 0, 0, 0.13);
+  background: #ffffff;
 }
 
-[data-tier="free"] .bottom-nav::before {
-  background: linear-gradient(
-    90deg,
-    transparent 0%, transparent 30%,
-    rgba(40, 40, 40, 0.08) 50%,
-    transparent 70%, transparent 100%
-  );
+[data-tier="free"] .bottom-nav__item {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-tier="free"] .bottom-nav__item--active {
+  color: rgba(0, 0, 0, 0.90);
+}
+
+[data-tier="free"] .bottom-nav__indicator {
+  background: rgba(0, 0, 0, 0.80);
 }
 
 [data-tier="free"] .desktop-nav {
-  background: rgba(242, 242, 242, 0.98);
-  border-right: 1px solid rgba(0, 0, 0, 0.13);
+  background: #ffffff;
+}
+
+[data-tier="free"] .desktop-nav__section-label {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+[data-tier="free"] .desktop-nav__link {
+  color: rgba(0, 0, 0, 0.55);
 }
 
 [data-tier="free"] .desktop-nav__link:hover {
   background: rgba(0, 0, 0, 0.06);
-  color: var(--text);
+  color: rgba(0, 0, 0, 0.90);
 }
 
 [data-tier="free"] .desktop-nav__link--active {
   background: rgba(0, 0, 0, 0.10);
+  color: rgba(0, 0, 0, 0.90);
 }
 
-/* App frame at tablet+ */
-@media (min-width: 768px) {
-  [data-tier="free"] .app-frame {
-    background: rgba(255, 255, 255, 0.55);
-  }
+[data-tier="free"] .desktop-nav__brand,
+[data-tier="free"] .desktop-nav__section {
+  border-color: rgba(0, 0, 0, 0.10);
 }
 
 [data-tier="free"] .app-frame {
   background: rgba(255, 255, 255, 0.55);
 }
 
-/* Form inputs (base is rgba(255,255,255,0.04) = invisible on white) */
+@media (min-width: 768px) {
+  [data-tier="free"] .app-frame {
+    background: rgba(255, 255, 255, 0.55);
+  }
+}
+
 [data-tier="free"] input,
 [data-tier="free"] textarea,
 [data-tier="free"] select {
@@ -271,7 +270,6 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
   color: var(--text) !important;
 }
 
-/* Save / primary action buttons with hardcoded gold gradient */
 [data-tier="free"] .profile-page__save-btn {
   background: linear-gradient(135deg, #111 0%, #3a3a3a 50%, #111 100%);
   color: #fff;
@@ -279,46 +277,51 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 
 /* ── Premium tier ── */
 
-/* Nav: dark marble with red veins */
 [data-tier="premium"] .bottom-nav {
-  background:
-    repeating-linear-gradient(
-      125deg,
-      transparent 0px, transparent 42px,
-      rgba(220, 38, 38, 0.12) 42px, rgba(220, 38, 38, 0.12) 44px,
-      transparent 44px, transparent 115px,
-      rgba(180, 20, 20, 0.07) 115px, rgba(180, 20, 20, 0.07) 118px
-    ),
-    repeating-linear-gradient(
-      38deg,
-      transparent 0px, transparent 75px,
-      rgba(220, 38, 38, 0.05) 75px, rgba(220, 38, 38, 0.05) 77px
-    ),
-    linear-gradient(180deg, #181818 0%, #0e0e0e 100%);
-  border-color: rgba(220, 38, 38, 0.22);
+  background: #dc2626;
 }
 
-[data-tier="premium"] .bottom-nav::before {
-  background: linear-gradient(
-    90deg,
-    transparent 0%, transparent 30%,
-    rgba(220, 38, 38, 0.16) 50%,
-    transparent 70%, transparent 100%
-  );
+[data-tier="premium"] .bottom-nav__item {
+  color: rgba(255, 255, 255, 0.60);
+}
+
+[data-tier="premium"] .bottom-nav__item--active {
+  color: #ffffff;
+}
+
+[data-tier="premium"] .bottom-nav__indicator {
+  background: #ffffff;
+}
+
+[data-tier="premium"] .desktop-nav {
+  background: #dc2626;
+}
+
+[data-tier="premium"] .desktop-nav__section-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+[data-tier="premium"] .desktop-nav__link {
+  color: rgba(255, 255, 255, 0.65);
 }
 
 [data-tier="premium"] .desktop-nav__link:hover {
-  background: rgba(220, 38, 38, 0.08);
-  color: var(--text);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 [data-tier="premium"] .desktop-nav__link--active {
-  background: rgba(220, 38, 38, 0.14);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
 }
 
-[data-tier="premium"] .profile-page__save-btn {
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
-  color: #fff;
+[data-tier="premium"] .desktop-nav__brand,
+[data-tier="premium"] .desktop-nav__section {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+[data-tier="premium"] .app-frame {
+  background: rgba(15, 15, 15, 0.55);
 }
 
 @media (min-width: 768px) {
@@ -327,6 +330,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
   }
 }
 
-[data-tier="premium"] .app-frame {
-  background: rgba(15, 15, 15, 0.55);
+[data-tier="premium"] .profile-page__save-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
+  color: #fff;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useDisplayTier } from '../../hooks/useDisplayTier'
 import './BrandBackground.css'
 
 type BrandBackgroundProps = {
@@ -18,6 +19,12 @@ type Particle = {
   rotationSpeed: number
 }
 
+const TIER_PARTICLE_COLORS: Record<string, [string, string, string]> = {
+  'black-card': ['rgba(255,235,150,1)', 'rgba(212,175,55,0.9)', 'rgba(180,130,20,0)'],
+  'premium':    ['rgba(255,140,140,1)', 'rgba(220,38,38,0.9)',  'rgba(150,10,10,0)'],
+  'free':       ['rgba(80,80,80,1)',    'rgba(50,50,50,0.8)',   'rgba(20,20,20,0)'],
+}
+
 function initParticle(canvas: HTMLCanvasElement): Particle {
   return {
     x: Math.random() * canvas.width,
@@ -34,6 +41,9 @@ function initParticle(canvas: HTMLCanvasElement): Particle {
 
 export function BrandBackground({ className = '', vignette = true }: BrandBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const tier = useDisplayTier()
+  const tierRef = useRef(tier)
+  tierRef.current = tier
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -58,6 +68,7 @@ export function BrandBackground({ className = '', vignette = true }: BrandBackgr
     let raf: number
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const [c0, c1, c2] = TIER_PARTICLE_COLORS[tierRef.current] ?? TIER_PARTICLE_COLORS['black-card']
 
       for (const p of particles) {
         ctx.save()
@@ -65,7 +76,6 @@ export function BrandBackground({ className = '', vignette = true }: BrandBackgr
         ctx.translate(p.x, p.y)
         ctx.rotate(p.rotation)
 
-        // diamond / rhombus shape for each mote
         const s = p.size
         ctx.beginPath()
         ctx.moveTo(0, -s)
@@ -74,16 +84,14 @@ export function BrandBackground({ className = '', vignette = true }: BrandBackgr
         ctx.lineTo(-s * 0.6, 0)
         ctx.closePath()
 
-        // gold gradient fill
         const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, s)
-        grad.addColorStop(0, 'rgba(255,235,150,1)')
-        grad.addColorStop(0.5, 'rgba(212,175,55,0.9)')
-        grad.addColorStop(1, 'rgba(180,130,20,0)')
+        grad.addColorStop(0, c0)
+        grad.addColorStop(0.5, c1)
+        grad.addColorStop(1, c2)
         ctx.fillStyle = grad
         ctx.fill()
         ctx.restore()
 
-        // update
         p.x += p.speedX
         p.y += p.speedY
         p.opacity += p.opacityDelta
@@ -91,7 +99,6 @@ export function BrandBackground({ className = '', vignette = true }: BrandBackgr
 
         if (p.opacity <= 0 || p.opacity >= 0.85) p.opacityDelta *= -1
 
-        // wrap
         if (p.y < -10) p.y = canvas.height + 10
         if (p.x < -10) p.x = canvas.width + 10
         if (p.x > canvas.width + 10) p.x = -10

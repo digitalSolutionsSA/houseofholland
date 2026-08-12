@@ -5,9 +5,8 @@
   flex-direction: column;
   gap: 6px;
   padding: 20px 12px;
-  border-right: 1px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(16px);
+  border-right: none;
+  background: #d4af37;
   position: sticky;
   top: 0;
   height: 100dvh;
@@ -18,7 +17,7 @@
 
 .desktop-nav__brand {
   padding: 0 6px 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
   margin-bottom: 10px;
   display: flex;
   justify-content: center;
@@ -34,14 +33,14 @@
 .desktop-nav__section {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .desktop-nav__section-label {
   font-size: 0.6rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold-muted);
+  color: rgba(30, 18, 0, 0.55);
   padding: 0 10px 6px;
   font-weight: 600;
 }
@@ -52,7 +51,7 @@
   gap: 10px;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  color: rgba(30, 18, 0, 0.65);
   font-size: 0.88rem;
   font-weight: 500;
   transition: background 0.2s ease, color 0.2s ease;
@@ -61,13 +60,13 @@
 }
 
 .desktop-nav__link:hover {
-  background: rgba(var(--accent-rgb), 0.08);
-  color: var(--text);
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(30, 18, 0, 0.95);
 }
 
 .desktop-nav__link--active {
-  background: rgba(var(--accent-rgb), 0.14);
-  color: var(--gold);
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(30, 18, 0, 0.95);
 }
 
 /* Show on tablet and above */
