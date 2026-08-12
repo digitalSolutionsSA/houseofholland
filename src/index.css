@@ -18,7 +18,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: #000;
+  background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,7 +61,7 @@ ol {
   min-height: 100%;
   min-height: 100dvh;
   position: relative;
-  background: #000;
+  background: var(--bg);
 }
 
 .app-shell__marble {
@@ -182,5 +182,53 @@ ol {
 @media (min-width: 1280px) {
   .app-frame--auth .app-main {
     max-width: 540px;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TIER STRUCTURAL OVERRIDES
+   Override hardcoded backgrounds that can't be reached via variables.
+   Placed last so they win the cascade over all component rules.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Free tier ── */
+[data-tier="free"] .bottom-nav {
+  background: rgba(255, 255, 255, 0.96);
+  border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-tier="free"] .desktop-nav {
+  background: rgba(248, 248, 248, 0.97);
+  border-right-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-tier="free"] .desktop-nav__link:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text);
+}
+
+[data-tier="free"] .desktop-nav__link--active {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+@media (min-width: 768px) {
+  [data-tier="free"] .app-frame {
+    background: rgba(255, 255, 255, 0.97);
+  }
+}
+
+/* ── Premium tier ── */
+[data-tier="premium"] .desktop-nav__link:hover {
+  background: rgba(220, 38, 38, 0.08);
+  color: var(--text);
+}
+
+[data-tier="premium"] .desktop-nav__link--active {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+@media (min-width: 768px) {
+  [data-tier="premium"] .app-frame {
+    background: rgba(15, 15, 15, 0.92);
   }
 }
