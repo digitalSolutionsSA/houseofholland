@@ -388,6 +388,76 @@
 }
 .profile-page__link--danger svg { color: #c9a0a0 !important; }
 
+/* ── Theme demo (staff only) ── */
+.profile-page__theme-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px var(--page-pad) 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.profile-page__theme-demo-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.profile-page__theme-demo-sub {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: -4px;
+}
+
+.profile-page__theme-pills {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-page__theme-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.profile-page__theme-pill:hover {
+  border-color: var(--gold);
+  color: var(--text);
+}
+
+.profile-page__theme-pill.is-active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--bg-card);
+}
+
+.profile-page__theme-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: block;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
 /* ── Tablet+ sidebar layout ── */
 @media (min-width: 768px) {
   .profile-page__hero {

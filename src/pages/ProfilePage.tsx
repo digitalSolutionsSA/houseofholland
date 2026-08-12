@@ -3,13 +3,22 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   ChevronRight, CreditCard, Award, Shirt, FilePen,
   LogOut, Camera, User, Mail, Phone, Save, X, Loader2,
-  IdCard, Upload, CheckCircle2,
+  IdCard, Upload, CheckCircle2, Palette,
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
+import type { MembershipPlan } from '../lib/supabase'
 import './ProfilePage.css'
+
+const DEMO_TIERS: { id: MembershipPlan; label: string; swatch: string; border: string }[] = [
+  { id: 'free',       label: 'Free',       swatch: '#ffffff', border: 'rgba(0,0,0,0.2)'    },
+  { id: 'premium',    label: 'Premium',    swatch: '#dc2626', border: 'transparent'        },
+  { id: 'black-card', label: 'Black Card', swatch: '#d4af37', border: 'transparent'        },
+]
+
+const DEMO_TIER_KEY = 'hoh_demo_tier'
 
 const CUSTOMER_LINKS = [
   { to: '/passport',   label: 'Tattoo Passport',      icon: Award      },
@@ -160,6 +169,16 @@ export function ProfilePage() {
 
   const isStaff = profile?.role === 'artist' || profile?.role === 'manager'
   const links = isStaff ? STAFF_LINKS : CUSTOMER_LINKS
+
+  const [demoTier, setDemoTierState] = useState<MembershipPlan>(() =>
+    (localStorage.getItem(DEMO_TIER_KEY) ?? 'black-card') as MembershipPlan
+  )
+
+  function applyDemoTier(t: MembershipPlan) {
+    localStorage.setItem(DEMO_TIER_KEY, t)
+    document.documentElement.dataset.tier = t
+    setDemoTierState(t)
+  }
 
   const roleBadge =
     profile?.role === 'manager' ? 'Store Manager'
@@ -387,6 +406,35 @@ export function ProfilePage() {
               <ChevronRight size={18} strokeWidth={1.5} />
             </button>
           </nav>
+        )}
+
+        {/* ── Theme demo (staff only) ── */}
+        {isStaff && !editing && (
+          <div className="profile-page__theme-demo">
+            <div className="profile-page__theme-demo-head">
+              <Palette size={15} strokeWidth={1.5} />
+              <span>Preview Customer Themes</span>
+            </div>
+            <p className="profile-page__theme-demo-sub">
+              Switch the app's look to show customers what each membership tier feels like.
+            </p>
+            <div className="profile-page__theme-pills">
+              {DEMO_TIERS.map(({ id, label, swatch, border }) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`profile-page__theme-pill${demoTier === id ? ' is-active' : ''}`}
+                  onClick={() => applyDemoTier(id)}
+                >
+                  <span
+                    className="profile-page__theme-swatch"
+                    style={{ background: swatch, borderColor: border }}
+                  />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

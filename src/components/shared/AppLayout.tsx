@@ -22,9 +22,17 @@ export function AppLayout() {
   const { profile } = useAuth()
   const { tier } = useMembership()
 
-  // Apply colour theme to <html> so all CSS [data-tier] selectors work
+  // Apply colour theme to <html> so all CSS [data-tier] selectors work.
+  // Staff can override via the demo picker (stored in localStorage).
   useEffect(() => {
-    document.documentElement.dataset.tier = profile ? tier : 'black-card'
+    if (!profile) return
+    const isStaff = profile.role === 'artist' || profile.role === 'manager'
+    if (isStaff) {
+      const saved = (localStorage.getItem('hoh_demo_tier') ?? 'black-card')
+      document.documentElement.dataset.tier = saved
+    } else {
+      document.documentElement.dataset.tier = tier
+    }
   }, [tier, profile])
 
   const isAuth = AUTH_ROUTES.includes(pathname)
