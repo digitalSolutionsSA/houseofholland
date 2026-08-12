@@ -3,7 +3,6 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { DesktopNav } from './DesktopNav'
 import { BrandBackground } from './BrandBackground'
-import { Logo } from './Logo'
 import { useAuth } from '../../context/AuthContext'
 import { useMembership } from '../../hooks/useMembership'
 
@@ -45,14 +44,6 @@ export function AppLayout() {
       <div className={`app-frame ${isAuth ? 'app-frame--auth' : ''}`}>
         {showDesktopNav && <DesktopNav />}
         <div className="app-main">
-          {showMobileNav && (
-            <>
-              <header className="mobile-topbar">
-                <Logo variant="full" height={44} />
-              </header>
-              <div className="mobile-topbar-spacer" />
-            </>
-          )}
           <Outlet />
           {showMobileNav && <BottomNav />}
         </div>
