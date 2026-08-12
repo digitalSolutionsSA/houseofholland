@@ -1,4 +1,4 @@
-.vault-card {
+﻿.vault-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -12,8 +12,8 @@
   transition: background 0.15s, border-color 0.15s;
 }
 .vault-card:hover {
-  background: rgba(212, 175, 55, 0.04);
-  border-color: rgba(212, 175, 55, 0.25);
+  background: rgba(var(--accent-rgb), 0.04);
+  border-color: rgba(var(--accent-rgb), 0.25);
 }
 
 .vault-card__thumb {

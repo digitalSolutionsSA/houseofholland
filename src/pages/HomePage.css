@@ -1,4 +1,4 @@
-.home-page {
+﻿.home-page {
   padding-top: 8px;
 }
 
@@ -36,11 +36,11 @@
 }
 
 .home-page__avatar--empty {
-  background: rgba(212,175,55,0.08);
+  background: rgba(var(--accent-rgb),0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(212,175,55,0.35);
+  border: 2px solid rgba(var(--accent-rgb),0.35);
 }
 
 /* Greeting lives in header on all sizes */

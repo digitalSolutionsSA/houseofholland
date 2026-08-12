@@ -1,4 +1,4 @@
-.artist-card {
+﻿.artist-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -10,7 +10,7 @@
 }
 
 .artist-card:hover {
-  background: rgba(212, 175, 55, 0.04);
+  background: rgba(var(--accent-rgb), 0.04);
 }
 
 .artist-card__avatar {
@@ -48,7 +48,7 @@
 }
 
 .artist-card__avatar--empty {
-  background: rgba(212, 175, 55, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   border-style: dashed;
 }
 

@@ -1,4 +1,4 @@
-.login-page {
+﻿.login-page {
   position: relative;
 }
 
@@ -75,7 +75,7 @@
 .login-page__or span {
   flex: 1;
   height: 1px;
-  background: rgba(212, 175, 55, 0.35);
+  background: rgba(var(--accent-rgb), 0.35);
 }
 
 .login-page__or p {

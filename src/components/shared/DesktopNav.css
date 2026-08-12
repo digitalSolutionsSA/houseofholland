@@ -1,4 +1,4 @@
-.desktop-nav {
+﻿.desktop-nav {
   display: none;
   width: var(--sidebar-width);
   flex-shrink: 0;
@@ -61,12 +61,12 @@
 }
 
 .desktop-nav__link:hover {
-  background: rgba(212, 175, 55, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   color: var(--text);
 }
 
 .desktop-nav__link--active {
-  background: rgba(212, 175, 55, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
   color: var(--gold);
 }
 

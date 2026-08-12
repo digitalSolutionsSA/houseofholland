@@ -1,4 +1,4 @@
-.quick-actions {
+﻿.quick-actions {
   display: grid;
   /* 2-col on smallest screens, grows to 4-col via responsive.css */
   grid-template-columns: repeat(2, 1fr);
@@ -24,7 +24,7 @@
 }
 
 .quick-actions__item:hover {
-  background: rgba(212, 175, 55, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .quick-actions__icon-wrap {

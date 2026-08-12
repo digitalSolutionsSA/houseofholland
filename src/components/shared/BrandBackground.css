@@ -1,4 +1,4 @@
-.brand-bg__dust {
+﻿.brand-bg__dust {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -23,7 +23,7 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(212,175,55,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 55% at 50% -5%, rgba(var(--accent-rgb),0.22) 0%, transparent 60%),
     radial-gradient(ellipse 70% 60% at 50% 45%, rgba(0,0,0,0.28), rgba(0,0,0,0.72) 75%),
     linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 20%, transparent 70%, rgba(0,0,0,0.65) 100%);
 }

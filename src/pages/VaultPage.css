@@ -1,4 +1,4 @@
-/* ── Membership-gated states ── */
+﻿/* ── Membership-gated states ── */
 .vault-page__locked {
   display: flex;
   flex-direction: column;
@@ -12,8 +12,8 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.07);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(var(--accent-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,8 +83,8 @@
   margin: 12px var(--page-pad) 0;
   padding: 12px 14px;
   border-radius: var(--radius-sm, 8px);
-  background: rgba(212, 175, 55, 0.05);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(var(--accent-rgb), 0.05);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
   font-size: 0.78rem;
   color: var(--text-dim);
 }
@@ -138,7 +138,7 @@
 .vault-lightbox__card {
   position: relative;
   background: #111010;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
   border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 520px;

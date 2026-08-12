@@ -1,4 +1,4 @@
-@import './styles/variables.css';
+﻿@import './styles/variables.css';
 @import './styles/responsive.css';
 
 *,
@@ -148,7 +148,7 @@ ol {
     max-width: 480px;
     width: 100%;
     margin: 40px auto;
-    border: 1px solid rgba(212, 175, 55, 0.18);
+    border: 1px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 24px;
     background: rgba(0, 0, 0, 0.78);
     backdrop-filter: blur(10px);
@@ -192,29 +192,53 @@ ol {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Free tier ── */
+
+/* Logo: white logo becomes pure black silhouette */
+[data-tier="free"] .brand-logo--full,
+[data-tier="free"] .brand-logo--mark img {
+  filter: brightness(0);
+}
+
+/* Nav */
 [data-tier="free"] .bottom-nav {
-  background: rgba(255, 255, 255, 0.96);
-  border-top-color: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 [data-tier="free"] .desktop-nav {
-  background: rgba(248, 248, 248, 0.97);
-  border-right-color: rgba(0, 0, 0, 0.1);
+  background: rgba(242, 242, 242, 0.98);
+  border-right: 1px solid rgba(0, 0, 0, 0.13);
 }
 
 [data-tier="free"] .desktop-nav__link:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.06);
   color: var(--text);
 }
 
 [data-tier="free"] .desktop-nav__link--active {
-  background: rgba(0, 0, 0, 0.09);
+  background: rgba(0, 0, 0, 0.10);
 }
 
+/* App frame at tablet+ */
 @media (min-width: 768px) {
   [data-tier="free"] .app-frame {
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(255, 255, 255, 0.98);
   }
+}
+
+/* Form inputs (base is rgba(255,255,255,0.04) = invisible on white) */
+[data-tier="free"] input,
+[data-tier="free"] textarea,
+[data-tier="free"] select {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
+  color: var(--text) !important;
+}
+
+/* Save / primary action buttons with hardcoded gold gradient */
+[data-tier="free"] .profile-page__save-btn {
+  background: linear-gradient(135deg, #111 0%, #3a3a3a 50%, #111 100%);
+  color: #fff;
 }
 
 /* ── Premium tier ── */
@@ -225,6 +249,11 @@ ol {
 
 [data-tier="premium"] .desktop-nav__link--active {
   background: rgba(220, 38, 38, 0.14);
+}
+
+[data-tier="premium"] .profile-page__save-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
+  color: #fff;
 }
 
 @media (min-width: 768px) {

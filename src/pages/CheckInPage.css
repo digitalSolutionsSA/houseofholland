@@ -1,4 +1,4 @@
-.checkin-page {
+﻿.checkin-page {
   padding-bottom: 40px;
 }
 
@@ -23,8 +23,8 @@
 .checkin__appt-card {
   padding: 18px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(212,175,55,0.3);
-  background: rgba(212,175,55,0.05);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
+  background: rgba(var(--accent-rgb),0.05);
 }
 
 .checkin__appt-label {
@@ -93,7 +93,7 @@
 
 /* ── Sections ── */
 .checkin__section {
-  border: 1px solid rgba(212,175,55,0.15);
+  border: 1px solid rgba(var(--accent-rgb),0.15);
   border-radius: 14px;
   padding: 18px;
   display: flex;
@@ -109,7 +109,7 @@
   color: var(--gold);
   text-transform: uppercase;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(212,175,55,0.15);
+  border-bottom: 1px solid rgba(var(--accent-rgb),0.15);
 }
 
 .checkin__section-note {
@@ -136,7 +136,7 @@
 
 .checkin__input {
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(212,175,55,0.2);
+  border: 1px solid rgba(var(--accent-rgb),0.2);
   border-radius: 8px;
   color: var(--text);
   font-size: 0.92rem;
@@ -148,7 +148,7 @@
 
 .checkin__input:focus {
   border-color: var(--gold);
-  background: rgba(212,175,55,0.04);
+  background: rgba(var(--accent-rgb),0.04);
 }
 
 /* ── Signature ── */
@@ -156,7 +156,7 @@
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(212,175,55,0.3);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
   background: rgba(0,0,0,0.4);
   touch-action: none;
 }
@@ -175,7 +175,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: rgba(212,175,55,0.3);
+  color: rgba(var(--accent-rgb),0.3);
   font-size: 0.85rem;
   pointer-events: none;
   font-style: italic;
@@ -270,7 +270,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  background: rgba(212,175,55,0.06);
+  background: rgba(var(--accent-rgb),0.06);
 }
 
 .checkin__error-msg {
@@ -362,7 +362,7 @@
   background: #fff;
   border-radius: 8px;
   padding: 8px;
-  border: 1px solid rgba(212,175,55,0.35);
+  border: 1px solid rgba(var(--accent-rgb),0.35);
   display: block;
 }
 

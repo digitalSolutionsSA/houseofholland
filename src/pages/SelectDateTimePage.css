@@ -1,4 +1,4 @@
-.select-time-page {
+﻿.select-time-page {
   padding-bottom: 28px;
   overflow-x: hidden;
 }
@@ -31,7 +31,7 @@
 }
 
 .select-time-page__artist-card:hover {
-  background: rgba(212,175,55,0.04);
+  background: rgba(var(--accent-rgb),0.04);
 }
 
 .select-time-page__artist-avatar {
@@ -44,7 +44,7 @@
 }
 
 .select-time-page__artist-avatar--empty {
-  background: rgba(212,175,55,0.08);
+  background: rgba(var(--accent-rgb),0.08);
 }
 
 .select-time-page__artist-info {
@@ -112,7 +112,7 @@
   padding: 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-gold);
-  background: rgba(212,175,55,0.05);
+  background: rgba(var(--accent-rgb),0.05);
 }
 
 .select-time-page__confirm-avatar {
@@ -237,7 +237,7 @@
   color: var(--gold);
   font-weight: 700;
   border: 1px solid transparent;
-  background: rgba(212, 175, 55, 0.18);
+  background: rgba(var(--accent-rgb), 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -245,12 +245,12 @@
 }
 
 .select-time-page__days button:hover:not(.is-disabled):not(.is-selected) {
-  background: rgba(212, 175, 55, 0.32);
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+  background: rgba(var(--accent-rgb), 0.32);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.2);
 }
 
 .select-time-page__days button.is-today:not(.is-selected) {
-  background: rgba(212, 175, 55, 0.28);
+  background: rgba(var(--accent-rgb), 0.28);
   border: 1px solid var(--gold);
 }
 
@@ -259,7 +259,7 @@
   border-color: var(--gold);
   color: var(--text-on-gold);
   font-weight: 700;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.35);
 }
 
 .select-time-page__times {
@@ -283,8 +283,8 @@
   padding: 12px 8px;
   border-radius: var(--radius-sm);
   /* Available slots: gold-tinted, clearly selectable */
-  border: 1.5px solid rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.08);
+  border: 1.5px solid rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.08);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 600;
@@ -292,8 +292,8 @@
 }
 
 .select-time-page__grid button:hover:not(.is-selected) {
-  background: rgba(212, 175, 55, 0.18);
-  border-color: rgba(212, 175, 55, 0.75);
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.75);
 }
 
 .select-time-page__grid button.is-selected {
@@ -362,8 +362,8 @@
   gap: 7px;
   padding: 9px 16px;
   border-radius: 8px;
-  border: 1px dashed rgba(212, 175, 55, 0.5);
-  background: rgba(212, 175, 55, 0.05);
+  border: 1px dashed rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.05);
   color: var(--gold);
   font-size: 0.85rem;
   font-weight: 600;
@@ -372,7 +372,7 @@
 }
 
 .select-time-page__ref-add:hover {
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--gold);
 }
 

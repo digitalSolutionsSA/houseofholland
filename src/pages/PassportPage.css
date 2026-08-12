@@ -1,4 +1,4 @@
-.passport-page {
+﻿.passport-page {
   padding-bottom: 32px;
 }
 
@@ -16,8 +16,8 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.07);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(var(--accent-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,8 +61,8 @@
   margin: 8px var(--page-pad) 0;
   padding: 9px 14px;
   border-radius: var(--radius-sm, 8px);
-  background: rgba(212, 175, 55, 0.07);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(var(--accent-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;

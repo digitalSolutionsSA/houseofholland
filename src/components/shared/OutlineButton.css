@@ -1,4 +1,4 @@
-.outline-btn {
+﻿.outline-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -20,7 +20,7 @@
 }
 
 .outline-btn:hover {
-  background: rgba(212, 175, 55, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .outline-btn:active {

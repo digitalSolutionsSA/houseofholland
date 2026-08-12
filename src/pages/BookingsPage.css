@@ -1,4 +1,4 @@
-.bookings-page__content {
+﻿.bookings-page__content {
   padding: 8px var(--page-pad) 20px;
   display: flex;
   flex-direction: column;
@@ -35,8 +35,8 @@
 .bookings-page__today-card {
   padding: 16px;
   border-radius: 14px;
-  border: 1px solid rgba(212,175,55,0.35);
-  background: rgba(212,175,55,0.05);
+  border: 1px solid rgba(var(--accent-rgb),0.35);
+  background: rgba(var(--accent-rgb),0.05);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -53,12 +53,12 @@
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(212,175,55,0.4);
+  border: 1px solid rgba(var(--accent-rgb),0.4);
   flex-shrink: 0;
 }
 
 .bookings-page__today-avatar--empty {
-  background: rgba(212,175,55,0.08);
+  background: rgba(var(--accent-rgb),0.08);
 }
 
 .bookings-page__today-service {
@@ -144,8 +144,8 @@
 
 .bookings-page__status--accepted {
   color: var(--gold);
-  background: rgba(212,175,55,0.1);
-  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(var(--accent-rgb),0.1);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
 }
 
 .bookings-page__deposit-btn {
@@ -231,8 +231,8 @@
 }
 
 .bookings-popup__icon--checkin {
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
   color: var(--gold);
 }
 
@@ -341,8 +341,8 @@
   transition: background 0.15s, border-color 0.15s;
 }
 .appointment-card--clickable:hover {
-  background: rgba(212,175,55,0.04);
-  border-color: rgba(212,175,55,0.25);
+  background: rgba(var(--accent-rgb),0.04);
+  border-color: rgba(var(--accent-rgb),0.25);
 }
 
 /* ── Booking detail bottom sheet ── */
@@ -354,7 +354,7 @@
   max-width: 520px;
   margin: 0 auto;
   background: #111010;
-  border: 1px solid rgba(212,175,55,0.18);
+  border: 1px solid rgba(var(--accent-rgb),0.18);
   border-bottom: none;
   border-radius: 20px 20px 0 0;
   z-index: 210;
@@ -430,8 +430,8 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--gold);
-  background: rgba(212,175,55,0.1);
-  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(var(--accent-rgb),0.1);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
   border-radius: 6px;
   padding: 2px 10px;
   cursor: pointer;
@@ -447,7 +447,7 @@
   width: 100%;
   min-height: 90px;
   background: var(--bg-elevated, #1a1a1a);
-  border: 1px solid rgba(212,175,55,0.3);
+  border: 1px solid rgba(var(--accent-rgb),0.3);
   border-radius: 8px;
   color: var(--text);
   font-size: 0.88rem;
@@ -469,7 +469,7 @@
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: 8px;
-  border: 1px solid rgba(212,175,55,0.2);
+  border: 1px solid rgba(var(--accent-rgb),0.2);
   display: block;
 }
 
