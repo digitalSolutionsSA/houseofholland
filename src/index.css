@@ -56,6 +56,25 @@ ol {
   list-style: none;
 }
 
+/* ── Mobile topbar (logo, hidden on tablet+) ── */
+.mobile-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+@media (min-width: 768px) {
+  .mobile-topbar {
+    display: none;
+  }
+}
+
 /* ── App shell ── */
 .app-shell {
   min-height: 100%;
@@ -192,12 +211,6 @@ ol {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Free tier ── */
-
-/* Logo: white logo becomes pure black silhouette */
-[data-tier="free"] .brand-logo--full,
-[data-tier="free"] .brand-logo--mark img {
-  filter: brightness(0);
-}
 
 /* Nav */
 [data-tier="free"] .bottom-nav {

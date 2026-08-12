@@ -1,12 +1,31 @@
-const logoWhite = '/logo-white.webp'
-const logoBlack = '/logo-black.webp'
+import { useState, useEffect } from 'react'
 import './Logo.css'
 
+const TIER_LOGOS: Record<string, string> = {
+  'black-card': '/logo-gold.png',
+  'premium':    '/logo-red.png',
+  'free':       '/logo-black.webp',
+}
+
+function useDisplayTier() {
+  const [tier, setTier] = useState(
+    () => document.documentElement.dataset.tier ?? 'black-card'
+  )
+  useEffect(() => {
+    const obs = new MutationObserver(() => {
+      setTier(document.documentElement.dataset.tier ?? 'black-card')
+    })
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-tier'],
+    })
+    return () => obs.disconnect()
+  }, [])
+  return tier
+}
+
 type LogoProps = {
-  /** full = crest + wordmark; mark = crest only */
   variant?: 'full' | 'mark'
-  theme?: 'white' | 'black'
-  /** Height in px for the rendered logo */
   height?: number
   className?: string
   alt?: string
@@ -14,12 +33,12 @@ type LogoProps = {
 
 export function Logo({
   variant = 'full',
-  theme = 'white',
   height = 140,
   className = '',
   alt = 'House of Holland Tattoo Emporium',
 }: LogoProps) {
-  const src = theme === 'white' ? logoWhite : logoBlack
+  const tier = useDisplayTier()
+  const src = TIER_LOGOS[tier] ?? '/logo-gold.png'
 
   if (variant === 'mark') {
     return (
