@@ -13,16 +13,6 @@
   overflow: hidden;
 }
 
-.bottom-nav__brand {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 32px;
-  flex-shrink: 0;
-  opacity: 0.9;
-  position: relative;
-  z-index: 1;
-}
 
 .bottom-nav__items {
   display: flex;

@@ -22,7 +22,7 @@ type Particle = {
 const TIER_PARTICLE_COLORS: Record<string, [string, string, string]> = {
   'black-card': ['rgba(255,235,150,1)', 'rgba(212,175,55,0.9)', 'rgba(180,130,20,0)'],
   'premium':    ['rgba(255,140,140,1)', 'rgba(220,38,38,0.9)',  'rgba(150,10,10,0)'],
-  'free':       ['rgba(80,80,80,1)',    'rgba(50,50,50,0.8)',   'rgba(20,20,20,0)'],
+  'free':       ['rgba(0,0,0,1)',        'rgba(0,0,0,0.85)',     'rgba(0,0,0,0)'],
 }
 
 function initParticle(canvas: HTMLCanvasElement): Particle {

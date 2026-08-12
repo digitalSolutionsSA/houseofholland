@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   CreditCard,
 } from 'lucide-react'
-import { Logo } from './Logo'
 import { useAuth } from '../../context/AuthContext'
 import './BottomNav.css'
 
@@ -35,9 +34,6 @@ export function BottomNav() {
 
   return (
     <nav className="bottom-nav" aria-label="Main">
-      <div className="bottom-nav__brand">
-        <Logo variant="full" height={28} />
-      </div>
       <div className="bottom-nav__items">
         {items.map(({ to, label, icon: Icon }) => (
           <NavLink

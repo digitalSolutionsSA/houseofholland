@@ -1,10 +1,10 @@
 :root {
   /* Brand */
   --bg: #000000;
-  --bg-elevated: #0d0d0d;
-  --bg-card: #1c1c1e;
-  --bg-muted: #1a1a1a;
-  --bg-chip: #2a2a2a;
+  --bg-elevated: #181818;
+  --bg-card: #272729;
+  --bg-muted: #222224;
+  --bg-chip: #323234;
 
   /* accent-rgb drives every rgba(gold, opacity) in the codebase */
   --accent-rgb: 212, 175, 55;
@@ -23,7 +23,7 @@
   --text-on-gold: #1a1a1a;
 
   --border-gold: rgba(var(--accent-rgb), 0.45);
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.16);
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -56,10 +56,10 @@
   --accent-rgb:        0, 0, 0;
 
   --bg:                #ffffff;
-  --bg-elevated:       #eeeeee;
-  --bg-card:           #e4e4e4;
-  --bg-muted:          #f2f2f2;
-  --bg-chip:           #d8d8d8;
+  --bg-elevated:       #f0f0f0;
+  --bg-card:           #e8e8e8;
+  --bg-muted:          #f4f4f4;
+  --bg-chip:           #d4d4d4;
 
   --gold:              #111111;
   --gold-bright:       #333333;
@@ -74,8 +74,8 @@
   --text-dim:          #777777;
   --text-on-gold:      #ffffff;
 
-  --border-gold:       rgba(0, 0, 0, 0.35);
-  --border-subtle:     rgba(0, 0, 0, 0.13);
+  --border-gold:       rgba(0, 0, 0, 0.40);
+  --border-subtle:     rgba(0, 0, 0, 0.22);
 }
 
 /* ── Premium tier: dark grey / red accent ── */
@@ -83,10 +83,10 @@
   --accent-rgb:        220, 38, 38;
 
   --bg:                #0f0f0f;
-  --bg-elevated:       #1a1a1a;
-  --bg-card:           #222222;
-  --bg-muted:          #1d1d1d;
-  --bg-chip:           #2d2d2d;
+  --bg-elevated:       #1e1e1e;
+  --bg-card:           #2a2a2a;
+  --bg-muted:          #222222;
+  --bg-chip:           #333333;
 
   --gold:              #dc2626;
   --gold-bright:       #ef4444;
@@ -101,8 +101,8 @@
   --text-dim:          #606060;
   --text-on-gold:      #ffffff;
 
-  --border-gold:       rgba(220, 38, 38, 0.45);
-  --border-subtle:     rgba(255, 255, 255, 0.07);
+  --border-gold:       rgba(220, 38, 38, 0.55);
+  --border-subtle:     rgba(255, 255, 255, 0.16);
 }
 
 /* Tablet: sidebar appears, bottom nav hidden */
