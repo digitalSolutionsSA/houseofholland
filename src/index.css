@@ -92,7 +92,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 .app-frame {
   width: 100%;
   min-height: 100dvh;
-  background: rgba(0, 0, 0, 0.38);
+  background: rgba(0, 0, 0, 0.18);
   position: relative;
   z-index: 1;
   display: flex;
@@ -148,7 +148,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
   .app-frame {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    background: rgba(0, 0, 0, 0.38);
+    background: rgba(0, 0, 0, 0.18);
     min-height: 100dvh;
   }
 
@@ -262,9 +262,9 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 [data-tier="premium"] .desktop-nav__brand,
 [data-tier="premium"] .desktop-nav__section       { border-color: rgba(220, 38, 38, 0.18); }
 
-[data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.38); }
+[data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.18); }
 @media (min-width: 768px) {
-  [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.38); }
+  [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.18); }
 }
 
 [data-tier="premium"] .profile-page__save-btn {
