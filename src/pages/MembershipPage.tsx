@@ -37,8 +37,8 @@ const TIERS = [
     id: 'premium' as const,
     name: 'Premium',
     Icon: Zap,
-    priceLabel: '$1.00 / mo',
-    zarLabel: 'R18.50 / mo',
+    priceLabel: '$4.99 / mo',
+    zarLabel: 'R91.83 / mo',
     tagline: 'Early access & rewards',
     badge: 'Most Popular',
     benefits: [
@@ -57,8 +57,8 @@ const TIERS = [
     id: 'black-card' as const,
     name: 'Black Card',
     Icon: Crown,
-    priceLabel: '$2.00 / mo',
-    zarLabel: 'R37.00 / mo',
+    priceLabel: '$6.99 / mo',
+    zarLabel: 'R128.65 / mo',
     tagline: 'Full VIP treatment',
     badge: undefined as string | undefined,
     benefits: [

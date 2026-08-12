@@ -9,8 +9,8 @@ const ALLOWED_EMAILS = ['info@digitalsolutionssa.co.za', 'armandgroesbeek@gmail.
 
 const PLAN_PRICES: Record<MembershipPlan, number> = {
   free: 0,
-  premium: 1.00,
-  'black-card': 2.00,
+  premium: 4.99,
+  'black-card': 6.99,
 }
 
 // Tiered commission based on number of paid customers per artist
