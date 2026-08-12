@@ -9,6 +9,7 @@ import {
   Award,
   CreditCard,
   ShieldCheck,
+  Trophy,
 } from 'lucide-react'
 import { Logo } from './Logo'
 import { useAuth } from '../../context/AuthContext'
@@ -24,8 +25,9 @@ const CUSTOMER_PRIMARY = [
 ]
 
 const CUSTOMER_SECONDARY = [
-  { to: '/passport',   label: 'Passport',   icon: Award },
-  { to: '/membership', label: 'Membership', icon: CreditCard },
+  { to: '/passport',    label: 'Passport',    icon: Award },
+  { to: '/battle-pass', label: 'Battle Pass', icon: Trophy },
+  { to: '/membership',  label: 'Membership',  icon: CreditCard },
 ]
 
 const ARTIST_PRIMARY = [

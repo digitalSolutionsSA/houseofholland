@@ -22,8 +22,10 @@ export function useMembership() {
     shopDiscount: isBlackCard ? 0.15 : isPremium ? 0.075 : 0,
     // How many days before the event a tier can join the flash queue
     flashNoticeDays: isBlackCard ? 7 : isPremium ? 2 : 0,
-    // Loyalty points multiplier: free = none, premium = 1×, black-card = 1.5×
+    // Passport points multiplier (tattoo-count based, legacy)
     pointsMultiplier: isBlackCard ? 1.5 : isPremium ? 1.0 : 0,
+    // Battle pass spend rate: points earned per R10 spent
+    spendPointsRate: isBlackCard ? 2 : isPremium ? 1 : 0,
     hasAccess: (required: MembershipPlan) =>
       tierIndex >= TIER_ORDER.indexOf(required),
   }

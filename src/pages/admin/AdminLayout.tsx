@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Users, Shirt, Zap, LayoutDashboard, ArrowLeft, CheckCircle,
   Images, CalendarDays, CalendarCheck, UserCheck, Bell, DollarSign,
-  FileText, UserCog, GitBranch, type LucideIcon,
+  FileText, UserCog, GitBranch, Trophy, type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
 import { BottomNav } from '../../components/shared/BottomNav'
@@ -26,6 +26,7 @@ const MANAGER_LINKS: NavLink[] = [
   { to: '/admin/flash',         label: 'Flash Events',     icon: Zap },
   { to: '/admin/rent',          label: 'Booth Rent',       icon: DollarSign },
   { to: '/admin/notifications', label: 'Notifications',    icon: Bell },
+  { to: '/admin/points',        label: 'Client Points',   icon: Trophy },
 ]
 
 const REFERRAL_EMAILS = ['info@digitalsolutionssa.co.za', 'armandgroesbeek@gmail.com']
@@ -36,6 +37,7 @@ const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/portfolio',      label: 'My Portfolio',    icon: Images },
   { to: '/admin/artist-profile', label: 'My Profile',      icon: UserCog },
   { to: '/admin/waivers',        label: 'Waivers',         icon: FileText },
+  { to: '/admin/points',         label: 'Client Points',   icon: Trophy },
 ]
 
 export function AdminLayout() {

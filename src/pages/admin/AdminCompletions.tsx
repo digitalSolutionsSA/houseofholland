@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Upload, Search } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { awardSpendPoints } from '../../lib/awardPoints'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 type ClientResult = { id: string; full_name: string | null; email: string | null }
@@ -29,6 +30,8 @@ export function AdminCompletions() {
   const [selectedClient, setSelectedClient] = useState<ClientResult | null>(null)
   const [style, setStyle] = useState('')
   const [notes, setNotes] = useState('')
+  const [price, setPrice] = useState('')
+  const [hours, setHours] = useState('')
   const [completedAt, setCompletedAt] = useState(new Date().toISOString().split('T')[0])
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
@@ -103,16 +106,31 @@ export function AdminCompletions() {
 
     const { data: urlData } = supabase.storage.from('portfolio').getPublicUrl(path)
 
-    const { error: dbErr } = await supabase.from('tattoo_completions').insert({
-      profile_id: selectedClient.id,
-      artist_id: selectedArtistId,
-      photo_url: urlData.publicUrl,
-      style: style.trim() || null,
-      notes: notes.trim() || null,
-      completed_at: completedAt,
-    })
+    const { data: newComp, error: dbErr } = await supabase
+      .from('tattoo_completions')
+      .insert({
+        profile_id: selectedClient.id,
+        artist_id: selectedArtistId,
+        photo_url: urlData.publicUrl,
+        style: style.trim() || null,
+        notes: notes.trim() || null,
+        completed_at: completedAt,
+        price: price.trim() ? parseFloat(price) : null,
+        duration_hours: hours.trim() ? parseFloat(hours) : null,
+      })
+      .select('id')
+      .single()
 
     if (dbErr) { setError(dbErr.message); setSaving(false); return }
+
+    if (price.trim() && profile?.id) {
+      await awardSpendPoints({
+        profileId: selectedClient.id,
+        price: parseFloat(price),
+        awardedBy: profile.id,
+        referenceId: newComp?.id,
+      })
+    }
 
     setSaving(false)
     setModal(false)
@@ -120,6 +138,8 @@ export function AdminCompletions() {
     setClientSearch('')
     setStyle('')
     setNotes('')
+    setPrice('')
+    setHours('')
     setPhotoFile(null)
     setCompletedAt(new Date().toISOString().split('T')[0])
     load(selectedArtistId)
@@ -247,6 +267,21 @@ export function AdminCompletions() {
               <textarea className="admin-modal__textarea" value={notes}
                 placeholder="Any notes about the piece…"
                 onChange={e => setNotes(e.target.value)} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="admin-modal__field">
+                <label className="admin-modal__label">Total Price Charged (R)</label>
+                <input className="admin-modal__input" type="number" min="0" step="0.01"
+                  value={price} placeholder="e.g. 350"
+                  onChange={e => setPrice(e.target.value)} />
+              </div>
+              <div className="admin-modal__field">
+                <label className="admin-modal__label">Hours in Chair</label>
+                <input className="admin-modal__input" type="number" min="0" step="0.5"
+                  value={hours} placeholder="e.g. 3.5"
+                  onChange={e => setHours(e.target.value)} />
+              </div>
             </div>
 
             <div className="admin-modal__field">

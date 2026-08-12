@@ -30,6 +30,8 @@ import { AdminRent } from './pages/admin/AdminRent'
 import { AdminWaivers } from './pages/admin/AdminWaivers'
 import { AdminArtistProfile } from './pages/admin/AdminArtistProfile'
 import { AdminReferrals } from './pages/admin/AdminReferrals'
+import { AdminPoints } from './pages/admin/AdminPoints'
+import { BattlePassPage } from './pages/BattlePassPage'
 import { BoothRentPage } from './pages/BoothRentPage'
 import { useAuth } from './context/AuthContext'
 
@@ -75,6 +77,7 @@ export default function App() {
           <Route path="waivers"          element={<AdminWaivers />} />
           <Route path="artist-profile"   element={<AdminArtistProfile />} />
           <Route path="referrals"        element={<AdminReferrals />} />
+          <Route path="points"           element={<AdminPoints />} />
         </Route>
 
         {/* Public app */}
@@ -89,6 +92,7 @@ export default function App() {
           <Route path="/merch" element={<RequireAuth><MerchPage /></RequireAuth>} />
           <Route path="/consent" element={<RequireAuth><ConsentFormsPage /></RequireAuth>} />
           <Route path="/passport" element={<RequireAuth><PassportPage /></RequireAuth>} />
+          <Route path="/battle-pass" element={<RequireAuth><BattlePassPage /></RequireAuth>} />
           <Route path="/membership" element={<RequireAuth><MembershipPage /></RequireAuth>} />
           <Route path="/bookings" element={<RequireAuth><BookingsPage /></RequireAuth>} />
           <Route path="/bookings/select-time" element={<RequireAuth><SelectDateTimePage /></RequireAuth>} />

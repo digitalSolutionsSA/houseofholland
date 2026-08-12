@@ -1,0 +1,381 @@
+.bp-page {
+  padding-bottom: 32px;
+}
+
+/* ── Locked state ── */
+.bp-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px var(--page-pad) 40px;
+  gap: 16px;
+}
+
+.bp-locked__icon {
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.bp-locked h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.bp-locked p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.65;
+  max-width: 340px;
+}
+
+.bp-locked p strong { color: var(--gold); }
+
+.bp-locked__cta {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 12px 28px;
+  background: var(--gold-gradient-btn);
+  color: #0a0a0a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-md);
+}
+
+/* ── Season header ── */
+.bp-season {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--page-pad);
+}
+
+.bp-season__label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.bp-season__reset {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+/* ── Points card ── */
+.bp-points-card {
+  margin: 0 var(--page-pad) 20px;
+  padding: 24px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid rgba(var(--accent-rgb), 0.20);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.bp-points-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gold-gradient);
+}
+
+.bp-points-card__value {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.bp-points-card__label {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.bp-points-card__rate {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.bp-points-card__progress {
+  margin-top: 18px;
+}
+
+.bp-points-card__progress-track {
+  height: 6px;
+  background: rgba(var(--accent-rgb), 0.12);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bp-points-card__progress-fill {
+  height: 100%;
+  background: var(--gold-gradient);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.bp-points-card__progress-label {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.bp-points-card__maxed {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ── Rewards track ── */
+.bp-track {
+  margin: 0 var(--page-pad);
+}
+
+.bp-track__heading,
+.bp-earn__heading,
+.bp-history__heading {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.10);
+}
+
+.bp-track__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Tier card ── */
+.bp-tier {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  opacity: 0.65;
+  transition: opacity 0.2s;
+}
+
+.bp-tier--unlocked {
+  opacity: 1;
+  border-color: rgba(var(--accent-rgb), 0.30);
+}
+
+.bp-tier--next {
+  opacity: 0.9;
+  border-color: rgba(var(--accent-rgb), 0.18);
+}
+
+.bp-tier__badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.20);
+  color: var(--text-muted);
+}
+
+.bp-tier--unlocked .bp-tier__badge {
+  background: rgba(var(--accent-rgb), 0.14);
+  border-color: var(--border-gold);
+  color: var(--gold);
+}
+
+.bp-tier__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.bp-tier__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.bp-tier__number {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.bp-tier__pts {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.bp-tier__name {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.bp-tier__desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.bp-tier__stock {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.bp-tier__claim {
+  display: inline-block;
+  padding: 8px 20px;
+  background: var(--gold-gradient-btn);
+  color: #0a0a0a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.bp-tier__claim:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.bp-tier__claimed {
+  font-size: 0.78rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.bp-tier__soldout {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.bp-tier__need {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── How to earn ── */
+.bp-earn {
+  margin: 24px var(--page-pad) 0;
+}
+
+.bp-earn__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bp-earn__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.bp-earn__icon {
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.bp-earn__item strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.bp-earn__item span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Points history ── */
+.bp-history {
+  margin: 24px var(--page-pad) 0;
+}
+
+.bp-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.bp-history__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+}
+
+.bp-history__icon {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.bp-history__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bp-history__label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.bp-history__note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.bp-history__pts {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+  flex-shrink: 0;
+}

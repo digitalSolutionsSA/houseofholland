@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle, FileText, Download, LogIn } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { awardSpendPoints } from '../../lib/awardPoints'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 type Booking = {
@@ -108,6 +109,7 @@ export function AdminBookings() {
   const [cmpNotes, setCmpNotes]   = useState('')
   const [cmpDate, setCmpDate]     = useState('')
   const [cmpPrice, setCmpPrice]   = useState('')
+  const [cmpHours, setCmpHours]   = useState('')
   const [cmpPaymentReceived, setCmpPaymentReceived] = useState(false)
   const [cmpFile, setCmpFile]     = useState<File | null>(null)
   const [cmpPreview, setCmpPreview] = useState<string | null>(null)
@@ -639,6 +641,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
     setCmpNotes('')
     setCmpDate(new Date().toISOString().split('T')[0])
     setCmpPrice('')
+    setCmpHours('')
     setCmpPaymentReceived(false)
     setCmpFile(null)
     setCmpPreview(null)
@@ -691,8 +694,17 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       notes: cmpNotes.trim() || null,
       completed_at: cmpDate,
       price: cmpPrice.trim() ? parseFloat(cmpPrice) : null,
+      duration_hours: cmpHours.trim() ? parseFloat(cmpHours) : null,
     })
     if (dbErr) { setCmpError(dbErr.message); setCmpSaving(false); return }
+
+    if (cmpPrice.trim() && profileId && profile?.id) {
+      await awardSpendPoints({
+        profileId,
+        price: parseFloat(cmpPrice),
+        awardedBy: profile.id,
+      })
+    }
 
     // Mark the booking as completed
     await supabase.from('bookings').update({ status: 'completed' }).eq('id', completeModal.id)
@@ -1375,17 +1387,31 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   />
                 </div>
 
-                <div className="admin-modal__field">
-                  <label className="admin-modal__label">Total Price Charged (optional)</label>
-                  <input
-                    className="admin-modal__input"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={cmpPrice}
-                    placeholder="e.g. 350"
-                    onChange={e => setCmpPrice(e.target.value)}
-                  />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className="admin-modal__field">
+                    <label className="admin-modal__label">Total Price Charged (R)</label>
+                    <input
+                      className="admin-modal__input"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={cmpPrice}
+                      placeholder="e.g. 350"
+                      onChange={e => setCmpPrice(e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-modal__field">
+                    <label className="admin-modal__label">Hours in Chair</label>
+                    <input
+                      className="admin-modal__input"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={cmpHours}
+                      placeholder="e.g. 3.5"
+                      onChange={e => setCmpHours(e.target.value)}
+                    />
+                  </div>
                 </div>
 
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 18, padding: '12px 14px', borderRadius: 8, border: `1px solid ${cmpPaymentReceived ? 'var(--gold)' : 'var(--border-subtle)'}`, background: cmpPaymentReceived ? 'rgba(212,175,55,0.07)' : 'transparent' }}>
