@@ -6,7 +6,6 @@ import type { MembershipPlan } from '../../lib/supabase'
 import {
   PLAN_PRICES,
   getCommissionRate,
-  getTierLabel,
   getTierColor,
   monthsInPeriod,
 } from '../../lib/commission'

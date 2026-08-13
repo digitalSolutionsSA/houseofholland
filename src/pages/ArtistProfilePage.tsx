@@ -131,7 +131,7 @@ export function ArtistProfilePage() {
             .order('created_at', { ascending: false }),
         ])
         setPortfolio(photos ?? [])
-        const allReviews = (reviewData ?? []) as Review[]
+        const allReviews = (reviewData ?? []) as unknown as Review[]
         setReviews(allReviews)
         if (user) {
           const { data: myR } = await supabase
@@ -141,9 +141,9 @@ export function ArtistProfilePage() {
             .eq('profile_id', user.id)
             .maybeSingle()
           if (myR) {
-            setMyReview(myR as Review)
-            setReviewRating((myR as Review).rating)
-            setReviewComment((myR as Review).comment ?? '')
+            setMyReview(myR as unknown as Review)
+            setReviewRating((myR as unknown as Review).rating)
+            setReviewComment((myR as unknown as Review).comment ?? '')
           }
         }
       }
@@ -209,7 +209,7 @@ export function ArtistProfilePage() {
         .order('created_at', { ascending: false }),
     ])
     if (updatedArtist) setArtist(updatedArtist)
-    const allReviews = (updatedReviews ?? []) as Review[]
+    const allReviews = (updatedReviews ?? []) as unknown as Review[]
     setReviews(allReviews)
 
     const { data: myR } = await supabase
@@ -218,7 +218,7 @@ export function ArtistProfilePage() {
       .eq('artist_id', artist.id)
       .eq('profile_id', user.id)
       .maybeSingle()
-    if (myR) setMyReview(myR as Review)
+    if (myR) setMyReview(myR as unknown as Review)
 
     setReviewSuccess(true)
     setReviewSubmitting(false)

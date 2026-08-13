@@ -17,8 +17,6 @@ type AuthContextValue = {
   toggleCustomerView: () => void
 }
 
-const CUSTOMER_VIEW_ADMIN = 'info@digitalsolutionssa.co.za'
-
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -70,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
+      else setRealProfile(null)
     })
 
     return () => subscription.unsubscribe()
