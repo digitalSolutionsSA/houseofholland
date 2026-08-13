@@ -73,6 +73,8 @@ export function FlashDayCard() {
             src={event.cover_image_url!}
             alt={event.title}
             className="flash-day-card__bg"
+            loading="lazy"
+            decoding="async"
           />
           {/* dark gradient so text stays readable */}
           <div className="flash-day-card__poster-scrim" aria-hidden />
