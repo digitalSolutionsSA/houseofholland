@@ -43,13 +43,15 @@ export async function awardBonusPoints(opts: {
   reason: 'referral' | 'review' | 'flash_day' | 'upgrade' | 'manual'
   note?: string
   awardedBy: string
+  referenceId?: string
 }) {
-  const { profileId, points, reason, note, awardedBy } = opts
+  const { profileId, points, reason, note, awardedBy, referenceId } = opts
 
   await supabase.from('loyalty_points').insert({
     profile_id: profileId,
     points,
     reason,
+    reference_id: referenceId ?? null,
     note: note ?? null,
     awarded_by: awardedBy,
     season: CURRENT_SEASON,

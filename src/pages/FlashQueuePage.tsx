@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { storageImg } from '../lib/storageImg'
 import { useAuth } from '../context/AuthContext'
 import { useMembership } from '../hooks/useMembership'
+import { awardBonusPoints, CURRENT_SEASON } from '../lib/awardPoints'
 import './FlashQueuePage.css'
 
 type FlashEvent = {
@@ -36,7 +37,7 @@ function daysUntilDate(dateStr: string): number {
 export function FlashQueuePage() {
   const { eventId } = useParams<{ eventId: string }>()
   const { profile } = useAuth()
-  const { flashNoticeDays, tier } = useMembership()
+  const { flashNoticeDays, tier, isPremium } = useMembership()
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [artists, setArtists] = useState<ArtistChip[]>([])
@@ -102,8 +103,33 @@ export function FlashQueuePage() {
       .insert({ flash_event_id: event.id, profile_id: profile.id, position: queueSize + 1 })
       .select('id, position, reserved_at')
       .single()
-    if (err) setError(err.message)
-    else { setReservation(data); setQueueSize(q => q + 1) }
+    if (err) {
+      setError(err.message)
+    } else {
+      setReservation(data)
+      setQueueSize(q => q + 1)
+      // Award flash day attendance points (premium/black-card only, once per event per season)
+      if (event.status === 'open' && isPremium) {
+        const { data: existing } = await supabase
+          .from('loyalty_points')
+          .select('id')
+          .eq('profile_id', profile.id)
+          .eq('reason', 'flash_day')
+          .eq('reference_id', event.id)
+          .eq('season', CURRENT_SEASON)
+          .maybeSingle()
+        if (!existing) {
+          await awardBonusPoints({
+            profileId: profile.id,
+            points: 20,
+            reason: 'flash_day',
+            note: event.title,
+            awardedBy: profile.id,
+            referenceId: event.id,
+          })
+        }
+      }
+    }
     setActing(false)
   }
 

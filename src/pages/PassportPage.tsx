@@ -44,16 +44,20 @@ export function PassportPage() {
 
   async function load() {
     setLoading(true)
-    const [{ data: comps }, { data: pts }, { data: rws }, { data: cls }] = await Promise.all([
+    const [{ data: comps }, { data: orders }, { data: pts }, { data: rws }, { data: cls }] = await Promise.all([
       supabase.from('tattoo_completions').select('price, duration_hours').eq('profile_id', profile!.id),
+      supabase.from('orders').select('total').eq('profile_id', profile!.id).in('status', ['paid', 'fulfilled']),
       supabase.from('loyalty_points').select('points').eq('profile_id', profile!.id).eq('season', CURRENT_SEASON),
       supabase.from('battle_pass_rewards').select('*').eq('is_active', true).order('sort_order'),
       supabase.from('battle_pass_claims').select('reward_id, fulfilled_at').eq('profile_id', profile!.id).eq('season', CURRENT_SEASON),
     ])
 
+    const tattooSpend  = (comps   ?? []).reduce((s, c) => s + ((c as any).price ?? 0), 0)
+    const merchSpend   = (orders  ?? []).reduce((s, o) => s + ((o as any).total ?? 0), 0)
+
     setTattooCount(comps?.length ?? 0)
     setTotalHours((comps ?? []).reduce((s, c) => s + ((c as any).duration_hours ?? 0), 0))
-    setTotalSpent((comps ?? []).reduce((s, c) => s + ((c as any).price ?? 0), 0))
+    setTotalSpent(tattooSpend + merchSpend)
     setLoyaltyPoints((pts ?? []).reduce((s, p) => s + p.points, 0))
     setRewards(rws ?? [])
     setClaims(cls ?? [])
