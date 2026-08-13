@@ -3,6 +3,7 @@ import { Plus, Upload, Search } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardSpendPoints } from '../../lib/awardPoints'
+import { StyleSelect } from '../../components/shared/StyleSelect'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 type ClientResult = { id: string; full_name: string | null; email: string | null }
@@ -256,10 +257,8 @@ export function AdminCompletions() {
             </div>
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Style / Title</label>
-              <input className="admin-modal__input" value={style}
-                placeholder="e.g. Black & Grey Sleeve, Floral Forearm…"
-                onChange={e => setStyle(e.target.value)} />
+              <label className="admin-modal__label">Style / Category</label>
+              <StyleSelect value={style} onChange={setStyle} />
             </div>
 
             <div className="admin-modal__field">

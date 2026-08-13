@@ -10,6 +10,7 @@ import { BrandBackground } from '../../components/shared/BrandBackground'
 import { useAuth } from '../../context/AuthContext'
 import './AdminLayout.css'
 
+
 type NavLink = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
 const MANAGER_LINKS: NavLink[] = [

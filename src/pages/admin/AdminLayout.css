@@ -123,6 +123,14 @@
   border-bottom: 1px solid var(--border-gold);
 }
 
+.admin-table tbody tr {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.admin-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
 .admin-table td {
   padding: 12px;
   border-bottom: 1px solid rgba(var(--accent-rgb),0.08);

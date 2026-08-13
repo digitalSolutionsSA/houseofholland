@@ -1,0 +1,149 @@
+.messages-page {
+  padding-top: 0;
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+}
+
+.messages-page__header {
+  padding: 20px var(--page-pad) 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.messages-page__title {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin: 0;
+}
+
+.messages-page__loading,
+.messages-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 64px 24px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.messages-page__empty p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.messages-page__empty-sub {
+  font-size: 0.82rem !important;
+  opacity: 0.7;
+}
+
+.messages-page__list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Conversation card ── */
+.messages-convo-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px var(--page-pad);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.12s;
+}
+
+.messages-convo-card:hover,
+.messages-convo-card:active {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.messages-convo-card--unread .messages-convo-card__name {
+  color: #fff;
+  font-weight: 700;
+}
+
+.messages-convo-card--unread .messages-convo-card__preview {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+}
+
+.messages-convo-card__avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.messages-convo-card__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.messages-convo-card__avatar span {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.messages-convo-card__badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 2px solid #000;
+}
+
+.messages-convo-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.messages-convo-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.messages-convo-card__name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.messages-convo-card__time {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.messages-convo-card__preview {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

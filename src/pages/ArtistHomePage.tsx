@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { CalendarDays, Clock, AlertTriangle, CheckCircle2, ChevronRight, CreditCard, ClipboardList, Users, Bell, TrendingUp } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { CalendarDays, Clock, AlertTriangle, CheckCircle2, ChevronRight, CreditCard, ClipboardList, Users, Bell, TrendingUp, Eye } from 'lucide-react'
 import { NotificationPanel } from '../components/shared/NotificationPanel'
+import { ArtistReferralCard } from '../components/home/ArtistReferralCard'
+import { MyCustomersSection } from '../components/home/MyCustomersSection'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import './ArtistHomePage.css'
+
+const CUSTOMER_VIEW_EMAIL = 'info@digitalsolutionssa.co.za'
 
 type ApptRow = {
   id: string
@@ -43,8 +47,15 @@ function greeting() {
 }
 
 export function ArtistHomePage() {
-  const { profile } = useAuth()
+  const { profile, realProfile, toggleCustomerView } = useAuth()
+  const navigate = useNavigate()
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
+  const canToggleCustomerView = realProfile?.email?.toLowerCase() === CUSTOMER_VIEW_EMAIL
+
+  function enterCustomerView() {
+    toggleCustomerView()
+    navigate('/home')
+  }
 
   const [, setArtistId] = useState<string | null>(null)
   const [upcoming, setUpcoming] = useState<ApptRow[]>([])
@@ -154,7 +165,26 @@ export function ArtistHomePage() {
           <p className="artist-home__greeting-sub">{greeting()},</p>
           <h1 className="artist-home__greeting-name">{firstName}</h1>
         </div>
-        <NotificationPanel />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {canToggleCustomerView && (
+            <button
+              onClick={enterCustomerView}
+              title="Switch to customer view"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 40, height: 40, borderRadius: '50%',
+                background: 'none', border: 'none',
+                color: 'var(--text-muted)', cursor: 'pointer',
+                transition: 'color 0.15s',
+              }}
+              onMouseOver={e => (e.currentTarget.style.color = '#f59e0b')}
+              onMouseOut={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+            >
+              <Eye size={22} strokeWidth={1.5} />
+            </button>
+          )}
+          <NotificationPanel />
+        </div>
       </header>
 
       <div className="artist-home__body">
@@ -231,6 +261,9 @@ export function ArtistHomePage() {
           </section>
         )}
 
+        {/* Referral earnings widget */}
+        <ArtistReferralCard />
+
         {/* Today's Schedule */}
         <section className="artist-home__section">
           <div className="artist-home__section-head">
@@ -302,6 +335,9 @@ export function ArtistHomePage() {
             </Link>
           </div>
         </section>
+
+        {/* Customers section — referred customers for artists, all customers for admin */}
+        <MyCustomersSection />
 
       </div>
     </div>

@@ -11,6 +11,7 @@ type FlashEvent = {
   description: string | null
   status: string
   max_spots: number
+  cover_image_url: string | null
   artist_name: string | null
 }
 
@@ -23,7 +24,7 @@ export function FlashDayCard() {
     async function load() {
       const { data: ev } = await supabase
         .from('flash_events')
-        .select('id, title, date, description, status, max_spots')
+        .select('id, title, date, description, status, max_spots, cover_image_url')
         .in('status', ['upcoming', 'open'])
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date')
@@ -32,7 +33,6 @@ export function FlashDayCard() {
 
       if (!ev) { setLoading(false); return }
 
-      // Fetch first artist from junction table
       const { data: junc } = await supabase
         .from('flash_event_artists')
         .select('artists(name)')
@@ -61,11 +61,25 @@ export function FlashDayCard() {
   }).toUpperCase()
 
   const isLive = event.status === 'open'
+  const hasCover = !!event.cover_image_url
 
   return (
-    <article className="flash-day-card">
+    <article className={`flash-day-card${hasCover ? ' flash-day-card--has-poster' : ''}`}>
       <div className="flash-day-card__accent" aria-hidden />
-      <div className="flash-day-card__overlay flash-day-card__overlay--no-img">
+
+      {hasCover && (
+        <>
+          <img
+            src={event.cover_image_url!}
+            alt={event.title}
+            className="flash-day-card__bg"
+          />
+          {/* dark gradient so text stays readable */}
+          <div className="flash-day-card__poster-scrim" aria-hidden />
+        </>
+      )}
+
+      <div className={`flash-day-card__overlay${hasCover ? '' : ' flash-day-card__overlay--no-img'}`}>
 
         <div className="flash-day-card__top">
           <span className={`flash-day-card__tag${isLive ? ' flash-day-card__tag--live' : ''}`}>
@@ -80,7 +94,7 @@ export function FlashDayCard() {
           {event.artist_name && (
             <p className="flash-day-card__event-name">with {event.artist_name}</p>
           )}
-          {event.description && (
+          {event.description && !hasCover && (
             <p className="flash-day-card__desc">{event.description}</p>
           )}
         </div>

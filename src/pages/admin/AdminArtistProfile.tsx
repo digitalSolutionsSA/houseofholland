@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Upload, Save } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { StylePicker } from '../../components/shared/StylePicker'
 
 type Artist = {
   id: string
@@ -23,7 +24,7 @@ export function AdminArtistProfile() {
   const [artist, setArtist]         = useState<Artist | null>(null)
 
   const [bio, setBio]               = useState('')
-  const [specialties, setSpecialties] = useState('')
+  const [specialties, setSpecialties] = useState<string[]>([])
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
@@ -66,7 +67,7 @@ export function AdminArtistProfile() {
     if (data) {
       setArtist(data)
       setBio(data.bio ?? '')
-      setSpecialties(data.specialties.join(', '))
+      setSpecialties(data.specialties)
     }
     setLoading(false)
   }
@@ -96,11 +97,9 @@ export function AdminArtistProfile() {
       avatar_url = urlData.publicUrl
     }
 
-    const specialtiesArr = specialties.split(',').map(s => s.trim()).filter(Boolean)
-
     const { error: err } = await supabase
       .from('artists')
-      .update({ bio: bio.trim() || null, specialties: specialtiesArr, avatar_url, hero_url: avatar_url })
+      .update({ bio: bio.trim() || null, specialties, avatar_url, hero_url: avatar_url })
       .eq('id', artistId)
 
     if (err) { setError(err.message); setSaving(false); return }
@@ -194,13 +193,8 @@ export function AdminArtistProfile() {
 
           {/* Specialties */}
           <div className="admin-modal__field">
-            <label className="admin-modal__label">Specialties (comma separated)</label>
-            <input
-              className="admin-modal__input"
-              value={specialties}
-              placeholder="e.g. Realism, Black & Grey, Neo-Traditional"
-              onChange={e => setSpecialties(e.target.value)}
-            />
+            <label className="admin-modal__label">Styles I specialise in</label>
+            <StylePicker value={specialties} onChange={setSpecialties} />
           </div>
 
           {/* Bio */}

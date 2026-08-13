@@ -26,16 +26,38 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 0;
+}
+
+/* dark gradient over the poster so text is always readable */
+.flash-day-card__poster-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.15) 40%,
+    rgba(0,0,0,0.65) 100%
+  );
+}
+
+.flash-day-card--has-poster {
+  min-height: 320px;
 }
 
 .flash-day-card__overlay {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding: 24px 22px 22px;
   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.flash-day-card--has-poster .flash-day-card__overlay {
+  min-height: 320px;
 }
 
 .flash-day-card__overlay--no-img {
@@ -95,7 +117,13 @@
   letter-spacing: 0.04em;
   color: var(--text);
   line-height: 1.1;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.6);
+}
+
+.flash-day-card--has-poster .flash-day-card__date-pill,
+.flash-day-card--has-poster .flash-day-card__eyebrow,
+.flash-day-card--has-poster .flash-day-card__spots {
+  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
 }
 
 .flash-day-card__event-name {

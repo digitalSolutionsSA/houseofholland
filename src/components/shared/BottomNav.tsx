@@ -7,24 +7,27 @@ import {
   User,
   ShieldCheck,
   CreditCard,
+  MessageCircle,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import './BottomNav.css'
 
 const CUSTOMER_ITEMS = [
-  { to: '/home',     label: 'Home',     icon: Home },
-  { to: '/artists',  label: 'Artists',  icon: Users },
-  { to: '/bookings', label: 'Bookings', icon: CalendarDays },
-  { to: '/vault',    label: 'Vault',    icon: Archive },
-  { to: '/profile',  label: 'Profile',  icon: User },
+  { to: '/home',      label: 'Home',     icon: Home },
+  { to: '/artists',   label: 'Artists',  icon: Users },
+  { to: '/bookings',  label: 'Bookings', icon: CalendarDays },
+  { to: '/messages',  label: 'Messages', icon: MessageCircle },
+  { to: '/vault',     label: 'Vault',    icon: Archive },
+  { to: '/profile',   label: 'Profile',  icon: User },
 ]
 
 const ARTIST_ITEMS = [
-  { to: '/home',       label: 'Home',       icon: Home },
-  { to: '/artists',    label: 'Artists',    icon: Users },
-  { to: '/admin',      label: 'Admin',      icon: ShieldCheck },
-  { to: '/membership', label: 'Membership', icon: CreditCard },
-  { to: '/profile',    label: 'Profile',    icon: User },
+  { to: '/home',      label: 'Home',     icon: Home },
+  { to: '/artists',   label: 'Artists',  icon: Users },
+  { to: '/messages',  label: 'Messages', icon: MessageCircle },
+  { to: '/admin',     label: 'Admin',    icon: ShieldCheck },
+  { to: '/membership',label: 'Membership',icon: CreditCard },
+  { to: '/profile',   label: 'Profile',  icon: User },
 ]
 
 export function BottomNav() {

@@ -4,6 +4,7 @@ import { PageHeader } from '../components/shared/PageHeader'
 import { CategoryChips } from '../components/shared/CategoryChips'
 import { ArtistCard } from '../components/artists/ArtistCard'
 import { supabase } from '../lib/supabase'
+import { TATTOO_STYLES, isPredefined } from '../lib/tattooStyles'
 import './ArtistsPage.css'
 
 type Artist = {
@@ -18,6 +19,8 @@ type Artist = {
 }
 
 const ALL_FILTER = 'All'
+const OTHER_FILTER = 'Other'
+const STYLE_FILTERS = [ALL_FILTER, ...TATTOO_STYLES, OTHER_FILTER]
 
 export function ArtistsPage() {
   const [artists, setArtists] = useState<Artist[]>([])
@@ -34,15 +37,17 @@ export function ArtistsPage() {
       .then(({ data }) => { setArtists(data ?? []); setLoading(false) })
   }, [])
 
-  const styleFilters = useMemo(() => {
-    const all = artists.flatMap(a => a.specialties)
-    return [ALL_FILTER, ...Array.from(new Set(all)).sort()]
-  }, [artists])
-
   const filtered = useMemo(() => {
     return artists.filter(a => {
       const matchesQuery = a.name.toLowerCase().includes(query.toLowerCase())
-      const matchesFilter = filter === ALL_FILTER || a.specialties.includes(filter)
+      let matchesFilter = false
+      if (filter === ALL_FILTER) {
+        matchesFilter = true
+      } else if (filter === OTHER_FILTER) {
+        matchesFilter = a.specialties.some(s => !isPredefined(s))
+      } else {
+        matchesFilter = a.specialties.includes(filter)
+      }
       return matchesQuery && matchesFilter
     })
   }, [artists, query, filter])
@@ -68,7 +73,7 @@ export function ArtistsPage() {
         />
       </div>
 
-      <CategoryChips items={styleFilters} active={filter} onChange={setFilter} />
+      <CategoryChips items={STYLE_FILTERS} active={filter} onChange={setFilter} />
 
       <div className="artists-page__list">
         {loading && <p style={{ color: 'var(--text-muted)', padding: '24px', textAlign: 'center' }}>Loading…</p>}

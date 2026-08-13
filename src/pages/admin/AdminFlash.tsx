@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Users } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Plus, Pencil, Trash2, Users, ImagePlus, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type FlashEvent = {
@@ -11,6 +11,7 @@ type FlashEvent = {
   end_time: string
   status: 'upcoming' | 'open' | 'closed'
   max_spots: number
+  cover_image_url: string | null
   artistIds: string[]
   guestArtistIds: string[]
 }
@@ -29,6 +30,25 @@ const EMPTY_FORM: FormState = {
   end_time: '18:00', status: 'upcoming', max_spots: 10,
 }
 
+const ACCEPTED = 'image/jpeg,image/png'
+
+function validateResolution(file: File): Promise<string | null> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      if (img.naturalWidth !== 2000 || img.naturalHeight !== 2000) {
+        resolve(`Image must be exactly 2000×2000 px. Yours is ${img.naturalWidth}×${img.naturalHeight} px.`)
+      } else {
+        resolve(null)
+      }
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve('Could not read image file.') }
+    img.src = url
+  })
+}
+
 export function AdminFlash() {
   const [events, setEvents]             = useState<FlashEvent[]>([])
   const [artists, setArtists]           = useState<Artist[]>([])
@@ -38,9 +58,17 @@ export function AdminFlash() {
   const [form, setForm]                 = useState<FormState>(EMPTY_FORM)
   const [selectedArtists, setSelectedArtists]           = useState<string[]>([])
   const [selectedGuestArtists, setSelectedGuestArtists] = useState<string[]>([])
-  const [editId, setEditId]   = useState<string | null>(null)
-  const [error, setError]     = useState<string | null>(null)
-  const [saving, setSaving]   = useState(false)
+  const [editId, setEditId]             = useState<string | null>(null)
+  const [error, setError]               = useState<string | null>(null)
+  const [saving, setSaving]             = useState(false)
+
+  // Cover image state
+  const [coverFile, setCoverFile]       = useState<File | null>(null)
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)  // object URL or existing URL
+  const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null)
+  const [coverError, setCoverError]     = useState<string | null>(null)
+  const [coverValidating, setCoverValidating] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function load() {
     setLoading(true)
@@ -65,10 +93,20 @@ export function AdminFlash() {
 
   useEffect(() => { load() }, [])
 
+  function resetCover() {
+    setCoverFile(null)
+    setCoverPreview(null)
+    setExistingCoverUrl(null)
+    setCoverError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   function openAdd() {
     setForm(EMPTY_FORM)
     setSelectedArtists([]); setSelectedGuestArtists([])
-    setError(null); setEditId(null); setModal('add')
+    setError(null); setEditId(null)
+    resetCover()
+    setModal('add')
   }
 
   function openEdit(ev: FlashEvent) {
@@ -79,7 +117,47 @@ export function AdminFlash() {
     })
     setSelectedArtists(ev.artistIds)
     setSelectedGuestArtists(ev.guestArtistIds)
-    setError(null); setEditId(ev.id); setModal('edit')
+    setError(null); setEditId(ev.id)
+    setCoverFile(null)
+    setCoverError(null)
+    setExistingCoverUrl(ev.cover_image_url)
+    setCoverPreview(ev.cover_image_url)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    setModal('edit')
+  }
+
+  async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const mime = file.type
+    if (!['image/jpeg', 'image/png'].includes(mime)) {
+      setCoverError('Only JPG and PNG files are accepted.')
+      e.target.value = ''
+      return
+    }
+
+    setCoverError(null)
+    setCoverValidating(true)
+    const resError = await validateResolution(file)
+    setCoverValidating(false)
+
+    if (resError) {
+      setCoverError(resError)
+      e.target.value = ''
+      return
+    }
+
+    setCoverFile(file)
+    setCoverPreview(URL.createObjectURL(file))
+  }
+
+  function removeCover() {
+    setCoverFile(null)
+    setCoverPreview(existingCoverUrl ? null : null)   // clear both cases
+    setExistingCoverUrl(null)
+    setCoverError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   function toggleArtist(id: string) {
@@ -94,6 +172,25 @@ export function AdminFlash() {
     if (!form.date) { setError('Date is required.'); return }
     setSaving(true); setError(null)
 
+    // Upload cover image if a new file was selected
+    let coverUrl: string | null = existingCoverUrl
+
+    if (coverFile) {
+      const ext = coverFile.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { data: uploaded, error: uploadErr } = await supabase.storage
+        .from('flash-event-covers')
+        .upload(path, coverFile, { cacheControl: '3600', upsert: false })
+
+      if (uploadErr || !uploaded) {
+        setError('Failed to upload cover image: ' + (uploadErr?.message ?? 'unknown error'))
+        setSaving(false); return
+      }
+
+      const { data: urlData } = supabase.storage.from('flash-event-covers').getPublicUrl(uploaded.path)
+      coverUrl = urlData.publicUrl
+    }
+
     const payload = {
       title: form.title.trim(),
       description: form.description || null,
@@ -102,7 +199,8 @@ export function AdminFlash() {
       end_time: form.end_time,
       status: form.status,
       max_spots: Number(form.max_spots),
-      artist_id: selectedArtists[0] ?? null,   // keep legacy FK for compat
+      artist_id: selectedArtists[0] ?? null,
+      cover_image_url: coverUrl,
     }
 
     let eventId = editId
@@ -116,7 +214,6 @@ export function AdminFlash() {
       if (err) { setError(err.message); setSaving(false); return }
     }
 
-    // Sync resident artists junction
     await supabase.from('flash_event_artists').delete().eq('flash_event_id', eventId!)
     if (selectedArtists.length > 0) {
       await supabase.from('flash_event_artists').insert(
@@ -124,7 +221,6 @@ export function AdminFlash() {
       )
     }
 
-    // Sync guest artists junction
     await supabase.from('flash_event_guest_artists').delete().eq('flash_event_id', eventId!)
     if (selectedGuestArtists.length > 0) {
       await supabase.from('flash_event_guest_artists').insert(
@@ -164,6 +260,7 @@ export function AdminFlash() {
         <table className="admin-table">
           <thead>
             <tr>
+              <th>Cover</th>
               <th>Title</th>
               <th>Date</th>
               <th>Time</th>
@@ -176,6 +273,12 @@ export function AdminFlash() {
           <tbody>
             {events.map((ev) => (
               <tr key={ev.id}>
+                <td style={{ width: 48 }}>
+                  {ev.cover_image_url
+                    ? <img src={ev.cover_image_url} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gold)' }} />
+                    : <div style={{ width: 40, height: 40, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImagePlus size={14} style={{ color: 'var(--text-dim)' }} /></div>
+                  }
+                </td>
                 <td>{ev.title}</td>
                 <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                   {new Date(ev.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -212,6 +315,66 @@ export function AdminFlash() {
           <div className="admin-modal">
             <h2 className="admin-modal__title">{modal === 'add' ? 'Add Flash Event' : 'Edit Flash Event'}</h2>
 
+            {/* ── Cover image upload ── */}
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">
+                Event Poster
+                <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>JPG or PNG · exactly 2000×2000 px</span>
+              </label>
+
+              {coverPreview ? (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <img
+                    src={coverPreview}
+                    alt="Cover preview"
+                    style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border-gold)', display: 'block' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={removeCover}
+                    title="Remove cover image"
+                    style={{ position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                  >
+                    <X size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--gold)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Replace image
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={coverValidating}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', padding: '24px 16px', borderRadius: 10, border: '2px dashed rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.04)', cursor: 'pointer', color: 'var(--text-muted)', transition: 'border-color 0.15s, background 0.15s' }}
+                  onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.6)')}
+                  onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.3)')}
+                >
+                  <ImagePlus size={28} strokeWidth={1.5} style={{ color: 'var(--gold)', opacity: 0.7 }} />
+                  <span style={{ fontSize: '0.83rem' }}>
+                    {coverValidating ? 'Validating…' : 'Click to upload poster'}
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>JPG / PNG · 2000×2000 px required</span>
+                </button>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED}
+                style={{ display: 'none' }}
+                onChange={handleCoverFile}
+              />
+
+              {coverError && (
+                <p style={{ marginTop: 6, fontSize: '0.78rem', color: '#f87171' }}>{coverError}</p>
+              )}
+            </div>
+
             <div className="admin-modal__field">
               <label className="admin-modal__label">Title *</label>
               <input className="admin-modal__input" value={form.title}
@@ -243,7 +406,6 @@ export function AdminFlash() {
               </div>
             </div>
 
-            {/* ── Resident artist checkboxes ── */}
             <div className="admin-modal__field">
               <label className="admin-modal__label">Resident Artists</label>
               {artists.length === 0 ? (
@@ -254,15 +416,8 @@ export function AdminFlash() {
                     const checked = selectedArtists.includes(a.id)
                     return (
                       <label key={a.id} className={`admin-flash__artist-row${checked ? ' admin-flash__artist-row--checked' : ''}`}>
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleArtist(a.id)}
-                          className="admin-flash__checkbox"
-                        />
-                        {a.avatar_url && (
-                          <img src={a.avatar_url} alt="" className="admin-flash__artist-avatar" />
-                        )}
+                        <input type="checkbox" checked={checked} onChange={() => toggleArtist(a.id)} className="admin-flash__checkbox" />
+                        {a.avatar_url && <img src={a.avatar_url} alt="" className="admin-flash__artist-avatar" />}
                         <span className="admin-flash__artist-name">{a.name}</span>
                         {checked && <span className="admin-flash__artist-tick">✓</span>}
                       </label>
@@ -272,7 +427,6 @@ export function AdminFlash() {
               )}
             </div>
 
-            {/* ── Guest artist checkboxes ── */}
             {guestArtists.length > 0 && (
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Guest Artists</label>
@@ -316,7 +470,7 @@ export function AdminFlash() {
 
             <div className="admin-modal__actions">
               <button className="admin-btn admin-btn--ghost" onClick={() => setModal(null)}>Cancel</button>
-              <button className="admin-btn admin-btn--primary" onClick={save} disabled={saving}>
+              <button className="admin-btn admin-btn--primary" onClick={save} disabled={saving || coverValidating}>
                 {saving ? 'Saving…' : 'Save Event'}
               </button>
             </div>

@@ -248,3 +248,296 @@
   line-height: 1.45;
   margin: 0;
 }
+
+/* ── Reviews section ── */
+.artist-reviews-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.artist-reviews-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.artist-reviews-section__title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--gold);
+  margin: 0;
+}
+
+.artist-reviews-section__title svg {
+  color: var(--gold);
+}
+
+.artist-reviews-section__read-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gold);
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  border-radius: 99px;
+  padding: 4px 12px;
+  background: rgba(var(--accent-rgb), 0.08);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.artist-reviews-section__read-btn:hover {
+  background: rgba(var(--accent-rgb), 0.16);
+}
+
+.artist-reviews-section__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.artist-reviews-section__more-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.artist-reviews-section__more-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--gold);
+}
+
+/* ── Review card ── */
+.artist-review-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.artist-review-card--full {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.artist-review-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.review-display-stars {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--gold);
+}
+
+.artist-review-card__date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.artist-review-card__author {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 5px;
+}
+
+.artist-review-card__comment {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Review modal ── */
+.review-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 640px) {
+  .review-modal-backdrop {
+    align-items: center;
+    padding: 16px;
+  }
+}
+
+.review-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #111;
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-radius: 24px 24px 0 0;
+  padding: 28px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .review-modal {
+    border-radius: 20px;
+  }
+}
+
+.review-modal--list {
+  gap: 0;
+}
+
+.review-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.review-modal__title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  padding-right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold);
+}
+
+.review-modal__subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── Star rating input ── */
+.review-star-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+
+.review-star-btn {
+  color: var(--gold);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: transform 0.1s;
+  line-height: 0;
+}
+
+.review-star-btn:hover,
+.review-star-btn--active {
+  transform: scale(1.1);
+}
+
+.review-modal__textarea {
+  width: 100%;
+  min-height: 100px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 0.92rem;
+  padding: 12px 14px;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.review-modal__textarea:focus {
+  outline: none;
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.review-modal__char-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+  margin: -6px 0 0;
+}
+
+.review-modal__error {
+  font-size: 0.85rem;
+  color: #f87171;
+  margin: 0;
+}
+
+.review-modal__submit {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: var(--gold);
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-top: 4px;
+}
+
+.review-modal__submit:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.review-modal__success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 0 8px;
+  color: var(--gold);
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.review-modal__points {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.review-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  overflow-y: auto;
+}

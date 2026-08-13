@@ -1,0 +1,42 @@
+.style-picker__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.style-picker__pill {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.04);
+  color: var(--text-muted, rgba(255,255,255,0.55));
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.style-picker__pill:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+  color: #d4af37;
+}
+
+.style-picker__pill--on {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: #d4af37;
+  color: #d4af37;
+}
+
+.style-picker__customs {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.style-picker__customs-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted, rgba(255,255,255,0.45));
+  margin: 0 0 2px;
+}

@@ -33,6 +33,8 @@ import { AdminReferrals } from './pages/admin/AdminReferrals'
 import { AdminPoints } from './pages/admin/AdminPoints'
 import { BattlePassPage } from './pages/BattlePassPage'
 import { BoothRentPage } from './pages/BoothRentPage'
+import { MessagesPage } from './pages/MessagesPage'
+import { ChatPage } from './pages/ChatPage'
 import { useAuth } from './context/AuthContext'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -101,6 +103,8 @@ export default function App() {
           <Route path="/flash-queue" element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
           <Route path="/booth-rent" element={<RequireAuth><BoothRentPage /></RequireAuth>} />
+          <Route path="/messages" element={<RequireAuth><MessagesPage /></RequireAuth>} />
+          <Route path="/messages/:conversationId" element={<RequireAuth><ChatPage /></RequireAuth>} />
           <Route path="/settings" element={<Navigate to="/profile" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

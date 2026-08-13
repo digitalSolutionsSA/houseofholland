@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Plus, Trash2, Upload, ImageIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { StyleSelect } from '../../components/shared/StyleSelect'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 type Photo  = { id: string; url: string; caption: string | null; style: string | null; created_at: string }
@@ -167,13 +168,8 @@ export function AdminPortfolio() {
             />
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Style / Title</label>
-              <input
-                className="admin-modal__input"
-                value={style}
-                placeholder="e.g. Neo-Traditional, Sleeve, Fineline…"
-                onChange={e => setStyle(e.target.value)}
-              />
+              <label className="admin-modal__label">Style / Category</label>
+              <StyleSelect value={style} onChange={setStyle} />
             </div>
 
             <div className="admin-modal__field">

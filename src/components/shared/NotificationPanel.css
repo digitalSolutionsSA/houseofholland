@@ -161,6 +161,9 @@
 .notif-item--booking .notif-item__icon { background: rgba(74,222,128,0.1);  color: #4ade80; }
 .notif-item--alert   .notif-item__icon { background: rgba(251,100,36,0.1);  color: #fb6424; }
 .notif-item--info    .notif-item__icon { background: rgba(147,197,253,0.1); color: #93c5fd; }
+.notif-item--message .notif-item__icon { background: rgba(139,92,246,0.12); color: #a78bfa; }
+
+.notif-item--link:hover { background: rgba(201,168,76,0.05); }
 
 .notif-item__body { flex: 1; min-width: 0; }
 

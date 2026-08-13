@@ -1,10 +1,37 @@
 import { useEffect, useRef, useState } from 'react'
-import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle, FileText, Download, LogIn } from 'lucide-react'
+import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle, FileText, Download, LogIn, ShieldAlert, Flag } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardSpendPoints } from '../../lib/awardPoints'
 
 type Artist = { id: string; name: string; profile_id: string | null }
+
+type CustomerFlag = {
+  id: string
+  customer_profile_id: string
+  artist_id: string
+  flag_type: 'cancellation' | 'no_show' | 'behaviour' | 'payment' | 'other'
+  comment: string | null
+  created_at: string
+  artists: { name: string } | null
+}
+
+const FLAG_LABELS: Record<CustomerFlag['flag_type'], string> = {
+  cancellation: 'Last-minute cancellation',
+  no_show:      'No-show',
+  behaviour:    'Inappropriate behaviour',
+  payment:      'Payment issues',
+  other:        'Other issue',
+}
+
+const FLAG_COLORS: Record<CustomerFlag['flag_type'], string> = {
+  cancellation: '#f87171',
+  no_show:      '#fbbf24',
+  behaviour:    '#f97316',
+  payment:      '#a78bfa',
+  other:        '#94a3b8',
+}
+
 type Booking = {
   id: string
   appointment_at: string
@@ -131,6 +158,14 @@ export function AdminBookings() {
   const [pastBookings, setPastBookings] = useState<Booking[]>([])
   const [pastLoading, setPastLoading] = useState(false)
 
+  // Customer flags
+  const [customerFlags, setCustomerFlags] = useState<Record<string, CustomerFlag[]>>({})
+  const [flagModal, setFlagModal] = useState<Booking | null>(null)
+  const [flagType, setFlagType] = useState<CustomerFlag['flag_type'] | ''>('')
+  const [flagComment, setFlagComment] = useState('')
+  const [flagSaving, setFlagSaving] = useState(false)
+  const [flagDetailsFor, setFlagDetailsFor] = useState<CustomerFlag[] | null>(null)
+
   // Waiver / check-in viewer
   const [waiverModal, setWaiverModal] = useState<{ consent: ConsentFormFull; booking: Booking } | null>(null)
   const [waiverLoading, setWaiverLoading] = useState<string | null>(null)
@@ -168,7 +203,9 @@ export function AdminBookings() {
       for (const p of profileData ?? []) profileMap[p.id] = p
     }
 
-    setBookings(bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null })))
+    const mapped = bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null }))
+    setBookings(mapped)
+    loadFlags(mapped)
     setLoading(false)
   }
 
@@ -192,6 +229,58 @@ export function AdminBookings() {
     }
     setPastBookings(bookingRows.map((b: any) => ({ ...b, profiles: profileMap[b.profile_id] ?? null })))
     setPastLoading(false)
+  }
+
+  async function loadFlags(bookingList: Booking[]) {
+    const profileIds = bookingList
+      .filter(b => b.profile_id)
+      .map(b => b.profile_id as string)
+    if (profileIds.length === 0) return
+    const { data } = await supabase
+      .from('customer_flags')
+      .select('*, artists(name)')
+      .in('customer_profile_id', profileIds)
+    const map: Record<string, CustomerFlag[]> = {}
+    for (const f of (data ?? []) as CustomerFlag[]) {
+      if (!map[f.customer_profile_id]) map[f.customer_profile_id] = []
+      map[f.customer_profile_id].push(f)
+    }
+    setCustomerFlags(map)
+  }
+
+  async function submitFlag() {
+    if (!flagModal?.profile_id || !flagType || !artistId) return
+    setFlagSaving(true)
+    const { data: inserted, error } = await supabase
+      .from('customer_flags')
+      .insert({
+        customer_profile_id: flagModal.profile_id,
+        artist_id: artistId,
+        flag_type: flagType,
+        comment: flagComment.trim() || null,
+      })
+      .select('*, artists(name)')
+      .single()
+    if (!error && inserted) {
+      setCustomerFlags(prev => {
+        const pid = flagModal.profile_id as string
+        const existing = prev[pid] ?? []
+        return { ...prev, [pid]: [...existing, inserted as CustomerFlag] }
+      })
+    }
+    setFlagSaving(false)
+    setFlagModal(null)
+    setFlagType('')
+    setFlagComment('')
+  }
+
+  async function deleteFlag(flag: CustomerFlag) {
+    await supabase.from('customer_flags').delete().eq('id', flag.id)
+    setCustomerFlags(prev => {
+      const pid = flag.customer_profile_id
+      return { ...prev, [pid]: (prev[pid] ?? []).filter(f => f.id !== flag.id) }
+    })
+    setFlagDetailsFor(prev => prev ? prev.filter(f => f.id !== flag.id) : null)
   }
 
   async function openWaiver(booking: Booking) {
@@ -874,6 +963,14 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                       Reason: {CANCEL_REASON_LABEL[(b as any).cancellation_reason] ?? (b as any).cancellation_reason}
                     </p>
                   )}
+                  {(b.status === 'no_show' || b.status === 'cancelled') && b.profile_id && (
+                    <button
+                      onClick={() => { setFlagModal(b); setFlagType(''); setFlagComment('') }}
+                      style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: '#f87171', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer' }}
+                    >
+                      <Flag size={11} /> Flag this customer
+                    </button>
+                  )}
                 </div>
               )
             })}
@@ -951,6 +1048,36 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                     {b.tattoo_design && <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: '0.77rem' }}>{b.tattoo_design}</p>}
                   </div>
                 )}
+
+                {/* ── Customer flag warning banner ── */}
+                {b.profile_id && (customerFlags[b.profile_id]?.length ?? 0) > 0 && (() => {
+                  const flags = customerFlags[b.profile_id!]
+                  const counts: Partial<Record<CustomerFlag['flag_type'], number>> = {}
+                  for (const f of flags) counts[f.flag_type] = (counts[f.flag_type] ?? 0) + 1
+                  return (
+                    <div style={{ margin: '10px 0', padding: '12px 14px', background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.4)', borderRadius: 10, borderLeft: '4px solid #f87171' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                        <ShieldAlert size={16} style={{ color: '#f87171', flexShrink: 0 }} />
+                        <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#f87171' }}>
+                          Flagged customer — {flags.length} warning{flags.length > 1 ? 's' : ''} from studio artists
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                        {(Object.entries(counts) as [CustomerFlag['flag_type'], number][]).map(([type, n]) => (
+                          <span key={type} style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: `${FLAG_COLORS[type]}20`, border: `1px solid ${FLAG_COLORS[type]}60`, color: FLAG_COLORS[type] }}>
+                            {n}× {FLAG_LABELS[type]}
+                          </span>
+                        ))}
+                      </div>
+                      <button
+                        style={{ fontSize: '0.75rem', color: '#f87171', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 6, padding: '4px 10px', cursor: 'pointer' }}
+                        onClick={() => setFlagDetailsFor(flags)}
+                      >
+                        View details
+                      </button>
+                    </div>
+                  )
+                })()}
 
                 {b.status === 'pending' && (
                   <div className="admin-booking-card__actions">
@@ -1306,6 +1433,108 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   <><CheckCircle size={13} style={{ display: 'inline', marginRight: 6 }} />Accept & Send Deposit Link</>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Flag customer modal ── */}
+      {flagModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setFlagModal(null)}>
+          <div className="admin-modal" style={{ maxWidth: 420 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <ShieldAlert size={22} color="#f87171" />
+              <h2 className="admin-modal__title" style={{ margin: 0, color: '#f87171' }}>Flag Customer</h2>
+            </div>
+            <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', marginBottom: 20 }}>
+              Client: <strong style={{ color: 'var(--text)' }}>{flagModal.profiles?.full_name ?? 'Unknown'}</strong>
+              <br />
+              <span style={{ fontSize: '0.75rem' }}>This flag is visible to all artists when they receive a booking request from this customer.</span>
+            </p>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Reason *</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {(Object.entries(FLAG_LABELS) as [CustomerFlag['flag_type'], string][]).map(([val, label]) => (
+                  <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: `1px solid ${flagType === val ? FLAG_COLORS[val] : 'var(--border-subtle)'}`, background: flagType === val ? `${FLAG_COLORS[val]}12` : 'transparent', cursor: 'pointer' }}>
+                    <input type="radio" name="flag_type" checked={flagType === val} onChange={() => setFlagType(val)} style={{ accentColor: FLAG_COLORS[val] }} />
+                    <span style={{ fontSize: '0.85rem', color: flagType === val ? FLAG_COLORS[val] : 'var(--text)', fontWeight: flagType === val ? 600 : 400 }}>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="admin-modal__field" style={{ marginTop: 14 }}>
+              <label className="admin-modal__label">Additional notes (optional)</label>
+              <textarea
+                className="admin-modal__textarea"
+                value={flagComment}
+                onChange={e => setFlagComment(e.target.value)}
+                placeholder="e.g. Cancelled 2 hours before appointment with no explanation…"
+                rows={3}
+              />
+            </div>
+
+            <div className="admin-modal__actions" style={{ marginTop: 16 }}>
+              <button className="admin-btn admin-btn--ghost" onClick={() => setFlagModal(null)}>Cancel</button>
+              <button
+                className="admin-btn admin-btn--danger"
+                onClick={submitFlag}
+                disabled={flagSaving || !flagType}
+              >
+                {flagSaving ? 'Saving…' : <><Flag size={13} style={{ display: 'inline', marginRight: 5 }} />Submit Flag</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Flag details modal ── */}
+      {flagDetailsFor && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setFlagDetailsFor(null)}>
+          <div className="admin-modal" style={{ maxWidth: 460 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <ShieldAlert size={18} color="#f87171" />
+                <h2 className="admin-modal__title" style={{ margin: 0, color: '#f87171' }}>Customer Flags</h2>
+              </div>
+              <button onClick={() => setFlagDetailsFor(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+              These warnings were left by artists in the studio. Use them to decide whether to accept this booking request.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {flagDetailsFor.map(f => (
+                <div key={f.id} style={{ padding: '12px 14px', background: `${FLAG_COLORS[f.flag_type]}0d`, border: `1px solid ${FLAG_COLORS[f.flag_type]}30`, borderLeft: `3px solid ${FLAG_COLORS[f.flag_type]}`, borderRadius: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: f.comment ? 6 : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: FLAG_COLORS[f.flag_type] }}>{FLAG_LABELS[f.flag_type]}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>
+                        {f.artists?.name ?? 'Artist'} · {new Date(f.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                      </span>
+                      {/* Only show delete if it's the current artist's flag */}
+                      <button
+                        onClick={() => deleteFlag(f)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: 2, lineHeight: 1 }}
+                        title="Remove flag"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  {f.comment && <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>{f.comment}</p>}
+                </div>
+              ))}
+              {flagDetailsFor.length === 0 && (
+                <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.85rem', padding: '16px 0' }}>All flags removed.</p>
+              )}
+            </div>
+            <div style={{ marginTop: 16, textAlign: 'right' }}>
+              <button className="admin-btn admin-btn--ghost" onClick={() => setFlagDetailsFor(null)}>Close</button>
             </div>
           </div>
         </div>

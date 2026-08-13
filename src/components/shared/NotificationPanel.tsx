@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
-import { Bell, X, CheckCheck, Zap, CalendarCheck, Info, AlertCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Bell, X, CheckCheck, Zap, CalendarCheck, Info, AlertCircle, MessageCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import './NotificationPanel.css'
@@ -9,6 +10,7 @@ type Notification = {
   title: string
   body: string | null
   type: string
+  link: string | null
   read_at: string | null
   created_at: string
 }
@@ -17,6 +19,7 @@ const TYPE_ICON: Record<string, ReactElement> = {
   flash:   <Zap size={14} strokeWidth={2} />,
   booking: <CalendarCheck size={14} strokeWidth={1.5} />,
   alert:   <AlertCircle size={14} strokeWidth={1.5} />,
+  message: <MessageCircle size={14} strokeWidth={1.5} />,
   info:    <Info size={14} strokeWidth={1.5} />,
 }
 
@@ -32,6 +35,7 @@ function timeAgo(iso: string) {
 
 export function NotificationPanel() {
   const { profile } = useAuth()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
@@ -140,17 +144,26 @@ export function NotificationPanel() {
           {items.map(n => {
             const isExpanded = expanded === n.id
             const hasBody = !!n.body
+            const hasLink = !!n.link
+
+            function handleClick() {
+              if (!n.read_at) markRead(n.id)
+              if (hasLink) {
+                setOpen(false)
+                navigate(n.link!)
+              } else {
+                setExpanded(isExpanded ? null : n.id)
+              }
+            }
+
             return (
               <div
                 key={n.id}
-                className={`notif-item notif-item--${n.type ?? 'info'}${n.read_at ? ' notif-item--read' : ''}${isExpanded ? ' notif-item--expanded' : ''}`}
-                onClick={() => {
-                  setExpanded(isExpanded ? null : n.id)
-                  if (!n.read_at) markRead(n.id)
-                }}
+                className={`notif-item notif-item--${n.type ?? 'info'}${n.read_at ? ' notif-item--read' : ''}${isExpanded ? ' notif-item--expanded' : ''}${hasLink ? ' notif-item--link' : ''}`}
+                onClick={handleClick}
                 role="button"
                 tabIndex={0}
-                onKeyDown={e => e.key === 'Enter' && setExpanded(isExpanded ? null : n.id)}
+                onKeyDown={e => e.key === 'Enter' && handleClick()}
               >
                 <span className="notif-item__icon">
                   {TYPE_ICON[n.type] ?? TYPE_ICON.info}
@@ -162,10 +175,13 @@ export function NotificationPanel() {
                   )}
                   <p className="notif-item__time">{timeAgo(n.created_at)}</p>
                 </div>
-                {hasBody && (
+                {!hasLink && hasBody && (
                   <span className="notif-item__chevron" aria-hidden>
                     {isExpanded ? '▲' : '▼'}
                   </span>
+                )}
+                {hasLink && (
+                  <span className="notif-item__chevron" aria-hidden style={{ fontSize: '0.7rem', opacity: 0.5 }}>›</span>
                 )}
               </div>
             )

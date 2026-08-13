@@ -1,42 +1,18 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, Users, DollarSign, Star, Zap, Crown, Lock } from 'lucide-react'
+import { ChevronDown, ChevronRight, Users, DollarSign, Star, Zap, Crown, Lock, CreditCard } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import type { MembershipPlan } from '../../lib/supabase'
+import {
+  PLAN_PRICES,
+  getCommissionRate,
+  getTierLabel,
+  getTierColor,
+  monthsInPeriod,
+} from '../../lib/commission'
 
 // Only these two accounts may view commission data
 const ALLOWED_EMAILS = ['info@digitalsolutionssa.co.za', 'armandgroesbeek@gmail.com']
-
-const PLAN_PRICES: Record<MembershipPlan, number> = {
-  free: 0,
-  premium: 4.99,
-  'black-card': 6.99,
-}
-
-// Tiered commission based on number of paid customers per artist
-function getCommissionRate(paidCustomers: number): number {
-  if (paidCustomers >= 2500) return 0.10  // 10%
-  if (paidCustomers >= 1000) return 0.075 // 7.5%
-  if (paidCustomers >= 500)  return 0.05  // 5%
-  if (paidCustomers >= 250)  return 0.025 // 2.5%
-  return 0 // Not yet eligible
-}
-
-function getTierLabel(paidCustomers: number): string {
-  if (paidCustomers >= 2500) return '10% (2500+ paid)'
-  if (paidCustomers >= 1000) return '7.5% (1000+ paid)'
-  if (paidCustomers >= 500)  return '5% (500+ paid)'
-  if (paidCustomers >= 250)  return '2.5% (250+ paid)'
-  return 'Not yet eligible (< 250 paid)'
-}
-
-function getTierColor(paidCustomers: number): string {
-  if (paidCustomers >= 2500) return '#e8c97e'
-  if (paidCustomers >= 1000) return '#c8a96e'
-  if (paidCustomers >= 500)  return 'var(--gold)'
-  if (paidCustomers >= 250)  return '#8ab4a0'
-  return 'var(--text-muted)'
-}
 
 const PLAN_LABELS: Record<MembershipPlan, string> = {
   free: 'Member (Free)',
@@ -73,12 +49,26 @@ type ArtistRow = {
 }
 
 function artistCommission(customers: Customer[], periodMonths: number): number {
-  const paid = customers.filter(c => c.membership_plan !== 'free').length
-  const rate = getCommissionRate(paid)
+  const paid = customers.filter(c => c.membership_plan !== 'free')
+  const rate = getCommissionRate(paid.length)
   if (rate === 0) return 0
-  return customers.reduce((sum, c) => {
-    return sum + PLAN_PRICES[c.membership_plan] * periodMonths * rate
+  return paid.reduce((sum, c) => {
+    const months = monthsInPeriod(c.created_at, periodMonths)
+    return sum + PLAN_PRICES[c.membership_plan] * months * rate
   }, 0)
+}
+
+function planBreakdown(customers: Customer[], periodMonths: number, rate: number) {
+  const premium   = customers.filter(c => c.membership_plan === 'premium')
+  const blackCard = customers.filter(c => c.membership_plan === 'black-card')
+  const calcPlan  = (list: Customer[]) =>
+    list.reduce((s, c) => s + PLAN_PRICES[c.membership_plan] * monthsInPeriod(c.created_at, periodMonths) * rate, 0)
+  return {
+    premiumCount:   premium.length,
+    blackCardCount: blackCard.length,
+    premiumComm:    calcPlan(premium),
+    blackCardComm:  calcPlan(blackCard),
+  }
 }
 
 function paidCount(customers: Customer[]) {
@@ -159,15 +149,18 @@ export function AdminReferrals() {
   const totalCustomers = rows.reduce((s, r) => s + r.customers.length, 0)
   const totalCommission = rows.reduce((s, r) => s + artistCommission(r.customers, periodMonths), 0)
 
+  const artistsWithReferrals = rows.filter(r => r.customers.length > 0).length
+
   return (
     <div>
+      {/* Header row */}
       <div className="admin-page__header">
         <h1 className="admin-page__title">Artist Referrals</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <label style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Period</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Period</label>
           <select
             className="admin-modal__select"
-            style={{ padding: '4px 8px', fontSize: '0.82rem', width: 'auto' }}
+            style={{ padding: '5px 8px', fontSize: '0.82rem', width: 'auto' }}
             value={periodMonths}
             onChange={e => setPeriodMonths(Number(e.target.value))}
           >
@@ -179,153 +172,239 @@ export function AdminReferrals() {
         </div>
       </div>
 
-      {/* Commission tier reference */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-        {[
-          { label: '< 250 paid', rate: 'No commission', color: 'var(--text-muted)' },
-          { label: '250+ paid', rate: '2.5%', color: '#8ab4a0' },
-          { label: '500+ paid', rate: '5%', color: 'var(--gold)' },
-          { label: '1000+ paid', rate: '7.5%', color: '#c8a96e' },
-          { label: '2500+ paid', rate: '10%', color: '#e8c97e' },
-        ].map(t => (
-          <div key={t.label} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${t.color}`, fontSize: '0.75rem', display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{ color: 'var(--text-muted)' }}>{t.label}</span>
-            <span style={{ color: t.color, fontWeight: 700 }}>{t.rate}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Summary strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
-        {[
-          { label: 'Referred Customers', value: totalCustomers, icon: Users, sub: `${totalPaid} on paid plans` },
-          { label: `Commission (${periodMonths}mo)`, value: `$${totalCommission.toFixed(2)}`, icon: DollarSign, sub: 'Tiered: 2.5 / 5 / 7.5%' },
-          { label: 'Artists with Referrals', value: rows.filter(r => r.customers.length > 0).length, icon: Users, sub: `of ${rows.length} total artists` },
-        ].map(({ label, value, icon: Icon, sub }) => (
-          <div key={label} style={{ background: 'var(--surface)', border: '1px solid var(--border-gold)', borderRadius: 8, padding: '14px 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <Icon size={14} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+      {/* Commission tier reference — horizontal scroll on mobile */}
+      <div style={{ overflowX: 'auto', marginBottom: 16, paddingBottom: 4 }}>
+        <div style={{ display: 'flex', gap: 6, minWidth: 'max-content' }}>
+          {[
+            { label: '0 customers', rate: '0%',   color: 'var(--text-dim)' },
+            { label: '1–249',       rate: '2.5%', color: '#8ab4a0' },
+            { label: '250–499',     rate: '5.0%', color: 'var(--gold)' },
+            { label: '500–999',     rate: '7.5%', color: '#c8a96e' },
+            { label: '1000+ cap',   rate: '10%',  color: '#e8c97e' },
+          ].map(t => (
+            <div key={t.label} style={{ padding: '4px 10px', borderRadius: 20, border: `1px solid ${t.color}`, fontSize: '0.73rem', display: 'flex', gap: 5, alignItems: 'center', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{t.label}</span>
+              <span style={{ color: t.color, fontWeight: 700 }}>{t.rate}</span>
             </div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{value}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
+      {/* Summary cards — commission full-width on top, two stats below */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        {/* Commission — spans full width */}
+        <div style={{ gridColumn: '1 / -1', background: 'var(--surface)', border: '1px solid var(--border-gold)', borderRadius: 10, padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+              <DollarSign size={13} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Commission ({periodMonths}mo)</span>
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Pro-rated · tiered 2.5 / 5.0 / 7.5 / 10%</div>
+          </div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--gold)', letterSpacing: '-0.02em' }}>
+            ${totalCommission.toFixed(2)}
+          </div>
+        </div>
+
+        {/* Customers */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Users size={12} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Customers</span>
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{totalCustomers}</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 1 }}>{totalPaid} on paid plans</div>
+        </div>
+
+        {/* Artists */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <Users size={12} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Active Artists</span>
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>{artistsWithReferrals}</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: 1 }}>of {rows.length} total</div>
+        </div>
+      </div>
+
+      {/* Artist accordion list */}
       {loading ? (
         <p className="admin-empty">Loading…</p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {rows.map(artist => {
             const isOpen = expanded.has(artist.id)
             const paid = paidCount(artist.customers)
             const rate = getCommissionRate(paid)
             const commission = artistCommission(artist.customers, periodMonths)
-            const tierLabel = getTierLabel(paid)
             const tierColor = getTierColor(paid)
 
             return (
-              <div key={artist.id} style={{ border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+              <div key={artist.id} style={{ border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+
+                {/* Artist row — tap to expand */}
                 <button
-                  style={{ width: '100%', background: 'var(--surface)', border: 'none', cursor: 'pointer', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}
+                  style={{ width: '100%', background: 'var(--surface)', border: 'none', cursor: 'pointer', padding: '12px 14px', display: 'grid', gridTemplateColumns: 'auto 1fr auto', alignItems: 'center', gap: 12, textAlign: 'left' }}
                   onClick={() => toggle(artist.id)}
                 >
+                  {/* Avatar */}
                   {artist.avatar_url
-                    ? <img src={artist.avatar_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-gold)' }} />
-                    : <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--surface-2)', flexShrink: 0 }} />}
+                    ? <img src={artist.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-gold)', flexShrink: 0 }} />
+                    : <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface-2)', flexShrink: 0 }} />}
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9rem' }}>{artist.name}</div>
-                    <div style={{ fontSize: '0.73rem', display: 'flex', gap: 10, marginTop: 2 }}>
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        Code: <code style={{ color: 'var(--gold)', letterSpacing: '0.1em' }}>{artist.referral_code ?? '—'}</code>
+                  {/* Name + code + tier */}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9rem', marginBottom: 3 }}>{artist.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        <code style={{ color: 'var(--gold)', letterSpacing: '0.08em', fontFamily: 'monospace' }}>{artist.referral_code ?? '—'}</code>
                       </span>
-                      <span style={{ color: tierColor, fontWeight: 600 }}>{tierLabel}</span>
+                      {paid > 0 && (
+                        <span style={{ fontSize: '0.68rem', color: tierColor, fontWeight: 700, background: `${tierColor}18`, border: `1px solid ${tierColor}40`, padding: '1px 6px', borderRadius: 10 }}>
+                          {(rate * 100).toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Stats row — commission · referred · paid */}
+                    <div style={{ display: 'flex', gap: 12, marginTop: 7 }}>
+                      <div>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 700, color: rate > 0 ? 'var(--gold)' : 'var(--text-dim)' }}>
+                          {rate > 0 ? `$${commission.toFixed(2)}` : '—'}
+                        </span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: 3 }}>due</span>
+                      </div>
+                      <div style={{ width: 1, background: 'var(--border)' }} />
+                      <div>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>{artist.customers.length}</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: 3 }}>referred</span>
+                      </div>
+                      <div style={{ width: 1, background: 'var(--border)' }} />
+                      <div>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: paid > 0 ? 'var(--text)' : 'var(--text-dim)' }}>{paid}</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: 3 }}>paid</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'right', marginRight: 8, flexShrink: 0 }}>
-                    <div style={{ fontWeight: 700, color: rate > 0 ? 'var(--gold)' : 'var(--text-muted)', fontSize: '0.95rem' }}>
-                      {rate > 0 ? `$${commission.toFixed(2)}` : '—'}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{periodMonths}mo due</div>
+                  {/* Chevron */}
+                  <div style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+                    {isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                   </div>
-
-                  <div style={{ textAlign: 'right', marginRight: 8, flexShrink: 0 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.9rem' }}>{artist.customers.length}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>referred</div>
-                  </div>
-
-                  <div style={{ textAlign: 'right', marginRight: 8, flexShrink: 0 }}>
-                    <div style={{ fontWeight: 600, color: paid > 0 ? 'var(--text)' : 'var(--text-muted)', fontSize: '0.9rem' }}>{paid}</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>paid</div>
-                  </div>
-
-                  {isOpen
-                    ? <ChevronDown size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                    : <ChevronRight size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
                 </button>
 
+                {/* Expanded detail */}
                 {isOpen && (
                   <div style={{ borderTop: '1px solid var(--border)' }}>
                     {artist.customers.length === 0 ? (
-                      <p style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
+                      <p style={{ padding: '14px 16px', color: 'var(--text-muted)', fontSize: '0.83rem', textAlign: 'center' }}>
                         No customers have signed up with this code yet.
                       </p>
-                    ) : (
-                      <table className="admin-table" style={{ margin: 0, borderRadius: 0 }}>
-                        <thead>
-                          <tr>
-                            <th>Customer</th>
-                            <th>Email</th>
-                            <th>Plan</th>
-                            <th>Monthly Fee</th>
-                            <th>Commission ({periodMonths}mo @ {(rate * 100).toFixed(1)}%)</th>
-                            <th>Joined</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {artist.customers.map(c => {
-                            const PlanIcon = PLAN_ICONS[c.membership_plan]
-                            const monthly = PLAN_PRICES[c.membership_plan]
-                            const comm = monthly * periodMonths * rate
-                            return (
-                              <tr key={c.id}>
-                                <td style={{ fontWeight: 500 }}>{c.full_name ?? '—'}</td>
-                                <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>{c.email ?? '—'}</td>
-                                <td>
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: planColor(c.membership_plan), fontSize: '0.82rem' }}>
-                                    <PlanIcon size={12} strokeWidth={2} />
-                                    {PLAN_LABELS[c.membership_plan]}
-                                  </span>
-                                </td>
-                                <td style={{ color: monthly > 0 ? 'var(--text)' : 'var(--text-muted)', fontSize: '0.82rem' }}>
-                                  {monthly > 0 ? `$${monthly.toFixed(2)}` : 'Free'}
-                                </td>
-                                <td style={{ color: comm > 0 ? 'var(--gold)' : 'var(--text-muted)', fontWeight: comm > 0 ? 600 : 400, fontSize: '0.82rem' }}>
-                                  {comm > 0 ? `$${comm.toFixed(2)}` : rate === 0 ? 'Not eligible yet' : '—'}
-                                </td>
-                                <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                                  {new Date(c.created_at).toLocaleDateString()}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                        <tfoot>
-                          <tr style={{ background: 'var(--surface)' }}>
-                            <td colSpan={4} style={{ fontWeight: 600, fontSize: '0.83rem', color: 'var(--text-muted)' }}>
-                              Total due to {artist.name}
-                            </td>
-                            <td style={{ fontWeight: 700, color: rate > 0 ? 'var(--gold)' : 'var(--text-muted)' }}>
-                              {rate > 0 ? `$${commission.toFixed(2)}` : 'Not eligible yet'}
-                            </td>
-                            <td />
-                          </tr>
-                        </tfoot>
-                      </table>
-                    )}
+                    ) : (() => {
+                      const bd = planBreakdown(artist.customers, periodMonths, rate)
+                      return (
+                        <>
+                          {/* Plan breakdown pills */}
+                          {rate > 0 && (
+                            <div style={{ padding: '10px 14px', background: 'rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Breakdown — {periodMonths}mo window, pro-rated
+                              </div>
+                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                {bd.premiumCount > 0 && (
+                                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 12px', borderRadius: 8, background: 'rgba(138,180,160,0.1)', border: '1px solid rgba(138,180,160,0.3)', flex: '1 1 auto' }}>
+                                    <Zap size={12} style={{ color: '#8ab4a0', flexShrink: 0 }} />
+                                    <div>
+                                      <div style={{ fontSize: '0.72rem', color: '#8ab4a0' }}>Premium × {bd.premiumCount} @ $4.99</div>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#8ab4a0' }}>${bd.premiumComm.toFixed(2)}</div>
+                                    </div>
+                                  </div>
+                                )}
+                                {bd.blackCardCount > 0 && (
+                                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 12px', borderRadius: 8, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', flex: '1 1 auto' }}>
+                                    <CreditCard size={12} style={{ color: 'var(--gold)', flexShrink: 0 }} />
+                                    <div>
+                                      <div style={{ fontSize: '0.72rem', color: 'var(--gold)' }}>Black Card × {bd.blackCardCount} @ $6.99</div>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--gold)' }}>${bd.blackCardComm.toFixed(2)}</div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Customer table — scrolls horizontally on mobile */}
+                          <div style={{ overflowX: 'auto' }}>
+                            <table className="admin-table" style={{ margin: 0, borderRadius: 0, minWidth: 520 }}>
+                              <thead>
+                                <tr>
+                                  <th>Customer</th>
+                                  <th>Plan</th>
+                                  <th>Joined</th>
+                                  <th style={{ textAlign: 'center' }}>Months</th>
+                                  <th style={{ textAlign: 'right' }}>Commission</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {artist.customers.map(c => {
+                                  const PlanIcon = PLAN_ICONS[c.membership_plan]
+                                  const monthly = PLAN_PRICES[c.membership_plan]
+                                  const months = monthsInPeriod(c.created_at, periodMonths)
+                                  const comm = monthly * months * rate
+                                  return (
+                                    <tr key={c.id}>
+                                      <td>
+                                        <div style={{ fontWeight: 500, fontSize: '0.83rem' }}>{c.full_name ?? '—'}</div>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>{c.email ?? '—'}</div>
+                                      </td>
+                                      <td>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: planColor(c.membership_plan), fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                                          <PlanIcon size={11} strokeWidth={2} />
+                                          {PLAN_LABELS[c.membership_plan]}
+                                        </span>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                                          {monthly > 0 ? `$${monthly.toFixed(2)}/mo` : 'Free'}
+                                        </div>
+                                      </td>
+                                      <td style={{ color: 'var(--text-muted)', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+                                        {new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                      </td>
+                                      <td style={{ textAlign: 'center', fontSize: '0.8rem' }}>
+                                        {c.membership_plan === 'free' ? (
+                                          <span style={{ color: 'var(--text-dim)' }}>—</span>
+                                        ) : (
+                                          <>
+                                            <span style={{ color: months < periodMonths ? '#c8a96e' : 'var(--text-muted)', fontWeight: 600 }}>{months}</span>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem' }}>/{periodMonths}</span>
+                                            {months < periodMonths && (
+                                              <div style={{ fontSize: '0.62rem', color: '#c8a96e' }}>pro-rated</div>
+                                            )}
+                                          </>
+                                        )}
+                                      </td>
+                                      <td style={{ textAlign: 'right', color: comm > 0 ? 'var(--gold)' : 'var(--text-muted)', fontWeight: comm > 0 ? 700 : 400, fontSize: '0.83rem', whiteSpace: 'nowrap' }}>
+                                        {comm > 0 ? `$${comm.toFixed(2)}` : rate === 0 ? 'Not eligible' : '—'}
+                                      </td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                              <tfoot>
+                                <tr style={{ background: 'var(--surface)' }}>
+                                  <td colSpan={3} style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                    Total due to {artist.name}
+                                  </td>
+                                  <td />
+                                  <td style={{ textAlign: 'right', fontWeight: 700, fontSize: '0.9rem', color: rate > 0 ? 'var(--gold)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                    {rate > 0 ? `$${commission.toFixed(2)}` : 'Not eligible'}
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            </table>
+                          </div>
+                        </>
+                      )
+                    })()}
                   </div>
                 )}
               </div>
@@ -334,17 +413,18 @@ export function AdminReferrals() {
         </div>
       )}
 
+      {/* Grand total footer */}
       {!loading && (
-        <div style={{ marginTop: 20, padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border-gold)', borderRadius: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
-              Total Commission Payable — {periodMonths} month period
+        <div style={{ marginTop: 16, padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border-gold)', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+              Total payable — {periodMonths} month period
             </div>
-            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              Tiered rates (2.5 / 5 / 7.5%) · {totalPaid} paid customers · {totalCustomers} total referred
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {totalPaid} paid · {totalCustomers} referred · pro-rated
             </div>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: 'var(--gold)' }}>
+          <div style={{ fontSize: '1.7rem', fontWeight: 700, color: 'var(--gold)', letterSpacing: '-0.02em', flexShrink: 0 }}>
             ${totalCommission.toFixed(2)}
           </div>
         </div>

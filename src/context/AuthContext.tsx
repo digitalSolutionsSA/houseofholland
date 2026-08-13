@@ -5,22 +5,30 @@ import { supabase, type Profile } from '../lib/supabase'
 type AuthContextValue = {
   session: Session | null
   user: User | null
-  profile: Profile | null
+  profile: Profile | null        // effective profile (role overridden when in customer view)
+  realProfile: Profile | null    // always the real DB profile, unmodified
   loading: boolean
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string, fullName: string, referralCode?: string) => Promise<string | null>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<string | null>
   refreshProfile: () => Promise<void>
+  customerViewMode: boolean
+  toggleCustomerView: () => void
 }
+
+const CUSTOMER_VIEW_ADMIN = 'info@digitalsolutionssa.co.za'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
+  const [realProfile, setRealProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [customerViewMode, setCustomerViewMode] = useState(
+    () => sessionStorage.getItem('hoh_cvmode') === '1'
+  )
 
   async function fetchProfile(userId: string) {
     const { data } = await supabase
@@ -28,12 +36,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('id', userId)
       .single()
-    setProfile(data ?? null)
+    setRealProfile(data ?? null)
   }
 
   async function refreshProfile() {
     if (user) await fetchProfile(user.id)
   }
+
+  function toggleCustomerView() {
+    setCustomerViewMode(v => {
+      const next = !v
+      if (next) sessionStorage.setItem('hoh_cvmode', '1')
+      else sessionStorage.removeItem('hoh_cvmode')
+      return next
+    })
+  }
+
+  // When customer view mode is active, mask the role as 'public'
+  const profile: Profile | null =
+    customerViewMode && realProfile
+      ? { ...realProfile, role: 'public' }
+      : realProfile
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -92,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signIn, signUp, signOut, resetPassword, refreshProfile }}>
+    <AuthContext.Provider value={{ session, user, profile, realProfile, loading, signIn, signUp, signOut, resetPassword, refreshProfile, customerViewMode, toggleCustomerView }}>
       {children}
     </AuthContext.Provider>
   )

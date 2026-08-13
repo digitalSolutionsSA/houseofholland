@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { DesktopNav } from './DesktopNav'
 import { BrandBackground } from './BrandBackground'
+import { CustomerViewBanner } from './CustomerViewBanner'
 import { useAuth } from '../../context/AuthContext'
 import { useMembership } from '../../hooks/useMembership'
 
@@ -39,6 +40,7 @@ export function AppLayout() {
 
   return (
     <div className="app-shell">
+      <CustomerViewBanner />
       <BrandBackground className="app-shell__marble" vignette />
       <div className={`app-frame ${isAuth ? 'app-frame--auth' : ''}`}>
         {showDesktopNav && <DesktopNav />}
