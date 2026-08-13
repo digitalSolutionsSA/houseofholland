@@ -101,7 +101,7 @@ export function BrandBackground({ className = '', vignette = true }: Props) {
     document.addEventListener('visibilitychange', onVisibility)
 
     function draw() {
-      if (paused) return
+      if (paused || !canvas || !ctx) return
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // Rebuild stamps only when tier changes
