@@ -68,7 +68,6 @@ export function BookingsPage() {
 
   useEffect(() => {
     if (!profile?.id) return
-    const now = new Date()
     const startOfToday = studioMidnightUTC()
     supabase
       .from('bookings')
