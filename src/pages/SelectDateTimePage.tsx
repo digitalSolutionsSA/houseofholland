@@ -6,6 +6,7 @@ import { GradientButton } from '../components/shared/GradientButton'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
 import { storageImg } from '../lib/storageImg'
+import { studioSlotKey } from '../lib/studioTime'
 import './SelectDateTimePage.css'
 
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -179,10 +180,7 @@ export function SelectDateTimePage() {
       .gte('appointment_at', dayStart)
       .lte('appointment_at', dayEnd)
       .then(({ data }) => {
-        const booked = (data ?? []).map((b: any) => {
-          const d = new Date(b.appointment_at)
-          return `${pad(d.getHours())}:${pad(d.getMinutes())}`
-        })
+        const booked = (data ?? []).map((b: any) => studioSlotKey(b.appointment_at))
         setSlotsForDay(generateSlots(sched, booked))
         setSlotsLoading(false)
       })

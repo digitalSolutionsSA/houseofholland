@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Send, Paperclip, X, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { STUDIO_TZ } from '../lib/studioTime'
 import './ChatPage.css'
 
 type Message = {
@@ -22,18 +23,17 @@ type ConvoMeta = {
 }
 
 function timeLabel(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })
 }
 
 function dayLabel(iso: string) {
-  const d = new Date(iso)
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(today.getDate() - 1)
-  if (d.toDateString() === today.toDateString()) return 'Today'
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
-  return d.toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'short' })
+  const etDate = new Intl.DateTimeFormat('en-CA', { timeZone: STUDIO_TZ }).format(new Date(iso))
+  const etToday = new Intl.DateTimeFormat('en-CA', { timeZone: STUDIO_TZ }).format(new Date())
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1)
+  const etYesterday = new Intl.DateTimeFormat('en-CA', { timeZone: STUDIO_TZ }).format(yesterday)
+  if (etDate === etToday) return 'Today'
+  if (etDate === etYesterday) return 'Yesterday'
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'short', timeZone: STUDIO_TZ })
 }
 
 function groupByDay(msgs: Message[]) {

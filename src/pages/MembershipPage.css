@@ -64,15 +64,38 @@
   gap: 16px;
 }
 
-/* Black Card — gold featured border */
+/* Premium — crimson red theme */
 .membership-tier--featured {
-  border-color: var(--border-gold);
+  border-color: rgba(220, 38, 38, 0.5);
   background: linear-gradient(
     160deg,
-    rgba(var(--accent-rgb), 0.08) 0%,
-    rgba(var(--accent-rgb), 0.03) 100%
+    rgba(220, 38, 38, 0.09) 0%,
+    rgba(220, 38, 38, 0.03) 100%
   );
-  box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.1);
+  box-shadow: 0 0 28px rgba(220, 38, 38, 0.12);
+}
+
+.membership-tier--featured .membership-tier__name {
+  color: #e05555;
+}
+
+.membership-tier--featured .membership-tier__icon-wrap {
+  border-color: rgba(220, 38, 38, 0.5);
+  background: rgba(220, 38, 38, 0.1);
+  color: #e05555;
+}
+
+.membership-tier--featured .membership-tier__price {
+  color: #e05555;
+}
+
+.membership-tier--featured .membership-tier__benefits svg {
+  color: #e05555;
+}
+
+.membership-tier--featured .membership-tier__badge {
+  background: #dc2626;
+  color: #fff;
 }
 
 /* Elite — brighter premium feel */
@@ -132,10 +155,6 @@
   font-weight: 700;
   color: var(--text);
   line-height: 1.2;
-}
-
-.membership-tier--featured .membership-tier__name {
-  color: var(--gold);
 }
 
 .membership-tier--elite .membership-tier__name {
@@ -201,14 +220,14 @@
 
 .membership-tier__cta--disabled {
   border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-dim);
+  color: rgba(255, 255, 255, 0.55);
   cursor: default;
 }
 
 .membership-tier__cta--featured {
-  background: var(--gold-gradient-btn, linear-gradient(135deg, #d4af37 0%, #f5e27a 100%));
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
   border-color: transparent;
-  color: #0a0a0a;
+  color: #fff;
 }
 
 .membership-tier__cta--featured:hover {
@@ -307,14 +326,15 @@
   color: var(--text-muted);
 }
 
-/* ── Black Card (top tier) ── */
+/* ── Black Card (top tier) — rich gold theme ── */
 .membership-tier--top {
-  border-color: rgba(var(--accent-rgb), 0.35);
+  border-color: rgba(212, 175, 55, 0.5);
   background: linear-gradient(
     160deg,
-    rgba(var(--accent-rgb), 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%
+    rgba(212, 175, 55, 0.1) 0%,
+    rgba(212, 175, 55, 0.04) 100%
   );
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.15);
 }
 
 .membership-tier--top .membership-tier__name {
@@ -325,9 +345,28 @@
 }
 
 .membership-tier--top .membership-tier__icon-wrap {
-  border-color: rgba(var(--accent-rgb), 0.65);
-  background: rgba(var(--accent-rgb), 0.14);
-  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2);
+  border-color: rgba(212, 175, 55, 0.65);
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.22);
+}
+
+.membership-tier--top .membership-tier__price {
+  color: var(--gold);
+}
+
+.membership-tier--top .membership-tier__benefits svg {
+  color: var(--gold);
+}
+
+.membership-tier--top .membership-tier__cta:not(.membership-tier__cta--disabled) {
+  background: linear-gradient(135deg, #d4af37 0%, #f5e27a 100%);
+  border-color: transparent;
+  color: #0a0a0a;
+}
+
+.membership-tier--top .membership-tier__cta:not(.membership-tier__cta--disabled):hover {
+  opacity: 0.9;
 }
 
 /* ── Dual price (USD + ZAR) ── */

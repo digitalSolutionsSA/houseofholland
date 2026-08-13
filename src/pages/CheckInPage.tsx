@@ -4,6 +4,7 @@ import { Pen, RotateCcw, Loader2, CheckCircle2, AlertCircle, CalendarDays, Clock
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { isStudioToday, STUDIO_TZ } from '../lib/studioTime'
 import './CheckInPage.css'
 
 type BookingDetail = {
@@ -19,10 +20,7 @@ type BookingDetail = {
   artist_profile_id: string | null
 }
 
-function isToday(dateStr: string) {
-  const d = new Date(dateStr), t = new Date()
-  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
-}
+function isToday(dateStr: string) { return isStudioToday(dateStr) }
 
 function ConsentCheckbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -255,7 +253,7 @@ export function CheckInPage() {
         <h2>Not available yet</h2>
         <p>Check-in opens on the day of your appointment.</p>
         <p className="checkin__appt-date">
-          {new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+          {new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: STUDIO_TZ })}
         </p>
       </div>
     </div>
@@ -358,10 +356,10 @@ export function CheckInPage() {
           {booking.artist_name && <p className="checkin__appt-artist">with {booking.artist_name}</p>}
           <div className="checkin__appt-meta">
             <span><CalendarDays size={13} strokeWidth={1.5} />
-              {new Date(booking.appointment_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+              {new Date(booking.appointment_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: STUDIO_TZ })}
             </span>
             <span><Clock size={13} strokeWidth={1.5} />
-              {new Date(booking.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+              {new Date(booking.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })}
             </span>
           </div>
         </div>

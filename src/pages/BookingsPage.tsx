@@ -4,6 +4,7 @@ import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard, AlertT
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { isStudioToday, studioMidnightUTC, STUDIO_TZ } from '../lib/studioTime'
 import './BookingsPage.css'
 
 type Appointment = {
@@ -21,12 +22,7 @@ type Appointment = {
   reference_image_urls: string[] | null
 }
 
-function isToday(dateStr: string) {
-  const d = new Date(dateStr), t = new Date()
-  return d.getFullYear() === t.getFullYear() &&
-    d.getMonth() === t.getMonth() &&
-    d.getDate() === t.getDate()
-}
+function isToday(dateStr: string) { return isStudioToday(dateStr) }
 
 export function BookingsPage() {
   const { profile } = useAuth()
@@ -48,7 +44,7 @@ export function BookingsPage() {
       id: d.id,
       appointment_at: d.appointment_at,
       dateLabel: new Date(d.appointment_at).toLocaleString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
+        month: 'short', day: 'numeric', year: 'numeric', timeZone: STUDIO_TZ,
         hour: 'numeric', minute: '2-digit',
       }),
       artist: d.artists?.name ?? 'Artist',
@@ -73,7 +69,7 @@ export function BookingsPage() {
   useEffect(() => {
     if (!profile?.id) return
     const now = new Date()
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+    const startOfToday = studioMidnightUTC()
     supabase
       .from('bookings')
       .select('id, appointment_at, service, status, checked_in_at, deposit_link, notes, reference_image_urls, artists(name, avatar_url, profile_id)')
@@ -149,7 +145,7 @@ export function BookingsPage() {
 
     if (appt.artistProfileId) {
       const label = new Date(appt.appointment_at).toLocaleString('en-US', {
-        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ,
       })
       await supabase.from('notifications').insert({
         profile_id: appt.artistProfileId,

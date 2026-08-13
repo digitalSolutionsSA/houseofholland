@@ -8,6 +8,7 @@ import { NotificationPanel } from '../components/shared/NotificationPanel'
 import { ArtistHomePage } from './ArtistHomePage'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { studioHour } from '../lib/studioTime'
 import './HomePage.css'
 
 type Appointment = {
@@ -19,7 +20,7 @@ type Appointment = {
 }
 
 function greeting() {
-  const h = new Date().getHours()
+  const h = studioHour()
   if (h < 12) return 'Good morning'
   if (h < 17) return 'Good afternoon'
   return 'Good evening'

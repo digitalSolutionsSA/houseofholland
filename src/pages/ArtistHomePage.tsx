@@ -6,6 +6,7 @@ import { ArtistReferralCard } from '../components/home/ArtistReferralCard'
 import { MyCustomersSection } from '../components/home/MyCustomersSection'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { studioHour, isStudioToday, isStudioTomorrow, studioMidnightUTC, STUDIO_TZ } from '../lib/studioTime'
 import './ArtistHomePage.css'
 
 const CUSTOMER_VIEW_EMAIL = 'info@digitalsolutionssa.co.za'
@@ -20,27 +21,19 @@ type ApptRow = {
   deposit_link: string | null
 }
 
-function isToday(iso: string) {
-  const d = new Date(iso), t = new Date()
-  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
-}
-
-function isTomorrow(iso: string) {
-  const d = new Date(iso), t = new Date()
-  t.setDate(t.getDate() + 1)
-  return d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate()
-}
+function isToday(iso: string) { return isStudioToday(iso) }
+function isTomorrow(iso: string) { return isStudioTomorrow(iso) }
 
 function timeLabel(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })
 }
 
 function dateLabel(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: STUDIO_TZ })
 }
 
 function greeting() {
-  const h = new Date().getHours()
+  const h = studioHour()
   if (h < 12) return 'Good morning'
   if (h < 17) return 'Good afternoon'
   return 'Good evening'
@@ -79,7 +72,7 @@ export function ArtistHomePage() {
       if (!aid) { setLoading(false); return }
 
       const now = new Date()
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
+      const startOfToday = studioMidnightUTC()
       const in30 = new Date(now.getTime() + 30 * 86400000)
 
       const [bookingsRes, monthRes, rentRes] = await Promise.all([
@@ -351,9 +344,9 @@ function ApptCard({ appt, compact }: { appt: ApptRow; compact?: boolean }) {
   return (
     <div className={`artist-home__appt${compact ? ' artist-home__appt--compact' : ''}`}>
       <div className="artist-home__appt-time">
-        {!compact && <span className="artist-home__appt-hour">{new Date(appt.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>}
+        {!compact && <span className="artist-home__appt-hour">{new Date(appt.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })}</span>}
         {compact && <span className="artist-home__appt-date">{dateLabel(appt.appointment_at)}</span>}
-        {compact && <span className="artist-home__appt-hour">{new Date(appt.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>}
+        {compact && <span className="artist-home__appt-hour">{new Date(appt.appointment_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })}</span>}
       </div>
       <div className="artist-home__appt-body">
         <p className="artist-home__appt-client">{appt.client}</p>

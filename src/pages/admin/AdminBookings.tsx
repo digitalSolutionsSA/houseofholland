@@ -3,6 +3,7 @@ import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardSpendPoints } from '../../lib/awardPoints'
+import { STUDIO_TZ } from '../../lib/studioTime'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 
@@ -322,7 +323,7 @@ export function AdminBookings() {
 
   function downloadConsentForm(consent: ConsentFormFull, booking: Booking) {
     const clientName = (booking.profiles as any)?.full_name ?? consent.full_name
-    const apptDate = new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    const apptDate = new Date(booking.appointment_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: STUDIO_TZ })
     const signedDate = consent.signed_at ? new Date(consent.signed_at).toLocaleString('en-US') : 'N/A'
     const checkinDate = consent.checked_in_at ? new Date(consent.checked_in_at).toLocaleString('en-US') : 'N/A'
     const row = (label: string, val: string) =>
@@ -1033,7 +1034,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                       <div style={{ fontSize: '0.8rem', color: '#4ade80' }}>
                         <CheckCircle size={12} style={{ display: 'inline', marginRight: 5 }} />
-                        Checked in · {new Date(b.checked_in_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        Checked in · {new Date(b.checked_in_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ })}
                         {b.tattoo_location && <span style={{ color: 'var(--text-muted)' }}> · {b.tattoo_location}</span>}
                       </div>
                       <button
