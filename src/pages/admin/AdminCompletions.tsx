@@ -38,7 +38,6 @@ export function AdminCompletions() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const isManager = profile?.role === 'manager'
   const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   async function load(artistId: string) {

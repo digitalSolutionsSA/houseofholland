@@ -172,7 +172,6 @@ export function AdminBookings() {
   const [waiverLoading, setWaiverLoading] = useState<string | null>(null)
   const [checkinAlert, setCheckinAlert] = useState<{ name: string; service: string; bookingId: string } | null>(null)
 
-  const isManager = profile?.role === 'manager'
   const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   // New booking alert popup

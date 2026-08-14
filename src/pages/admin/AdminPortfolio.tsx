@@ -25,7 +25,6 @@ export function AdminPortfolio() {
   const [file, setFile]         = useState<File | null>(null)
   const [showForm, setShowForm] = useState(false)
 
-  const isManager = profile?.role === 'manager'
   const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   async function loadPhotos(artistId: string) {

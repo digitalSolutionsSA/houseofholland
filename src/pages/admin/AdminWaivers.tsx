@@ -42,7 +42,6 @@ function fmt(dt: string) {
 
 export function AdminWaivers() {
   const { profile } = useAuth()
-  const isManager = profile?.role === 'manager'
   const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   const [tab, setTab] = useState<'today' | 'send'>('today')
