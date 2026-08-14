@@ -172,8 +172,8 @@
 }
 
 .booth-rent__modal {
-  background: #111010;
-  border: 1px solid rgba(201,168,76,0.2);
+  background: var(--bg-elevated);
+  border: 1px solid rgba(var(--accent-rgb),0.2);
   border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 460px;

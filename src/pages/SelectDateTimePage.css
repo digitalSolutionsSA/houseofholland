@@ -347,8 +347,8 @@
   width: 32px;
   height: 32px;
   border-radius: 0 8px 0 8px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
+  background: var(--bg-card);
+  color: var(--text);
   border: none;
   cursor: pointer;
   display: flex;

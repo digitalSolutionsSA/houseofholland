@@ -92,7 +92,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 .app-frame {
   width: 100%;
   min-height: 100dvh;
-  background: rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.05);
   position: relative;
   z-index: 1;
   display: flex;
@@ -148,7 +148,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
   .app-frame {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    background: rgba(0, 0, 0, 0.18);
+    background: rgba(0, 0, 0, 0.05);
     min-height: 100dvh;
   }
 
@@ -233,6 +233,7 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 [data-tier="free"] .app-frame { background: rgba(255, 255, 255, 0.42); }
 @media (min-width: 768px) {
   [data-tier="free"] .app-frame { background: rgba(255, 255, 255, 0.42); }
+  [data-tier="free"] .app-frame--auth .app-main { background: rgba(255, 255, 255, 0.88); }
 }
 
 [data-tier="free"] input,
@@ -265,9 +266,24 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 [data-tier="premium"] .desktop-nav__brand,
 [data-tier="premium"] .desktop-nav__section       { border-color: rgba(220, 38, 38, 0.18); }
 
-[data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.18); }
+[data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
 @media (min-width: 768px) {
-  [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.18); }
+  [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+}
+
+/* ── Premium tier: subtle white glow on red-coloured elements ── */
+[data-tier="premium"] .artist-profile-page__icon-btn,
+[data-tier="premium"] .artist-profile-page__spec-tag,
+[data-tier="premium"] .artist-profile-page__rating svg,
+[data-tier="premium"] .artist-profile-page__actions > *,
+[data-tier="premium"] .artist-reviews-section__title,
+[data-tier="premium"] .artist-reviews-section__title svg,
+[data-tier="premium"] .artist-reviews-section__read-btn,
+[data-tier="premium"] .review-display-stars,
+[data-tier="premium"] .review-modal__title,
+[data-tier="premium"] .review-star-btn,
+[data-tier="premium"] .review-modal__success {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
 }
 
 [data-tier="premium"] .profile-page__save-btn {
