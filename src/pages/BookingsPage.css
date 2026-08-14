@@ -335,6 +335,27 @@
   color: #f87171;
 }
 
+/* Reschedule button in detail sheet */
+.bookings-page__reschedule-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  background: rgba(var(--accent-rgb), 0.06);
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.bookings-page__reschedule-btn:hover {
+  background: rgba(var(--accent-rgb), 0.14);
+}
+
 /* ── Clickable appointment card ── */
 .appointment-card--clickable {
   cursor: pointer;

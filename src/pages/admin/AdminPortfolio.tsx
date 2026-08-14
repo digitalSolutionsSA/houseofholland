@@ -26,6 +26,7 @@ export function AdminPortfolio() {
   const [showForm, setShowForm] = useState(false)
 
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   async function loadPhotos(artistId: string) {
     setLoading(true)
@@ -52,7 +53,7 @@ export function AdminPortfolio() {
       if (mine) {
         setSelected(mine.id)
         loadPhotos(mine.id)
-      } else if (isManager && list && list.length > 0) {
+      } else if (isSuper && list && list.length > 0) {
         setSelected(list[0].id)
         loadPhotos(list[0].id)
       } else {
@@ -141,8 +142,7 @@ export function AdminPortfolio() {
         />
       </div>
 
-      {/* Manager can switch between artists */}
-      {isManager && artists.length > 1 && (
+      {isSuper && artists.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           <select
             className="admin-modal__select"

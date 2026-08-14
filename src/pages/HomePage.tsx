@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, User } from 'lucide-react'
+import { ChevronRight, User, AlertCircle } from 'lucide-react'
 import { FlashDayCard } from '../components/home/FlashDayCard'
 import { AppointmentCard } from '../components/home/AppointmentCard'
 import { QuickActions } from '../components/home/QuickActions'
@@ -60,6 +60,14 @@ export function HomePage() {
 
   if (isArtist) return <ArtistHomePage />
 
+  const idUrl = (profile as any)?.id_document_url
+  const missingItems = [
+    !profile?.avatar_url          && 'profile photo',
+    !profile?.full_name?.trim()   && 'full name',
+    !profile?.phone?.trim()       && 'phone number',
+    !idUrl                        && 'ID document',
+  ].filter(Boolean) as string[]
+
   return (
     <div className="page home-page">
       <header className="home-page__header">
@@ -89,6 +97,17 @@ export function HomePage() {
         <p>{greeting()},</p>
         <h1>{firstName}</h1>
       </section>
+
+      {missingItems.length > 0 && (
+        <Link to="/profile" className="home-page__profile-nudge">
+          <AlertCircle size={18} strokeWidth={1.8} className="home-page__profile-nudge-icon" />
+          <div className="home-page__profile-nudge-text">
+            <strong>Complete your profile</strong>
+            <span>Still missing: {missingItems.join(', ')}. Tap to update.</span>
+          </div>
+          <ChevronRight size={16} strokeWidth={1.5} className="home-page__profile-nudge-arrow" />
+        </Link>
+      )}
 
       <div className="home-page__desktop-grid">
         <section className="home-page__section">

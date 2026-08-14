@@ -16,8 +16,8 @@ export function useMembership() {
     tierIndex,
     isPremium,
     isBlackCard,
-    // Vault: free = locked, premium = 3, black-card = unlimited
-    vaultLimit: isBlackCard ? Infinity : isPremium ? 3 : 0,
+    // Vault: free = locked, premium = 10, black-card = unlimited
+    vaultLimit: isBlackCard ? Infinity : isPremium ? 10 : 0,
     // Shop discount: 0 | 7.5% | 15%
     shopDiscount: isBlackCard ? 0.15 : isPremium ? 0.075 : 0,
     // How many days before the event a tier can join the flash queue

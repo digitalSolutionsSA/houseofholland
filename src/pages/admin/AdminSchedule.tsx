@@ -41,6 +41,7 @@ function toDateStr(d: Date) {
 export function AdminSchedule() {
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   const [artists, setArtists]     = useState<ArtistItem[]>([])
   const [artistId, setArtistId]   = useState('')
@@ -74,7 +75,7 @@ export function AdminSchedule() {
         .order('name')
       setArtists(list ?? [])
       const mine = (list ?? []).find((a: ArtistItem) => a.profile_id === profile?.id)
-      const id = mine?.id ?? (isManager ? list?.[0]?.id ?? '' : '')
+      const id = mine?.id ?? (isSuper ? list?.[0]?.id ?? '' : '')
       setArtistId(id)
     }
     init()
@@ -283,30 +284,47 @@ export function AdminSchedule() {
 
   // ── Render ──────────────────────────────────────────────────────
 
+  const SLOT_OPTIONS = [
+    { value: 30,  label: '30 min' },
+    { value: 60,  label: '1 hr'   },
+    { value: 90,  label: '1.5 hr' },
+    { value: 120, label: '2 hr'   },
+  ]
+
   if (!artistId && !loading) {
     return (
       <div>
         <div className="admin-page__header">
-          <h1 className="admin-page__title">Weekly Schedule</h1>
+          <h1 className="admin-page__title">Schedule</h1>
         </div>
         <p className="admin-empty">Your account is not linked to an artist record. Ask your manager to assign your login on the Artists page.</p>
       </div>
     )
   }
 
+  const currentArtistName = artists.find(a => a.id === artistId)?.name
+
   return (
     <div>
       <div className="admin-page__header">
-        <h1 className="admin-page__title">Schedule</h1>
+        <div>
+          <h1 className="admin-page__title">Schedule</h1>
+          {isSuper && currentArtistName && (
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2, display: 'block' }}>
+              {currentArtistName}
+            </span>
+          )}
+        </div>
         {tab === 'weekly' && (
           <button className="admin-btn admin-btn--primary" onClick={saveWeekly} disabled={weekSaving || loading}>
             <Save size={13} style={{ display: 'inline', marginRight: 6 }} />
-            {weekSaving ? 'Saving…' : 'Save Schedule'}
+            {weekSaving ? 'Saving…' : weekSuccess ? '✓ Saved' : 'Save Schedule'}
           </button>
         )}
       </div>
 
-      {isManager && artists.length > 1 && (
+      {/* Artist switcher (super only) */}
+      {isSuper && artists.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           <select
             className="admin-modal__select"
@@ -319,24 +337,13 @@ export function AdminSchedule() {
         </div>
       )}
 
-      {/* Tab switcher */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, borderBottom: '1px solid var(--border-muted)', paddingBottom: 0 }}>
+      {/* Tab pills */}
+      <div className="sched-tabs">
         {(['weekly', 'calendar'] as const).map(t => (
           <button
             key={t}
+            className={`sched-tab${tab === t ? ' sched-tab--active' : ''}`}
             onClick={() => setTab(t)}
-            style={{
-              padding: '8px 20px',
-              background: 'transparent',
-              border: 'none',
-              borderBottom: tab === t ? '2px solid var(--gold)' : '2px solid transparent',
-              color: tab === t ? 'var(--gold)' : 'var(--text-muted)',
-              fontWeight: tab === t ? 600 : 400,
-              cursor: 'pointer',
-              fontSize: '0.88rem',
-              textTransform: 'capitalize',
-              marginBottom: -1,
-            }}
           >
             {t === 'weekly' ? 'Weekly Defaults' : '30-Day Calendar'}
           </button>
@@ -346,196 +353,159 @@ export function AdminSchedule() {
       {loading ? (
         <p className="admin-empty">Loading…</p>
       ) : tab === 'weekly' ? (
-        <>
-          {weekSuccess && (
-            <p style={{ color: '#6bffb8', fontSize: '0.85rem', marginBottom: 16, padding: '8px 12px', background: 'rgba(107,255,184,0.08)', border: '1px solid rgba(107,255,184,0.2)', borderRadius: 6 }}>
-              Schedule saved.
-            </p>
-          )}
-          {weekError && <p className="admin-modal__error" style={{ marginBottom: 16 }}>{weekError}</p>}
-          <div className="admin-schedule__table">
-            {rows.map((row, i) => (
-              <div key={row.day_of_week} className={`admin-schedule__row ${row.is_active ? 'admin-schedule__row--active' : 'admin-schedule__row--off'}`}>
-                <label className="admin-schedule__day-toggle">
-                  <input type="checkbox" checked={row.is_active} onChange={e => updateRow(i, { is_active: e.target.checked })} />
-                  <span className="admin-schedule__day-name">{DAYS[row.day_of_week]}</span>
-                </label>
-                {row.is_active ? (
-                  <div className="admin-schedule__times">
-                    <div className="admin-schedule__time-field">
-                      <label>From</label>
-                      <input type="time" className="admin-modal__input" value={row.start_time}
-                        onChange={e => updateRow(i, { start_time: e.target.value })} />
-                    </div>
-                    <span className="admin-schedule__dash">—</span>
-                    <div className="admin-schedule__time-field">
-                      <label>To</label>
-                      <input type="time" className="admin-modal__input" value={row.end_time}
-                        onChange={e => updateRow(i, { end_time: e.target.value })} />
-                    </div>
-                    <div className="admin-schedule__time-field">
-                      <label>Slot</label>
-                      <select className="admin-modal__select" value={row.slot_minutes}
-                        onChange={e => updateRow(i, { slot_minutes: Number(e.target.value) })}>
-                        <option value={30}>30 min</option>
-                        <option value={60}>1 hr</option>
-                        <option value={90}>1.5 hr</option>
-                        <option value={120}>2 hr</option>
-                      </select>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="admin-schedule__off-label">Day off</span>
-                )}
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 16 }}>
-            These are your default working hours. Use the 30-Day Calendar tab to override specific dates.
-          </p>
-        </>
-      ) : (
-        /* ── Calendar tab ── */
-        <div style={{ display: 'grid', gridTemplateColumns: selectedDate ? '1fr 280px' : '1fr', gap: 24, alignItems: 'start' }}>
-          {/* Calendar */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <button className="admin-btn admin-btn--ghost" onClick={() => shiftMonth(-1)}>
-                <ChevronLeft size={16} />
-              </button>
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{monthLabel}</span>
-              <button className="admin-btn admin-btn--ghost" onClick={() => shiftMonth(1)}>
-                <ChevronRight size={16} />
-              </button>
-            </div>
 
-            {/* Day-of-week headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginBottom: 4 }}>
-              {DAYS_SHORT.map(d => (
-                <div key={d} style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-dim)', fontWeight: 600, padding: '4px 0' }}>{d}</div>
-              ))}
-            </div>
+        /* ── Weekly tab ── */
+        <div className="sched-week">
+          {weekError && <p className="admin-modal__error" style={{ marginBottom: 12 }}>{weekError}</p>}
 
-            {/* Day cells */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
-              {calDays.map((day, i) => {
-                if (day === null) return <div key={`e-${i}`} />
-                const status = dayStatus(day)
-                const inWindow = isInWindow(day)
-                const past = isPast(day)
-                const dateStr = toDateStr(new Date(calYear, calMonth, day))
-                const isSelected = selectedDate === dateStr
-                const hasOverride = overrides.some(o => o.override_date === dateStr)
-                const apptCount = bookingCounts[dateStr] ?? 0
+          {rows.map((row, i) => (
+            <div key={row.day_of_week} className={`sched-day${row.is_active ? ' sched-day--on' : ''}`}>
 
-                const bgColor =
-                  isSelected ? 'var(--gold)' :
-                  past       ? 'transparent' :
-                  !inWindow  ? 'transparent' :
-                  status === 'available' || status === 'override-on' ? 'rgba(212,175,55,0.12)' :
-                  'transparent'
-
-                const textColor =
-                  isSelected ? '#000' :
-                  past || !inWindow ? 'var(--text-dim)' :
-                  status === 'available' || status === 'override-on' ? 'var(--gold)' :
-                  'var(--text-muted)'
-
-                return (
-                  <button
-                    key={day}
-                    onClick={() => inWindow && !past && openDayEdit(day)}
-                    disabled={past || !inWindow}
-                    style={{
-                      aspectRatio: '1',
-                      borderRadius: 8,
-                      border: hasOverride && !isSelected ? '1px solid var(--gold)' : '1px solid transparent',
-                      background: bgColor,
-                      color: textColor,
-                      fontSize: '0.82rem',
-                      fontWeight: 600,
-                      cursor: inWindow && !past ? 'pointer' : 'default',
-                      position: 'relative',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 2,
-                      padding: '6px 2px',
-                    }}
-                  >
-                    {day}
-                    {apptCount > 0 && (
-                      <span style={{
-                        position: 'absolute', top: 2, right: 3,
-                        background: isSelected ? '#000' : '#6bffb8',
-                        color: '#000',
-                        borderRadius: '50%',
-                        width: 14, height: 14,
-                        fontSize: '0.58rem', fontWeight: 800,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        lineHeight: 1,
-                      }}>
-                        {apptCount}
-                      </span>
-                    )}
-                    {hasOverride && !apptCount && (
-                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: isSelected ? '#000' : 'var(--gold)' }} />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Legend */}
-            <div style={{ display: 'flex', gap: 12, marginTop: 16, fontSize: '0.72rem', color: 'var(--text-dim)', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: 'rgba(212,175,55,0.15)', border: '1px solid transparent', display: 'inline-block' }} />
-                Available
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: 'transparent', border: '1px solid var(--gold)', display: 'inline-block' }} />
-                Overridden
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 2, background: 'transparent', border: '1px solid var(--border-muted)', display: 'inline-block' }} />
-                Day off
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#6bffb8', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 800, color: '#000' }}>1</span>
-                Appointments
-              </span>
-            </div>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: 8 }}>
-              Editable range: today + 30 days. Click any upcoming date to override.
-            </p>
-          </div>
-
-          {/* Day edit panel */}
-          {selectedDate && editOverride && (
-            <div style={{ border: '1px solid var(--border-gold)', borderRadius: 10, padding: 20, background: 'var(--surface-1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <span style={{ fontWeight: 600, color: 'var(--gold)', fontSize: '0.9rem' }}>
-                  {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                </span>
-                <button className="admin-btn admin-btn--ghost" onClick={() => setSelectedDate(null)}>
-                  <X size={14} />
+              {/* Day header row */}
+              <div className="sched-day__head">
+                <span className="sched-day__name">{DAYS[row.day_of_week]}</span>
+                <button
+                  type="button"
+                  className={`sched-toggle${row.is_active ? ' sched-toggle--on' : ''}`}
+                  onClick={() => updateRow(i, { is_active: !row.is_active })}
+                  aria-label={row.is_active ? 'Set day off' : 'Set working day'}
+                >
+                  <span className="sched-toggle__thumb" />
                 </button>
               </div>
 
-              {/* Available / Off toggle */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {/* Time pickers — only when active */}
+              {row.is_active && (
+                <div className="sched-day__body">
+                  <div className="sched-day__times">
+                    <div className="sched-day__time-field">
+                      <label>From</label>
+                      <input type="time" className="admin-modal__input"
+                        value={row.start_time}
+                        onChange={e => updateRow(i, { start_time: e.target.value })} />
+                    </div>
+                    <span className="sched-day__dash">—</span>
+                    <div className="sched-day__time-field">
+                      <label>To</label>
+                      <input type="time" className="admin-modal__input"
+                        value={row.end_time}
+                        onChange={e => updateRow(i, { end_time: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="sched-day__slot-row">
+                    <span className="sched-day__slot-label">Booking slot</span>
+                    <div className="sched-slot-pills">
+                      {SLOT_OPTIONS.map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          className={`sched-slot-pill${row.slot_minutes === opt.value ? ' sched-slot-pill--active' : ''}`}
+                          onClick={() => updateRow(i, { slot_minutes: opt.value })}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          <p className="sched-hint">
+            These are your default working hours. Use the 30-Day Calendar tab to override specific dates.
+          </p>
+        </div>
+
+      ) : (
+
+        /* ── Calendar tab ── */
+        <div className="sched-cal">
+
+          {/* Month nav */}
+          <div className="sched-cal__nav">
+            <button className="admin-btn admin-btn--ghost" onClick={() => shiftMonth(-1)}>
+              <ChevronLeft size={16} />
+            </button>
+            <span className="sched-cal__month">{monthLabel}</span>
+            <button className="admin-btn admin-btn--ghost" onClick={() => shiftMonth(1)}>
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          {/* Day-of-week headers */}
+          <div className="sched-cal__dow">
+            {DAYS_SHORT.map(d => <span key={d}>{d}</span>)}
+          </div>
+
+          {/* Day cells */}
+          <div className="sched-cal__grid">
+            {calDays.map((day, i) => {
+              if (day === null) return <div key={`e-${i}`} />
+              const status = dayStatus(day)
+              const inWindow = isInWindow(day)
+              const past = isPast(day)
+              const dateStr = toDateStr(new Date(calYear, calMonth, day))
+              const isSelected = selectedDate === dateStr
+              const hasOverride = overrides.some(o => o.override_date === dateStr)
+              const apptCount = bookingCounts[dateStr] ?? 0
+              const isOn = status === 'available' || status === 'override-on'
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => inWindow && !past && openDayEdit(day)}
+                  disabled={past || !inWindow}
+                  className={[
+                    'sched-cal__cell',
+                    isSelected   ? 'sched-cal__cell--selected' : '',
+                    past         ? 'sched-cal__cell--past'     : '',
+                    !inWindow && !past ? 'sched-cal__cell--future'  : '',
+                    inWindow && !past && isOn  ? 'sched-cal__cell--on'    : '',
+                    inWindow && !past && !isOn ? 'sched-cal__cell--off'   : '',
+                    hasOverride && !isSelected ? 'sched-cal__cell--override' : '',
+                  ].filter(Boolean).join(' ')}
+                >
+                  <span className="sched-cal__cell-day">{day}</span>
+                  {apptCount > 0 && (
+                    <span className="sched-cal__appt-dot">{apptCount}</span>
+                  )}
+                  {hasOverride && !apptCount && (
+                    <span className="sched-cal__override-dot" />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="sched-cal__legend">
+            <span><span className="sched-legend-swatch sched-legend-swatch--on" />Available</span>
+            <span><span className="sched-legend-swatch sched-legend-swatch--override" />Overridden</span>
+            <span><span className="sched-legend-swatch sched-legend-swatch--off" />Day off</span>
+            <span><span className="sched-legend-swatch sched-legend-swatch--appt">1</span>Booked</span>
+          </div>
+          <p className="sched-hint">Tap any upcoming date (today + 30 days) to set an override.</p>
+
+          {/* Day edit panel — full width below calendar */}
+          {selectedDate && editOverride && (
+            <div className="sched-override-panel">
+              <div className="sched-override-panel__head">
+                <span className="sched-override-panel__date">
+                  {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </span>
+                <button className="admin-btn admin-btn--ghost sched-override-panel__close" onClick={() => setSelectedDate(null)}>
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Working / Day Off toggle */}
+              <div className="sched-avail-toggle">
                 {[true, false].map(v => (
                   <button
                     key={String(v)}
+                    className={`sched-avail-btn${editOverride.is_available === v ? ' sched-avail-btn--active' : ''}`}
                     onClick={() => setEditOverride(o => o ? { ...o, is_available: v } : o)}
-                    style={{
-                      flex: 1, padding: '8px 0', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600,
-                      border: editOverride.is_available === v ? '1px solid var(--gold)' : '1px solid var(--border-muted)',
-                      background: editOverride.is_available === v ? 'rgba(212,175,55,0.12)' : 'transparent',
-                      color: editOverride.is_available === v ? 'var(--gold)' : 'var(--text-muted)',
-                      cursor: 'pointer',
-                    }}
                   >
                     {v ? 'Working' : 'Day Off'}
                   </button>
@@ -544,29 +514,35 @@ export function AdminSchedule() {
 
               {editOverride.is_available && (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                    <div>
-                      <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', display: 'block', marginBottom: 4 }}>From</label>
+                  <div className="sched-day__times" style={{ marginBottom: 14 }}>
+                    <div className="sched-day__time-field">
+                      <label>From</label>
                       <input type="time" className="admin-modal__input"
                         value={editOverride.start_time ?? '09:00'}
                         onChange={e => setEditOverride(o => o ? { ...o, start_time: e.target.value } : o)} />
                     </div>
-                    <div>
-                      <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', display: 'block', marginBottom: 4 }}>To</label>
+                    <span className="sched-day__dash">—</span>
+                    <div className="sched-day__time-field">
+                      <label>To</label>
                       <input type="time" className="admin-modal__input"
                         value={editOverride.end_time ?? '18:00'}
                         onChange={e => setEditOverride(o => o ? { ...o, end_time: e.target.value } : o)} />
                     </div>
                   </div>
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: '0.72rem', color: 'var(--text-dim)', display: 'block', marginBottom: 4 }}>Slot duration</label>
-                    <select className="admin-modal__select" value={editOverride.slot_minutes}
-                      onChange={e => setEditOverride(o => o ? { ...o, slot_minutes: Number(e.target.value) } : o)}>
-                      <option value={30}>30 min</option>
-                      <option value={60}>1 hr</option>
-                      <option value={90}>1.5 hr</option>
-                      <option value={120}>2 hr</option>
-                    </select>
+                  <div className="sched-day__slot-row" style={{ marginBottom: 16 }}>
+                    <span className="sched-day__slot-label">Booking slot</span>
+                    <div className="sched-slot-pills">
+                      {SLOT_OPTIONS.map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          className={`sched-slot-pill${editOverride.slot_minutes === opt.value ? ' sched-slot-pill--active' : ''}`}
+                          onClick={() => setEditOverride(o => o ? { ...o, slot_minutes: opt.value } : o)}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </>
               )}
@@ -575,17 +551,17 @@ export function AdminSchedule() {
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="admin-btn admin-btn--primary" style={{ flex: 1 }} onClick={saveOverride} disabled={calSaving}>
-                  {calSaving ? 'Saving…' : 'Save'}
+                  {calSaving ? 'Saving…' : 'Save Override'}
                 </button>
                 {editOverride.id && (
-                  <button className="admin-btn admin-btn--ghost" onClick={deleteOverride} disabled={calSaving} title="Clear override (revert to weekly default)">
-                    Clear
+                  <button className="admin-btn admin-btn--ghost" onClick={deleteOverride} disabled={calSaving}>
+                    Clear Override
                   </button>
                 )}
               </div>
               {editOverride.id && (
                 <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: 8, textAlign: 'center' }}>
-                  "Clear" removes the override and reverts to your weekly default.
+                  "Clear Override" reverts this date back to your weekly default.
                 </p>
               )}
             </div>

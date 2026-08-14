@@ -39,6 +39,7 @@ export function AdminCompletions() {
   const [error, setError] = useState<string | null>(null)
 
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   async function load(artistId: string) {
     setLoading(true)
@@ -66,7 +67,7 @@ export function AdminCompletions() {
         setMyArtistId(mine.id)
         setSelectedArtistId(mine.id)
         load(mine.id)
-      } else if (isManager && artistList && artistList.length > 0) {
+      } else if (isSuper && artistList && artistList.length > 0) {
         setSelectedArtistId(artistList[0].id)
         load(artistList[0].id)
       } else {
@@ -156,7 +157,7 @@ export function AdminCompletions() {
         </button>
       </div>
 
-      {isManager && artists.length > 1 && (
+      {isSuper && artists.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           <select
             className="admin-modal__select"
@@ -210,7 +211,7 @@ export function AdminCompletions() {
           <div className="admin-modal">
             <h2 className="admin-modal__title">Record Completed Tattoo</h2>
 
-            {isManager && (
+            {isSuper && (
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Artist</label>
                 <select className="admin-modal__select" value={selectedArtistId}

@@ -181,8 +181,9 @@ export function ProfilePage() {
   }
 
   const roleBadge =
-    profile?.role === 'manager' ? 'Store Manager'
-    : profile?.role === 'artist' ? 'Artist'
+    profile?.id === '54c13550-6c8c-4a2e-999c-9b79325ca164' ? 'Owner'
+    : profile?.role === 'manager' ? 'IT Support'
+    : profile?.role === 'artist' ? 'Manager'
     : 'Member'
 
   const membershipBadge =

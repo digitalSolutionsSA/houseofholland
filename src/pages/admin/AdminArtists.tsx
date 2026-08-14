@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X, Copy, RefreshCw, Mail } from 'lucide-react'
+import { Plus, Pencil, Trash2, Upload, KeyRound, UserX, UserCheck, X, Copy, RefreshCw, Mail, ChevronDown } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 type ArtistProfile = {
@@ -336,6 +336,8 @@ export function AdminArtists() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+
   return (
     <div>
       <div className="admin-page__header">
@@ -351,101 +353,117 @@ export function AdminArtists() {
       ) : artists.length === 0 ? (
         <p className="admin-empty">No artists yet. Add one above.</p>
       ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>Name</th>
-              <th>Specialties</th>
-              <th>Referral Code</th>
-              <th>Status</th>
-              <th>Login</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {artists.map((a) => (
-              <tr key={a.id}>
-                <td>
+        <div className="artist-cards">
+          {artists.map(a => {
+            const isOpen = expandedId === a.id
+            return (
+              <div key={a.id} className={`artist-card${isOpen ? ' artist-card--open' : ''}`}>
+
+                {/* ── Collapsed header (always visible) ── */}
+                <button
+                  className="artist-card__header"
+                  onClick={() => setExpandedId(isOpen ? null : a.id)}
+                >
                   {a.avatar_url
-                    ? <img src={a.avatar_url} className="admin-table__avatar" alt="" />
-                    : <div className="admin-table__avatar--empty" />}
-                </td>
-                <td>{a.name}</td>
-                <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                  {a.specialties.join(', ') || '—'}
-                </td>
-                <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <code style={{ fontSize: '0.85rem', color: 'var(--gold)', letterSpacing: '0.1em', fontWeight: 600 }}>
-                      {a.referral_code ?? '—'}
-                    </code>
-                    {a.referral_code && (
-                      <button
-                        className="admin-btn admin-btn--ghost"
-                        style={{ fontSize: '0.7rem', padding: '2px 6px' }}
-                        title="Copy code"
-                        onClick={() => navigator.clipboard.writeText(a.referral_code!)}
-                      >
-                        <Copy size={11} />
-                      </button>
-                    )}
-                    <button
-                      className="admin-btn admin-btn--ghost"
-                      style={{ fontSize: '0.7rem', padding: '2px 6px' }}
-                      title="Regenerate code"
-                      onClick={() => regenerateCode(a)}
-                    >
-                      <RefreshCw size={11} />
-                    </button>
+                    ? <img src={a.avatar_url} className="artist-card__avatar" alt="" />
+                    : <div className="artist-card__avatar artist-card__avatar--empty" />}
+                  <div className="artist-card__meta">
+                    <span className="artist-card__name">{a.name}</span>
+                    <span className={`admin-badge admin-badge--${a.is_active ? 'active' : 'inactive'}`}>
+                      {a.is_active ? 'Active' : 'Hidden'}
+                    </span>
                   </div>
-                </td>
-                <td>
-                  <span className={`admin-badge admin-badge--${a.is_active ? 'active' : 'inactive'}`}>
-                    {a.is_active ? 'Active' : 'Hidden'}
-                  </span>
-                </td>
-                <td>
-                  {a.profile_id ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <UserCheck size={12} />
-                        {a.profiles?.email ?? '—'}
-                      </span>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.75rem', padding: '2px 8px' }} onClick={() => openChangePassword(a)} title="Change password">
-                          <KeyRound size={11} style={{ marginRight: 3 }} />
-                          Change PW
-                        </button>
-                        <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.75rem', padding: '2px 8px' }} onClick={() => openChangeEmail(a)} title="Change email">
-                          <Mail size={11} />
-                        </button>
-                        <button className="admin-btn admin-btn--danger" style={{ fontSize: '0.75rem', padding: '2px 8px' }} onClick={() => unlinkAccount(a)} title="Remove login">
-                          <UserX size={11} />
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={1.8}
+                    className={`artist-card__chevron${isOpen ? ' artist-card__chevron--open' : ''}`}
+                  />
+                </button>
+
+                {/* ── Expanded body ── */}
+                {isOpen && (
+                  <div className="artist-card__body">
+
+                    {/* Specialties */}
+                    {a.specialties.length > 0 && (
+                      <div className="artist-card__row">
+                        <span className="artist-card__label">Styles</span>
+                        <div className="artist-card__tags">
+                          {a.specialties.map(s => (
+                            <span key={s} className="artist-card__tag">{s}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Referral code */}
+                    <div className="artist-card__row">
+                      <span className="artist-card__label">Referral Code</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <code className="artist-card__code">{a.referral_code ?? '—'}</code>
+                        {a.referral_code && (
+                          <button className="admin-btn admin-btn--ghost" style={{ padding: '3px 8px' }}
+                            title="Copy" onClick={() => navigator.clipboard.writeText(a.referral_code!)}>
+                            <Copy size={12} />
+                          </button>
+                        )}
+                        <button className="admin-btn admin-btn--ghost" style={{ padding: '3px 8px' }}
+                          title="Regenerate" onClick={() => regenerateCode(a)}>
+                          <RefreshCw size={12} />
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.78rem' }} onClick={() => openAssign(a)}>
-                      <KeyRound size={12} style={{ marginRight: 5 }} />
-                      Assign Login
-                    </button>
-                  )}
-                </td>
-                <td>
-                  <div className="admin-actions">
-                    <button className="admin-btn admin-btn--ghost" onClick={() => openEdit(a)}>
-                      <Pencil size={13} />
-                    </button>
-                    <button className="admin-btn admin-btn--danger" onClick={() => remove(a.id, a.name)}>
-                      <Trash2 size={13} />
-                    </button>
+
+                    {/* Bio */}
+                    {a.bio && (
+                      <div className="artist-card__row">
+                        <span className="artist-card__label">Bio</span>
+                        <p className="artist-card__bio">{a.bio}</p>
+                      </div>
+                    )}
+
+                    {/* Login */}
+                    <div className="artist-card__row">
+                      <span className="artist-card__label">Login</span>
+                      {a.profile_id ? (
+                        <div>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+                            <UserCheck size={13} />{a.profiles?.email ?? '—'}
+                          </span>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.78rem' }} onClick={() => openChangePassword(a)}>
+                              <KeyRound size={12} style={{ marginRight: 4 }} />Change PW
+                            </button>
+                            <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.78rem' }} onClick={() => openChangeEmail(a)}>
+                              <Mail size={12} style={{ marginRight: 4 }} />Change Email
+                            </button>
+                            <button className="admin-btn admin-btn--danger" style={{ fontSize: '0.78rem' }} onClick={() => unlinkAccount(a)}>
+                              <UserX size={12} style={{ marginRight: 4 }} />Remove Login
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button className="admin-btn admin-btn--ghost" style={{ fontSize: '0.82rem' }} onClick={() => openAssign(a)}>
+                          <KeyRound size={13} style={{ marginRight: 5 }} />Assign Login
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Edit / Delete */}
+                    <div className="artist-card__actions">
+                      <button className="admin-btn admin-btn--ghost" onClick={() => openEdit(a)}>
+                        <Pencil size={13} style={{ marginRight: 5 }} />Edit
+                      </button>
+                      <button className="admin-btn admin-btn--danger" onClick={() => remove(a.id, a.name)}>
+                        <Trash2 size={13} style={{ marginRight: 5 }} />Remove
+                      </button>
+                    </div>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+            )
+          })}
+        </div>
       )}
 
       {/* Artist add/edit modal */}

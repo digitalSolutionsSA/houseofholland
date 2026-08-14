@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard, AlertTriangle } from 'lucide-react'
+import { ChevronRight, LogIn, CheckCircle2, X, CalendarCheck, CreditCard, AlertTriangle, CalendarClock } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
@@ -9,6 +9,7 @@ import './BookingsPage.css'
 
 type Appointment = {
   id: string
+  artist_id: string
   appointment_at: string
   dateLabel: string
   artist: string
@@ -20,6 +21,7 @@ type Appointment = {
   deposit_link: string | null
   notes: string | null
   reference_image_urls: string[] | null
+  rescheduled_count: number
 }
 
 function isToday(dateStr: string) { return isStudioToday(dateStr) }
@@ -33,6 +35,7 @@ export function BookingsPage() {
   const [confirmPopup, setConfirmPopup] = useState<Appointment | null>(null)
   const [cancelPopup, setCancelPopup] = useState<Appointment | null>(null)
   const [cancelling, setCancelling] = useState(false)
+  const [rescheduleWarnPopup, setRescheduleWarnPopup] = useState<Appointment | null>(null)
   const [detailAppt, setDetailAppt] = useState<Appointment | null>(null)
   const [editingNotes, setEditingNotes] = useState(false)
   const [editNotes, setEditNotes] = useState('')
@@ -42,6 +45,7 @@ export function BookingsPage() {
   function mapRow(d: any): Appointment {
     return {
       id: d.id,
+      artist_id: d.artist_id,
       appointment_at: d.appointment_at,
       dateLabel: new Date(d.appointment_at).toLocaleString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric', timeZone: STUDIO_TZ,
@@ -56,6 +60,7 @@ export function BookingsPage() {
       deposit_link: d.deposit_link ?? null,
       notes: d.notes ?? null,
       reference_image_urls: d.reference_image_urls ?? null,
+      rescheduled_count: d.rescheduled_count ?? 0,
     }
   }
 
@@ -71,7 +76,7 @@ export function BookingsPage() {
     const startOfToday = studioMidnightUTC()
     supabase
       .from('bookings')
-      .select('id, appointment_at, service, status, checked_in_at, deposit_link, notes, reference_image_urls, artists(name, avatar_url, profile_id)')
+      .select('id, artist_id, appointment_at, service, status, checked_in_at, deposit_link, notes, reference_image_urls, rescheduled_count, artists(name, avatar_url, profile_id)')
       .eq('profile_id', profile.id)
       .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', startOfToday)
@@ -173,6 +178,42 @@ export function BookingsPage() {
       setEditingNotes(false)
     }
     setSavingNotes(false)
+  }
+
+  function handleRescheduleClick(appt: Appointment) {
+    const hoursUntil = (new Date(appt.appointment_at).getTime() - Date.now()) / 3600000
+    if (hoursUntil < 48) return // button is disabled — belt-and-suspenders guard
+    setDetailAppt(null)
+    if (appt.rescheduled_count >= 1) {
+      setRescheduleWarnPopup(appt)
+    } else {
+      navigate(`/bookings/select-time?reschedule=${appt.id}&artist=${appt.artist_id}`)
+    }
+  }
+
+  async function forfeitAppointment(appt: Appointment) {
+    setCancelling(true)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'cancelled', cancellation_reason: 'second_reschedule_forfeited' })
+      .eq('id', appt.id)
+    if (error) { setCancelling(false); return }
+
+    if (appt.artistProfileId) {
+      const label = new Date(appt.appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: STUDIO_TZ,
+      })
+      await supabase.from('notifications').insert({
+        profile_id: appt.artistProfileId,
+        title: 'Booking Forfeited',
+        body: `A client attempted a second reschedule of their ${appt.service} appointment on ${label}. The booking has been cancelled and deposit forfeited.`,
+        type: 'booking',
+      })
+    }
+
+    setUpcoming(prev => prev.filter(a => a.id !== appt.id))
+    setRescheduleWarnPopup(null)
+    setCancelling(false)
   }
 
   // Only show appointments that still need check-in in the prominent TODAY block
@@ -314,6 +355,39 @@ export function BookingsPage() {
         </div>
       )}
 
+      {/* ── Second-reschedule forfeit warning popup ── */}
+      {rescheduleWarnPopup && (
+        <div className="bookings-popup-overlay">
+          <div className="bookings-popup">
+            <div className="bookings-popup__icon bookings-popup__icon--warn">
+              <AlertTriangle size={28} strokeWidth={1.5} />
+            </div>
+            <h3 className="bookings-popup__title">Reschedule Again?</h3>
+            <p className="bookings-popup__body">
+              You've already rescheduled this appointment once.
+            </p>
+            <p className="bookings-popup__sub bookings-popup__sub--warn">
+              Rescheduling again will result in <strong>losing your appointment and deposit</strong>. This cannot be undone.
+            </p>
+            <div className="bookings-popup__actions">
+              <button className="bookings-popup__dismiss" onClick={() => setRescheduleWarnPopup(null)}>
+                Keep It
+              </button>
+              <button
+                className="bookings-popup__cta-btn bookings-popup__cta-btn--danger"
+                onClick={() => forfeitAppointment(rescheduleWarnPopup)}
+                disabled={cancelling}
+              >
+                {cancelling ? 'Processing…' : 'I Understand'}
+              </button>
+            </div>
+            <button className="bookings-popup__close" onClick={() => setRescheduleWarnPopup(null)}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Booking detail / edit modal ── */}
       {detailAppt && (
         <div className="bookings-popup-overlay" onClick={() => { setDetailAppt(null); setEditingNotes(false) }}>
@@ -397,6 +471,29 @@ export function BookingsPage() {
                   View Signed Consent Form
                 </Link>
               )}
+
+              {/* Reschedule */}
+              {!detailAppt.checked_in_at && detailAppt.status !== 'cancelled' && (() => {
+                const hoursUntil = (new Date(detailAppt.appointment_at).getTime() - Date.now()) / 3600000
+                const canReschedule = hoursUntil >= 48
+                if (!canReschedule) {
+                  return (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: 12, textAlign: 'center' }}>
+                      Rescheduling is only available 48+ hours before your appointment.
+                    </p>
+                  )
+                }
+                return (
+                  <button
+                    className="bookings-page__reschedule-btn"
+                    style={{ width: '100%', marginTop: 12 }}
+                    onClick={() => handleRescheduleClick(detailAppt)}
+                  >
+                    <CalendarClock size={14} strokeWidth={1.5} />
+                    {detailAppt.rescheduled_count >= 1 ? 'Reschedule (⚠ deposit at risk)' : 'Reschedule Appointment'}
+                  </button>
+                )
+              })()}
 
               {/* Cancel */}
               {detailAppt.status !== 'cancelled' && (

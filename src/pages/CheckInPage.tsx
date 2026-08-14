@@ -343,6 +343,25 @@ export function CheckInPage() {
     </div>
   )
 
+  if (!(profile as any)?.id_document_url) return (
+    <div className="page checkin-page">
+      <PageHeader title="Check In" backTo="/bookings" />
+      <div className="checkin__not-today">
+        <AlertCircle size={40} strokeWidth={1.2} />
+        <h2>ID Required</h2>
+        <p>You must upload a valid ID document to your profile before you can check in for a tattoo.</p>
+        <button
+          type="button"
+          className="checkin__submit"
+          style={{ marginTop: 24, maxWidth: 240 }}
+          onClick={() => navigate('/profile')}
+        >
+          Go to Profile
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <div className="page checkin-page">
       <PageHeader title="Check In & Consent Form" backTo="/bookings" />

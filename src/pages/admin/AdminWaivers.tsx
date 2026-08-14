@@ -43,6 +43,7 @@ function fmt(dt: string) {
 export function AdminWaivers() {
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   const [tab, setTab] = useState<'today' | 'send'>('today')
   const [artists, setArtists] = useState<Artist[]>([])
@@ -66,7 +67,7 @@ export function AdminWaivers() {
         .eq('is_active', true).order('name')
       setArtists(list ?? [])
       const mine = (list ?? []).find(a => a.profile_id === profile?.id)
-      const id = mine?.id ?? (isManager ? list?.[0]?.id ?? '' : '')
+      const id = mine?.id ?? (isSuper ? list?.[0]?.id ?? '' : '')
       setArtistId(id)
     }
     init()
@@ -247,7 +248,7 @@ ${sigHtml}
         <h1 className="admin-page__title">Waivers</h1>
       </div>
 
-      {isManager && artists.length > 1 && (
+      {isSuper && artists.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           <select className="admin-modal__select" style={{ maxWidth: 240 }}
             value={artistId} onChange={e => setArtistId(e.target.value)}>

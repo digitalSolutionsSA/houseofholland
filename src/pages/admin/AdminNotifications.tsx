@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Send } from 'lucide-react'
+import { Send, ShieldOff } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 type Profile = { id: string; full_name: string | null; email: string | null; role: string }
 
 export function AdminNotifications() {
+  const { profile } = useAuth()
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading]   = useState(true)
   const [title, setTitle]       = useState('')
@@ -51,6 +55,13 @@ export function AdminNotifications() {
     setTimeout(() => setSuccess(false), 3000)
     setSending(false)
   }
+
+  if (!isSuper) return (
+    <div className="admin-page__access-denied">
+      <ShieldOff size={40} strokeWidth={1.2} />
+      <p>Access restricted.</p>
+    </div>
+  )
 
   return (
     <div>

@@ -173,6 +173,7 @@ export function AdminBookings() {
   const [checkinAlert, setCheckinAlert] = useState<{ name: string; service: string; bookingId: string } | null>(null)
 
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   // New booking alert popup
   const [newAlert, setNewAlert] = useState<{ name: string; service: string; time: string; bookingId: string } | null>(null)
@@ -438,7 +439,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       setArtists(list ?? [])
 
       const mine = (list ?? []).find((a: any) => a.profile_id === profile?.id)
-      const id = mine?.id ?? (isManager ? list?.[0]?.id : null)
+      const id = mine?.id ?? (isSuper ? list?.[0]?.id : null)
       if (id) { setArtistId(id); loadBookings(id) }
       else setLoading(false)
     }
@@ -905,7 +906,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
       )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        {isManager && artists.length > 1 && (
+        {isSuper && artists.length > 1 && (
           <select className="admin-modal__select" style={{ maxWidth: 200 }}
             value={artistId} onChange={e => setArtistId(e.target.value)}>
             {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}

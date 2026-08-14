@@ -18,6 +18,7 @@ type ArtistList = { id: string; name: string; profile_id: string | null }
 export function AdminArtistProfile() {
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   const [artistList, setArtistList] = useState<ArtistList[]>([])
   const [artistId, setArtistId]     = useState('')
@@ -43,7 +44,7 @@ export function AdminArtistProfile() {
         .order('name')
       setArtistList(list ?? [])
       const mine = (list ?? []).find(a => a.profile_id === profile?.id)
-      const id = mine?.id ?? (isManager ? list?.[0]?.id ?? '' : '')
+      const id = mine?.id ?? (isSuper ? list?.[0]?.id ?? '' : '')
       setArtistId(id)
     }
     init()
@@ -133,7 +134,7 @@ export function AdminArtistProfile() {
         </button>
       </div>
 
-      {isManager && artistList.length > 1 && (
+      {isSuper && artistList.length > 1 && (
         <div style={{ marginBottom: 24 }}>
           <select
             className="admin-modal__select"

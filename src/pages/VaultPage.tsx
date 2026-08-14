@@ -66,7 +66,7 @@ export function VaultPage() {
           <h2 className="vault-page__locked-title">Premium Feature</h2>
           <p className="vault-page__locked-body">
             The Tattoo Vault stores a digital record of every piece you've had done at House of Holland.
-            Upgrade to <strong>Premium</strong> to store up to 3 tattoos, or go <strong>Black Card</strong> for unlimited storage.
+            Upgrade to <strong>Premium</strong> to store up to 10 tattoos, or go <strong>Black Card</strong> for unlimited storage.
           </p>
           <Link to="/membership" className="vault-page__locked-cta">
             View Membership Plans

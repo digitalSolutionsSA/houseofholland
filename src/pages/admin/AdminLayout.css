@@ -93,6 +93,17 @@
   max-width: 960px;
 }
 
+.admin-page__access-denied {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 80px 20px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .admin-page__header {
   display: flex;
   align-items: center;
@@ -303,6 +314,144 @@
   border-radius: var(--radius-sm);
 }
 
+/* ── Artist cards ──────────────────────────────────── */
+.artist-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.artist-card {
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.artist-card--open {
+  border-color: rgba(var(--accent-rgb), 0.35);
+}
+
+.artist-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+}
+
+.artist-card__header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.artist-card__avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border-gold);
+  flex-shrink: 0;
+}
+
+.artist-card__avatar--empty {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.artist-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.artist-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.artist-card__chevron {
+  color: var(--text-dim);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.artist-card__chevron--open {
+  transform: rotate(180deg);
+}
+
+.artist-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 14px;
+}
+
+.artist-card__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.artist-card__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.artist-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.artist-card__tag {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  color: var(--text-muted);
+}
+
+.artist-card__code {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+
+.artist-card__bio {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.artist-card__actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
 /* Status badges */
 .admin-badge {
   display: inline-block;
@@ -357,90 +506,438 @@
   font-size: 0.9rem;
 }
 
-/* Schedule table */
-.admin-schedule__table {
+/* ── Schedule redesign ── */
+
+/* Tab pills */
+.sched-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: var(--surface-0, rgba(0,0,0,0.15));
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.sched-tab {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sched-tab--active {
+  background: var(--surface-1, rgba(255,255,255,0.06));
+  color: var(--gold);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Weekly tab */
+.sched-week {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.admin-schedule__row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 14px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  flex-wrap: wrap;
-}
-
-.admin-schedule__row--active {
-  background: rgba(var(--accent-rgb),0.04);
-  border-color: rgba(var(--accent-rgb),0.2);
-}
-
-.admin-schedule__row--off {
-  opacity: 0.5;
-}
-
-.admin-schedule__day-toggle {
-  display: flex;
-  align-items: center;
   gap: 10px;
-  cursor: pointer;
-  min-width: 120px;
 }
 
-.admin-schedule__day-toggle input[type="checkbox"] {
-  accent-color: var(--gold);
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+.sched-day {
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s;
 }
 
-.admin-schedule__day-name {
-  font-size: 0.9rem;
+.sched-day--on {
+  border-color: rgba(var(--accent-rgb), 0.3);
+}
+
+.sched-day__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: transparent;
+}
+
+.sched-day--on .sched-day__head {
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.sched-day__name {
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
 }
 
-.admin-schedule__times {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  flex: 1;
+.sched-day:not(.sched-day--on) .sched-day__name {
+  color: var(--text-muted);
 }
 
-.admin-schedule__time-field {
+/* Toggle switch */
+.sched-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--border-subtle);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.sched-toggle--on {
+  background: var(--gold);
+}
+
+.sched-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+
+.sched-toggle--on .sched-toggle__thumb {
+  transform: translateX(20px);
+}
+
+/* Day body (time fields) */
+.sched-day__body {
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid rgba(var(--accent-rgb), 0.12);
+}
+
+.sched-day__times {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sched-day__time-field {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.admin-schedule__time-field label {
+.sched-day__time-field label {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
 }
 
-.admin-schedule__time-field .admin-modal__input,
-.admin-schedule__time-field .admin-modal__select {
+.sched-day__time-field .admin-modal__input {
   width: auto;
-  min-width: 90px;
-  padding: 7px 10px;
+  min-width: 110px;
+  padding: 8px 10px;
 }
 
-.admin-schedule__dash {
+.sched-day__dash {
   color: var(--text-dim);
-  margin-top: 18px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
-.admin-schedule__off-label {
-  font-size: 0.82rem;
+.sched-day__slot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sched-day__slot-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Slot duration pills */
+.sched-slot-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sched-slot-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sched-slot-pill--active {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Hint text */
+.sched-hint {
+  font-size: 0.75rem;
   color: var(--text-dim);
-  font-style: italic;
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* Calendar tab */
+.sched-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sched-cal__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sched-cal__month {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.sched-cal__dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.sched-cal__dow span {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  padding: 4px 0;
+  letter-spacing: 0.05em;
+}
+
+.sched-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.sched-cal__cell {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: default;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 2px;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.sched-cal__cell--on {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.sched-cal__cell--on:hover {
+  background: rgba(var(--accent-rgb), 0.18);
+}
+
+.sched-cal__cell--off {
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.sched-cal__cell--off:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.sched-cal__cell--past,
+.sched-cal__cell--future {
+  opacity: 0.35;
+}
+
+.sched-cal__cell--override {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.sched-cal__cell--selected {
+  background: var(--gold) !important;
+  color: #000 !important;
+  border-color: var(--gold) !important;
+}
+
+.sched-cal__cell-day {
+  line-height: 1;
+}
+
+.sched-cal__appt-dot {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  background: #6bffb8;
+  color: #000;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  font-size: 0.56rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.sched-cal__cell--selected .sched-cal__appt-dot {
+  background: #000;
+  color: var(--gold);
+}
+
+.sched-cal__override-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.sched-cal__cell--selected .sched-cal__override-dot {
+  background: #000;
+}
+
+/* Calendar legend */
+.sched-cal__legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 14px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sched-cal__legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sched-legend-swatch {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.sched-legend-swatch--on {
+  background: rgba(var(--accent-rgb), 0.15);
+  border: 1px solid transparent;
+}
+
+.sched-legend-swatch--override {
+  background: transparent;
+  border: 1px solid rgba(var(--accent-rgb), 0.6);
+}
+
+.sched-legend-swatch--off {
+  background: transparent;
+  border: 1px solid var(--border-muted);
+}
+
+.sched-legend-swatch--appt {
+  background: #6bffb8;
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 800;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Day override panel */
+.sched-override-panel {
+  margin-top: 20px;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: 14px;
+  padding: 20px;
+  background: var(--surface-1, rgba(255,255,255,0.03));
+  animation: sched-panel-in 0.18s ease;
+}
+
+@keyframes sched-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sched-override-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sched-override-panel__date {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--gold);
+}
+
+.sched-override-panel__close {
+  padding: 4px 8px;
+}
+
+/* Working / Day Off toggle inside override panel */
+.sched-avail-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sched-avail-btn {
+  flex: 1;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-muted);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sched-avail-btn--active {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 /* Booking cards */
@@ -606,7 +1103,11 @@
   cursor: pointer;
 }
 
-/* ── Mobile admin: horizontal strip + bottom nav ── */
+/* ── Mobile floating action button ── */
+.admin-fab {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .admin-shell {
     flex-direction: column;
@@ -614,73 +1115,120 @@
     min-height: 100dvh;
   }
 
+  /* Hide desktop sidebar entirely on mobile */
   .admin-sidebar {
-    width: 100%;
-    height: auto;
-    position: sticky;
-    top: 0;
-    flex-direction: column;
-    padding: 0;
-    gap: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--border-gold);
-    z-index: 50;
-  }
-
-  .admin-sidebar__brand {
-    display: none;
-  }
-
-  /* Wrap nav to allow right-fade overflow hint */
-  .admin-sidebar__nav {
-    flex-direction: row;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 8px 12px;
-    gap: 4px;
-    scrollbar-width: none;
-    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
-  }
-
-  .admin-sidebar__nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .admin-sidebar__link {
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding: 7px 12px;
-    font-size: 0.78rem;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    border-radius: 6px 6px 0 0;
-  }
-
-  .admin-sidebar__link--active {
-    border-left-color: transparent;
-    border-bottom-color: var(--gold);
-  }
-
-  /* Back to App hidden on mobile — use bottom nav instead */
-  .admin-sidebar__back {
     display: none;
   }
 
   .admin-main {
     flex: 1;
     padding: 16px;
-    /* Reserve space so content clears the bottom nav */
-    padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 16px);
-    /* Prevent horizontal overflow from tables */
+    padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 72px);
     overflow-x: hidden;
   }
 
-  /* Make wide tables horizontally scrollable on mobile */
   .admin-table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Floating button — sits just above the bottom nav */
+  .admin-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 12px);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(var(--accent-rgb), 0.3);
+    cursor: pointer;
+    z-index: 80;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .admin-fab:active {
+    transform: scale(0.93);
+  }
+
+  /* Drawer overlay */
+  .admin-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+  }
+
+  /* Slide-in drawer from right */
+  .admin-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(280px, 85vw);
+    background: #0a0a0a;
+    border-left: 1px solid var(--border-gold);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 16px calc(24px + var(--safe-bottom, 0px));
+    gap: 4px;
+    animation: drawer-in 0.22s ease;
+    overflow-y: auto;
+  }
+
+  @keyframes drawer-in {
+    from { transform: translateX(100%); opacity: 0.6; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  .admin-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+  }
+
+  .admin-drawer__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .admin-drawer__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+
+  /* Ensure drawer links look like sidebar links */
+  .admin-drawer__nav .admin-sidebar__link {
+    border-left: 2px solid transparent;
+    border-bottom: none;
+    border-radius: var(--radius-sm);
+    white-space: normal;
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
+
+  .admin-drawer__nav .admin-sidebar__link--active {
+    border-left-color: var(--gold);
+    border-bottom-color: transparent;
   }
 }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Trophy, Gift, Zap, Users, Star, CheckCircle } from 'lucide-react'
+import { Search, Trophy, Gift, Zap, Users, Star, CheckCircle, ShieldOff } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardBonusPoints, CURRENT_SEASON } from '../../lib/awardPoints'
@@ -25,6 +25,7 @@ const REASON_LABELS: Record<string, string> = {
 export function AdminPoints() {
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
 
   const [search, setSearch]           = useState('')
   const [results, setResults]         = useState<Client[]>([])
@@ -124,6 +125,13 @@ export function AdminPoints() {
 
   const pendingClaims = claims.filter(c => !c.fulfilled_at)
   const fulfilledClaims = claims.filter(c => c.fulfilled_at)
+
+  if (!isSuper) return (
+    <div className="admin-page__access-denied">
+      <ShieldOff size={40} strokeWidth={1.2} />
+      <p>Access restricted.</p>
+    </div>
+  )
 
   return (
     <div>

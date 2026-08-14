@@ -54,7 +54,12 @@ export function SelectDateTimePage() {
   const navigate  = useNavigate()
   const [searchParams] = useSearchParams()
   const preselectedArtistId = searchParams.get('artist')
+  const rescheduleId = searchParams.get('reschedule')
   const { profile } = useAuth()
+
+  const [rescheduleBooking, setRescheduleBooking] = useState<{
+    id: string; artist_id: string; service: string; rescheduled_count: number
+  } | null>(null)
 
   // Artists cannot book as customers
   useEffect(() => {
@@ -66,7 +71,7 @@ export function SelectDateTimePage() {
   const today = new Date()
 
   // Steps: 0 = pick artist, 1 = pick date/time, 2 = confirm
-  const [step, setStep] = useState(preselectedArtistId ? 1 : 0)
+  const [step, setStep] = useState(preselectedArtistId || rescheduleId ? 1 : 0)
 
   // Artist step
   const [artists, setArtists]         = useState<Artist[]>([])
@@ -124,6 +129,23 @@ export function SelectDateTimePage() {
       })
   }, [])
 
+  // If in reschedule mode, load the booking then auto-select the artist
+  useEffect(() => {
+    if (!rescheduleId || !profile) return
+    supabase.from('bookings')
+      .select('id, artist_id, service, rescheduled_count')
+      .eq('id', rescheduleId)
+      .eq('profile_id', profile.id)
+      .single()
+      .then(({ data }) => { if (data) setRescheduleBooking(data) })
+  }, [rescheduleId, profile])
+
+  useEffect(() => {
+    if (!rescheduleBooking || artists.length === 0) return
+    const match = artists.find((a: Artist) => a.id === rescheduleBooking.artist_id)
+    if (match) { setSelectedArtist(match); setStep(1) }
+  }, [rescheduleBooking, artists])
+
   // Load schedule + overrides when artist chosen
   useEffect(() => {
     if (!selectedArtist) return
@@ -173,17 +195,20 @@ export function SelectDateTimePage() {
     const dayStart = new Date(year, month, selectedDay, 0, 0, 0).toISOString()
     const dayEnd   = new Date(year, month, selectedDay, 23, 59, 59).toISOString()
 
-    supabase.from('bookings')
+    let query = supabase.from('bookings')
       .select('appointment_at')
       .eq('artist_id', selectedArtist.id)
       .eq('status', 'confirmed')
       .gte('appointment_at', dayStart)
       .lte('appointment_at', dayEnd)
-      .then(({ data }) => {
-        const booked = (data ?? []).map((b: any) => studioSlotKey(b.appointment_at))
-        setSlotsForDay(generateSlots(sched, booked))
-        setSlotsLoading(false)
-      })
+
+    if (rescheduleId) query = query.neq('id', rescheduleId)
+
+    query.then(({ data }) => {
+      const booked = (data ?? []).map((b: any) => studioSlotKey(b.appointment_at))
+      setSlotsForDay(generateSlots(sched, booked))
+      setSlotsLoading(false)
+    })
   }, [selectedDay, schedules, overrides])
 
   const days = useMemo(() => {
@@ -225,6 +250,35 @@ export function SelectDateTimePage() {
 
     const [h, m] = selectedTime.split(':').map(Number)
     const appointmentAt = new Date(year, month, selectedDay, h, m, 0).toISOString()
+
+    // Reschedule mode: UPDATE existing booking instead of creating a new one
+    if (rescheduleId && rescheduleBooking) {
+      const { error } = await supabase.from('bookings')
+        .update({
+          appointment_at: appointmentAt,
+          rescheduled_count: rescheduleBooking.rescheduled_count + 1,
+        })
+        .eq('id', rescheduleId)
+        .eq('profile_id', profile.id)
+
+      if (error) { setBookingError(error.message); setBooking(false); return }
+
+      if (selectedArtist.profile_id) {
+        const apptLabel = new Date(appointmentAt).toLocaleString('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+        })
+        await supabase.from('notifications').insert({
+          profile_id: selectedArtist.profile_id,
+          title: 'Appointment Rescheduled',
+          body: `${profile.full_name ?? 'A client'} rescheduled their ${rescheduleBooking.service} to ${apptLabel}.`,
+          type: 'booking',
+        })
+      }
+
+      setDone(true)
+      setBooking(false)
+      return
+    }
 
     // Upload reference images first
     const uploadedUrls: string[] = []
@@ -275,6 +329,24 @@ export function SelectDateTimePage() {
 
   // ── Done screen ──────────────────────────────────────────────
   if (done) {
+    if (rescheduleBooking) {
+      return (
+        <div className="page page--no-nav select-time-page select-time-page--done">
+          <div className="select-time-page__done">
+            <div className="select-time-page__done-icon"><Check size={32} strokeWidth={2.5} /></div>
+            <h2>Appointment Rescheduled!</h2>
+            <p>
+              Your <strong>{rescheduleBooking.service}</strong> with <strong>{selectedArtist?.name}</strong> has been
+              rescheduled to <strong>{summaryDate}</strong> at <strong>{selectedTime ? fmtSlot(selectedTime) : ''}</strong>.
+            </p>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-dim)', marginTop: 8 }}>
+              This was your one permitted reschedule for this appointment.
+            </p>
+            <GradientButton onClick={() => navigate('/bookings')}>View My Bookings</GradientButton>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="page page--no-nav select-time-page select-time-page--done">
         <div className="select-time-page__done">
@@ -334,7 +406,10 @@ export function SelectDateTimePage() {
           title="Select Date & Time"
           align="center"
           leftAction={
-            <button type="button" onClick={() => { setStep(0); setSelectedDay(null); setSelectedTime(null) }}>
+            <button type="button" onClick={() => {
+              if (rescheduleId) { navigate('/bookings') }
+              else { setStep(0); setSelectedDay(null); setSelectedTime(null) }
+            }}>
               <ChevronLeft size={22} strokeWidth={1.5} />
             </button>
           }
@@ -433,6 +508,53 @@ export function SelectDateTimePage() {
   }
 
   // ── Step 2: Confirm ──────────────────────────────────────────
+  // Reschedule mode: simplified confirm (no service/notes changes)
+  if (rescheduleBooking) {
+    return (
+      <div className="page page--no-nav select-time-page">
+        <PageHeader
+          title="Confirm Reschedule"
+          align="center"
+          leftAction={
+            <button type="button" onClick={() => setStep(1)}>
+              <ChevronLeft size={22} strokeWidth={1.5} />
+            </button>
+          }
+        />
+        <div className="select-time-page__confirm">
+          <div className="select-time-page__confirm-summary">
+            {selectedArtist?.avatar_url && (
+              <img src={storageImg(selectedArtist.avatar_url, 100) ?? selectedArtist.avatar_url} alt="" className="select-time-page__confirm-avatar" decoding="async" />
+            )}
+            <div>
+              <div className="select-time-page__confirm-artist">{selectedArtist?.name}</div>
+              <div className="select-time-page__confirm-when">
+                {summaryDate} at {selectedTime ? fmtSlot(selectedTime) : ''}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 12, padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border-subtle)' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 3 }}>Service</p>
+            <p style={{ fontSize: '0.95rem', fontWeight: 600 }}>{rescheduleBooking.service}</p>
+          </div>
+
+          <div style={{ marginTop: 12, padding: '12px 16px', background: 'rgba(220,38,38,0.08)', borderRadius: 12, border: '1px solid rgba(220,38,38,0.25)' }}>
+            <p style={{ fontSize: '0.82rem', color: '#f87171' }}>
+              ⚠ This is your one permitted reschedule. You will not be able to reschedule again without forfeiting your deposit.
+            </p>
+          </div>
+
+          {bookingError && <p className="admin-modal__error">{bookingError}</p>}
+
+          <GradientButton onClick={confirmBooking} disabled={booking} style={{ marginTop: 16 }}>
+            {booking ? 'RESCHEDULING…' : 'CONFIRM RESCHEDULE'}
+          </GradientButton>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="page page--no-nav select-time-page">
       <PageHeader

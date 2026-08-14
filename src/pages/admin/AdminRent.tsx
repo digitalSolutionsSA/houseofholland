@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Pencil, X } from 'lucide-react'
+import { CheckCircle2, Pencil, X, ShieldOff, DollarSign } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 type Artist = { id: string; name: string; avatar_url: string | null }
 type RentRow = { artist_id: string; weekly_rate: number; currency: string; notes: string | null; artist_name: string; artist_avatar: string | null }
@@ -14,6 +15,9 @@ function fmtDate(d: string) {
 }
 
 export function AdminRent() {
+  const { profile } = useAuth()
+  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+
   const [rentRows, setRentRows]   = useState<RentRow[]>([])
   const [artists, setArtists]     = useState<Artist[]>([])
   const [payments, setPayments]   = useState<Payment[]>([])
@@ -81,6 +85,29 @@ export function AdminRent() {
 
   const rateMap = new Map(rentRows.map(r => [r.artist_id, r]))
 
+  if (!isSuper) return (
+    <div className="admin-page__access-denied">
+      <ShieldOff size={40} strokeWidth={1.2} />
+      <p>Access restricted.</p>
+    </div>
+  )
+
+  return (
+    <div>
+      <div className="admin-page__header">
+        <h1 className="admin-page__title">Booth Rent</h1>
+      </div>
+      <div className="admin-page__access-denied" style={{ paddingTop: 60 }}>
+        <DollarSign size={44} strokeWidth={1.1} />
+        <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>Coming Soon</p>
+        <p style={{ fontSize: '0.85rem', maxWidth: 280, lineHeight: 1.5 }}>
+          In-app booth rent payments and payment tracking will be available in a future update.
+        </p>
+      </div>
+    </div>
+  )
+
+  // eslint-disable-next-line no-unreachable
   return (
     <div>
       <div className="admin-page__header">

@@ -46,7 +46,7 @@ const TIERS = [
       'Flash queue advanced — 2 day prior notice',
       '7.5% shop discount',
       'Loyalty rewards (point system)',
-      'Tattoo Vault — up to 3 tattoos',
+      'Tattoo Vault — up to 10 tattoos',
       'Member-only promotions',
       'Tattoo Passport',
       'Custom app theme — Premium red',
