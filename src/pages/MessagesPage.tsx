@@ -35,27 +35,36 @@ export function MessagesPage() {
 
   const [convos, setConvos] = useState<ConversationRow[]>([])
   const [loading, setLoading] = useState(true)
+  // Stored so realtime subscriptions can filter to this artist's conversations
+  const [artistId, setArtistId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
-    load()
+    load(false)
+  }, [user, isArtist])
 
-    // Real-time: update conversation list when a new message arrives
+  // Set up realtime subscription once we know the artistId (for artists)
+  // or immediately for customers
+  useEffect(() => {
+    if (!user) return
+    if (isArtist && artistId === null) return
+
+    const filter = isArtist
+      ? `artist_id=eq.${artistId}`
+      : `customer_id=eq.${user.id}`
+
     const channel = supabase
       .channel(`conversations-list-${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'conversations' },
-        () => { load() }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversations', filter }, () => load(true))
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations', filter }, () => load(true))
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [user, isArtist])
+  }, [user, isArtist, artistId])
 
-  async function load() {
-    setLoading(true)
+  async function load(background = false) {
     if (!user) return
+    if (!background) setLoading(true)
 
     if (isArtist) {
       // Artist: find their linked artist record first
@@ -65,7 +74,10 @@ export function MessagesPage() {
         .eq('profile_id', user.id)
         .maybeSingle()
 
-      if (!artistRecord) { setLoading(false); return }
+      if (!artistRecord) { if (!background) setLoading(false); return }
+
+      // Store artistId so the subscription effect can use it
+      setArtistId(artistRecord.id)
 
       const { data } = await supabase
         .from('conversations')
@@ -84,7 +96,6 @@ export function MessagesPage() {
       }))
       setConvos(rows)
     } else {
-      // Customer
       const { data } = await supabase
         .from('conversations')
         .select('id, last_message_at, last_message_preview, last_sender_id, artists(name, avatar_url)')
@@ -103,7 +114,7 @@ export function MessagesPage() {
       setConvos(rows)
     }
 
-    setLoading(false)
+    if (!background) setLoading(false)
   }
 
   if (loading) return (

@@ -69,6 +69,9 @@ export function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  // Stable ref so the realtime callback always sees the current user id without re-subscribing
+  const userRef = useRef<string | undefined>(user?.id)
+  useEffect(() => { userRef.current = user?.id }, [user])
 
   useEffect(() => {
     if (!conversationId || !user) return
@@ -78,6 +81,25 @@ export function ChatPage() {
   // Real-time subscription
   useEffect(() => {
     if (!conversationId) return
+
+    // Reload messages from DB — merges with any already in state so nothing is lost
+    async function syncMessages() {
+      const { data } = await supabase
+        .from('messages')
+        .select('id, sender_id, body, attachment_url, attachment_type, created_at')
+        .eq('conversation_id', conversationId!)
+        .order('created_at', { ascending: true })
+      if (!data) return
+      setMessages(prev => {
+        const ids = new Set(data.map((m: Message) => m.id))
+        const extra = prev.filter(m => !ids.has(m.id))
+        return [...data as Message[], ...extra].sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+      })
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
+    }
+
     const channel = supabase
       .channel(`chat:${conversationId}`)
       .on(
@@ -90,9 +112,19 @@ export function ChatPage() {
             return [...prev, msg]
           })
           scrollBottom()
+          // If the incoming message is from the other person, mark it read immediately
+          // and clear the unread indicator on the conversation
+          if (msg.sender_id !== userRef.current) {
+            supabase.from('messages').update({ read_at: new Date().toISOString() }).eq('id', msg.id).then(() => {})
+            supabase.from('conversations').update({ last_sender_id: null }).eq('id', conversationId!).then(() => {})
+          }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        // On every (re)connect, sync messages to catch anything missed during a disconnect
+        if (status === 'SUBSCRIBED') syncMessages()
+      })
+
     return () => { supabase.removeChannel(channel) }
   }, [conversationId])
 
@@ -134,22 +166,39 @@ export function ChatPage() {
         : ((convo.artist as any)?.avatar_url ?? null),
     })
 
-    // Load messages
+    // Load messages — merge with any realtime messages that arrived during this async load
     const { data: msgs } = await supabase
       .from('messages')
       .select('id, sender_id, body, attachment_url, attachment_type, created_at')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true })
 
-    setMessages((msgs as Message[]) ?? [])
+    const incoming = (msgs as Message[]) ?? []
+    setMessages(prev => {
+      if (prev.length === 0) return incoming
+      const ids = new Set(incoming.map(m => m.id))
+      const extra = prev.filter(m => !ids.has(m.id))
+      return [...incoming, ...extra].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+    })
 
-    // Mark unread messages from the other party as read
-    await supabase
-      .from('messages')
-      .update({ read_at: new Date().toISOString() })
-      .eq('conversation_id', conversationId)
-      .neq('sender_id', user.id)
-      .is('read_at', null)
+    // Mark all unread messages from the other person as read
+    // AND clear the unread indicator on the conversation list
+    await Promise.all([
+      supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', user.id)
+        .is('read_at', null),
+      supabase
+        .from('conversations')
+        .update({ last_sender_id: null })
+        .eq('id', conversationId)
+        .not('last_sender_id', 'is', null)
+        .neq('last_sender_id', user.id),
+    ])
 
     setLoading(false)
   }
@@ -195,11 +244,16 @@ export function ChatPage() {
       attachment_type,
     }
 
-    const { data: inserted } = await supabase
+    const { data: inserted, error: sendErr } = await supabase
       .from('messages')
       .insert(payload)
       .select('id, sender_id, body, attachment_url, attachment_type, created_at')
       .single()
+
+    if (sendErr) {
+      setSending(false)
+      return
+    }
 
     if (inserted) {
       setMessages(prev => prev.some(m => m.id === (inserted as Message).id) ? prev : [...prev, inserted as Message])
