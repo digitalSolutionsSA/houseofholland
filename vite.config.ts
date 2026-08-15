@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'esnext',
-    minify: 'esbuild',
+    minify: 'oxc',
     cssMinify: true,
     // Keep chunks reasonably small for faster parse time
     chunkSizeWarningLimit: 600,
