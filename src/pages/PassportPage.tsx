@@ -147,7 +147,7 @@ export function PassportPage() {
   const passportNo = `HOH-${(profile?.id ?? '').slice(0, 8).toUpperCase()}`
 
   const tierLabel = isBlackCard ? 'BLACK CARD' : 'PREMIUM'
-  const logoSrc   = isBlackCard ? '/logo-gold.png' : '/logo-red.png'
+  const logoSrc   = isBlackCard ? '/logo-gold.webp' : '/logo-red.webp'
 
   const nextReward = rewards.find(r => loyaltyPoints < r.points_required)
   const progressToNext = nextReward

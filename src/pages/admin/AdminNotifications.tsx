@@ -7,7 +7,7 @@ type Profile = { id: string; full_name: string | null; email: string | null; rol
 
 export function AdminNotifications() {
   const { profile } = useAuth()
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading]   = useState(true)

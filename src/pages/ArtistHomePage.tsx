@@ -9,7 +9,6 @@ import { supabase } from '../lib/supabase'
 import { studioHour, isStudioToday, isStudioTomorrow, studioMidnightUTC, STUDIO_TZ } from '../lib/studioTime'
 import './ArtistHomePage.css'
 
-const CUSTOMER_VIEW_EMAIL = 'info@digitalsolutionssa.co.za'
 
 type ApptRow = {
   id: string
@@ -43,7 +42,7 @@ export function ArtistHomePage() {
   const { profile, realProfile, toggleCustomerView } = useAuth()
   const navigate = useNavigate()
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there'
-  const canToggleCustomerView = realProfile?.email?.toLowerCase() === CUSTOMER_VIEW_EMAIL
+  const canToggleCustomerView = !!realProfile?.is_super_admin
 
   function enterCustomerView() {
     toggleCustomerView()

@@ -68,9 +68,9 @@ html[data-tier] {
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
-html[data-tier="black-card"] { background-image: url('/NAVBAR BANNERS/banner-gold.png'); }
-html[data-tier="premium"]    { background-image: url('/NAVBAR BANNERS/banner-red.png'); }
-html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-white.png'); }
+html[data-tier="black-card"] { background-image: url('/NAVBAR BANNERS/banner-gold.webp'); }
+html[data-tier="premium"]    { background-image: url('/NAVBAR BANNERS/banner-red.webp'); }
+html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-white.webp'); }
 
 /* ── App shell ── */
 .app-shell {
@@ -246,6 +246,165 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 [data-tier="free"] .profile-page__save-btn {
   background: linear-gradient(135deg, #111 0%, #3a3a3a 50%, #111 100%);
   color: #fff;
+}
+
+/* InputField wrapper (inner <input> handled above; this fixes the dark wrapper) */
+[data-tier="free"] .input-field {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* NotificationPanel — hardcoded rgba(255,255,255,...) borders/hover invisible on white */
+[data-tier="free"] .notif-panel__head {
+  border-bottom-color: rgba(0, 0, 0, 0.10);
+}
+[data-tier="free"] .notif-item {
+  border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+[data-tier="free"] .notif-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-tier="free"] .notif-item--expanded {
+  background: rgba(0, 0, 0, 0.05);
+}
+[data-tier="free"] .notif-item__time {
+  color: rgba(0, 0, 0, 0.45);
+}
+[data-tier="free"] .notif-panel__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text);
+}
+[data-tier="free"] .notif-bell__badge {
+  border-color: #ffffff;
+}
+
+/* ProfilePage — tablet+ dark panel backgrounds */
+@media (min-width: 768px) {
+  [data-tier="free"] .profile-page__hero {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  [data-tier="free"] .profile-page__nav,
+  [data-tier="free"] .profile-page__form,
+  [data-tier="free"] .profile-page__info-grid {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+}
+/* ProfilePage input near-invisible on white */
+[data-tier="free"] .profile-page__input {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.20);
+}
+
+/* AdminLayout — shell, sidebar, drawer dark backgrounds */
+[data-tier="free"] .admin-shell {
+  background: rgba(255, 255, 255, 0.25);
+}
+[data-tier="free"] .admin-sidebar {
+  background: #ffffff;
+  border-right-color: rgba(0, 0, 0, 0.12);
+}
+[data-tier="free"] .admin-drawer {
+  background: #ffffff;
+  border-left-color: rgba(0, 0, 0, 0.12);
+}
+
+/* AdminLayout — table rows dark on white */
+[data-tier="free"] .admin-table tbody tr {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-tier="free"] .admin-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* AdminLayout — modal inputs near-invisible on white */
+[data-tier="free"] .admin-modal__input,
+[data-tier="free"] .admin-modal__textarea,
+[data-tier="free"] .admin-modal__select {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.20);
+}
+
+/* AdminLayout — artist card subtle whites invisible on white bg */
+[data-tier="free"] .artist-card {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-tier="free"] .artist-card__header:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-tier="free"] .artist-card__avatar--empty {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+/* AdminLayout — status badges with near-invisible white backgrounds */
+[data-tier="free"] .admin-badge--closed,
+[data-tier="free"] .admin-badge--inactive {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+/* AdminLayout — schedule tab bar */
+[data-tier="free"] .sched-tabs {
+  background: rgba(0, 0, 0, 0.06);
+}
+[data-tier="free"] .sched-tab--active {
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* MessagesPage — hardcoded white name text on white background */
+[data-tier="free"] .messages-convo-card__name {
+  color: rgba(0, 0, 0, 0.85);
+}
+[data-tier="free"] .messages-convo-card__badge {
+  border-color: #f0f0f0;
+}
+
+/* BookingsPage — popup and detail sheet dark fallbacks */
+[data-tier="free"] .bookings-popup {
+  background: #ffffff;
+}
+[data-tier="free"] .bookings-detail-sheet__handle {
+  background: rgba(0, 0, 0, 0.12);
+}
+[data-tier="free"] .bookings-detail-sheet__section {
+  border-top-color: rgba(0, 0, 0, 0.10);
+}
+
+/* ArtistProfilePage — lightbox inner dark background */
+[data-tier="free"] .artist-profile-lightbox__inner {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+[data-tier="free"] .artist-profile-lightbox__img {
+  background: #f0f0f0;
+}
+
+/* Review modal — dark background on white theme */
+[data-tier="free"] .review-modal {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+[data-tier="free"] .review-modal__close {
+  background: #f0f0f0;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+[data-tier="free"] .review-modal__textarea {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.18);
+}
+
+/* BookingsPage detail sheet textarea */
+[data-tier="free"] .bookings-detail-sheet__textarea {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.20);
+}
+
+/* Auth frame — dark card wrapping login form on tablet+ */
+@media (min-width: 768px) {
+  [data-tier="free"] .app-frame--auth .app-main {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
 }
 
 /* ── Premium tier ── */

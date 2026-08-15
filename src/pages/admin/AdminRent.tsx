@@ -16,7 +16,7 @@ function fmtDate(d: string) {
 
 export function AdminRent() {
   const { profile } = useAuth()
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [rentRows, setRentRows]   = useState<RentRow[]>([])
   const [artists, setArtists]     = useState<Artist[]>([])

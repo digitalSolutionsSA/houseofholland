@@ -25,7 +25,7 @@ const REASON_LABELS: Record<string, string> = {
 export function AdminPoints() {
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [search, setSearch]           = useState('')
   const [results, setResults]         = useState<Client[]>([])

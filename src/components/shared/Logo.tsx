@@ -2,8 +2,8 @@ import './Logo.css'
 import { useDisplayTier } from '../../hooks/useDisplayTier'
 
 const TIER_LOGOS: Record<string, string> = {
-  'black-card': '/logo-gold.png',
-  'premium':    '/logo-red.png',
+  'black-card': '/logo-gold.webp',
+  'premium':    '/logo-red.webp',
   'free':       '/logo-black.webp',
 }
 
@@ -21,7 +21,7 @@ export function Logo({
   alt = 'House of Holland Tattoo Emporium',
 }: LogoProps) {
   const tier = useDisplayTier()
-  const src = TIER_LOGOS[tier] ?? '/logo-gold.png'
+  const src = TIER_LOGOS[tier] ?? '/logo-gold.webp'
 
   if (variant === 'mark') {
     return (
@@ -30,7 +30,7 @@ export function Logo({
         style={{ width: height, height }}
         aria-hidden={alt ? undefined : true}
       >
-        <img src={src} alt={alt} />
+        <img src={src} alt={alt} loading="eager" decoding="async" fetchPriority="high" />
       </span>
     )
   }
@@ -41,6 +41,9 @@ export function Logo({
       alt={alt}
       className={`brand-logo brand-logo--full ${className}`}
       style={{ height, width: 'auto' }}
+      loading="eager"
+      decoding="async"
+      fetchPriority="high"
     />
   )
 }

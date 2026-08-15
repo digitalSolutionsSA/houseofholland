@@ -6,6 +6,11 @@ import { useAuth } from '../context/AuthContext'
 import { STUDIO_TZ } from '../lib/studioTime'
 import './ChatPage.css'
 
+function RoleBadge({ role }: { role: 'artist' | 'customer' | 'support' }) {
+  const label = role === 'artist' ? 'Artist' : role === 'support' ? 'Support' : 'Customer'
+  return <span className={`role-badge role-badge--${role} chat-role-badge`}>{label}</span>
+}
+
 type Message = {
   id: string
   sender_id: string
@@ -20,6 +25,9 @@ type ConvoMeta = {
   artist_id: string
   other_name: string
   other_avatar: string | null
+  other_role: 'artist' | 'customer' | 'support'
+  recipient_profile_id: string | null  // profile_id to notify on send
+  my_display_name: string              // sender's name for the notification
 }
 
 function timeLabel(iso: string) {
@@ -144,7 +152,7 @@ export function ChatPage() {
       .from('conversations')
       .select(`
         customer_id, artist_id,
-        customer:profiles!conversations_customer_id_fkey(full_name, avatar_url),
+        customer:profiles!conversations_customer_id_fkey(full_name, avatar_url, role),
         artist:artists(name, avatar_url, profile_id)
       `)
       .eq('id', conversationId)
@@ -154,16 +162,30 @@ export function ChatPage() {
 
     const artistProfileId = (convo.artist as any)?.profile_id
     const iAmArtist = user.id === artistProfileId
+    const customerName = (convo.customer as any)?.full_name ?? 'Customer'
+    const artistName   = (convo.artist as any)?.name ?? 'Artist'
+    const customerRole = (convo.customer as any)?.role as string | null
+
+    // Determine what role the OTHER person has from this user's perspective
+    let otherRole: ConvoMeta['other_role'] = 'customer'
+    if (iAmArtist) {
+      // I'm the artist — other is the customer; they might be an artist/manager themselves
+      otherRole = (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer'
+    } else {
+      // I'm the customer — other is always an artist
+      otherRole = 'artist'
+    }
 
     setMeta({
       customer_id: convo.customer_id,
       artist_id: convo.artist_id,
-      other_name: iAmArtist
-        ? ((convo.customer as any)?.full_name ?? 'Customer')
-        : ((convo.artist as any)?.name ?? 'Artist'),
+      other_name: iAmArtist ? customerName : artistName,
       other_avatar: iAmArtist
         ? ((convo.customer as any)?.avatar_url ?? null)
         : ((convo.artist as any)?.avatar_url ?? null),
+      other_role: otherRole,
+      recipient_profile_id: iAmArtist ? convo.customer_id : (artistProfileId ?? null),
+      my_display_name: iAmArtist ? artistName : customerName,
     })
 
     // Load messages — merge with any realtime messages that arrived during this async load
@@ -259,6 +281,20 @@ export function ChatPage() {
       setMessages(prev => prev.some(m => m.id === (inserted as Message).id) ? prev : [...prev, inserted as Message])
     }
 
+    // Notify the recipient in the notifications table
+    if (meta?.recipient_profile_id) {
+      const preview = body
+        ? (body.length > 60 ? body.slice(0, 57) + '…' : body)
+        : '📎 Attachment'
+      await supabase.from('notifications').insert({
+        profile_id: meta.recipient_profile_id,
+        title: `New message from ${meta.my_display_name}`,
+        body: preview,
+        type: 'message',
+        link: `/chat/${conversationId}`,
+      })
+    }
+
     setText('')
     setAttachPreview(null)
     if (textareaRef.current) { textareaRef.current.style.height = 'auto' }
@@ -310,7 +346,7 @@ export function ChatPage() {
         </div>
         <div className="chat-page__header-info">
           <span className="chat-page__header-name">{meta.other_name}</span>
-          <span className="chat-page__header-status">Tap to view profile</span>
+          <RoleBadge role={meta.other_role} />
         </div>
       </div>
 

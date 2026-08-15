@@ -38,7 +38,7 @@ export function AdminCompletions() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   async function load(artistId: string) {
     setLoading(true)

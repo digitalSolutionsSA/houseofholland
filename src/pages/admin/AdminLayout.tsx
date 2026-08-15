@@ -14,8 +14,6 @@ import './AdminLayout.css'
 
 type NavLink = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
-const SUPER_EMAIL = 'info@digitalsolutionssa.co.za'
-
 const MANAGER_LINKS: NavLink[] = [
   { to: '/admin',               label: 'Dashboard',        icon: LayoutDashboard, end: true },
   { to: '/admin/bookings',      label: 'Appointments',     icon: CalendarCheck },
@@ -36,7 +34,7 @@ const SUPER_LINKS: NavLink[] = [
   { to: '/admin/points',        label: 'Client Points',    icon: Trophy },
 ]
 
-const REFERRAL_EMAILS = [SUPER_EMAIL, 'armandgroesbeek@gmail.com']
+const REFERRAL_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtatoos.com']
 
 const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/bookings',       label: 'Appointments',    icon: CalendarCheck },
@@ -50,7 +48,7 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const { profile } = useAuth()
   const isManager = profile?.role === 'manager'
-  const isSuper = profile?.email?.toLowerCase() === SUPER_EMAIL
+  const isSuper = !!profile?.is_super_admin
   const canSeeReferrals = REFERRAL_EMAILS.includes((profile?.email ?? '').toLowerCase())
   const links = [
     ...(isManager ? MANAGER_LINKS : ARTIST_LINKS),

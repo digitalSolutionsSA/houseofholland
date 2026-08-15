@@ -40,7 +40,7 @@ function toDateStr(d: Date) {
 
 export function AdminSchedule() {
   const { profile } = useAuth()
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [artists, setArtists]     = useState<ArtistItem[]>([])
   const [artistId, setArtistId]   = useState('')

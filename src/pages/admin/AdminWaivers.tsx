@@ -42,7 +42,7 @@ function fmt(dt: string) {
 
 export function AdminWaivers() {
   const { profile } = useAuth()
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [tab, setTab] = useState<'today' | 'send'>('today')
   const [artists, setArtists] = useState<Artist[]>([])

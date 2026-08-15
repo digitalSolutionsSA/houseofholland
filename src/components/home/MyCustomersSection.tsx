@@ -9,7 +9,6 @@ import { useAuth } from '../../context/AuthContext'
 import type { MembershipPlan } from '../../lib/supabase'
 
 const SUPABASE_FUNCTIONS_URL = 'https://tgaxteclhzmzfsvaulzr.supabase.co/functions/v1'
-const ADMIN_EMAIL = 'info@digitalsolutionssa.co.za'
 const COLLAPSE_KEY = 'customers_section_collapsed'
 
 type Customer = {
@@ -66,7 +65,7 @@ export function MyCustomersSection() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
 
-  const isAdmin = profile?.email?.toLowerCase() === ADMIN_EMAIL
+  const isAdmin = !!profile?.is_super_admin
 
   const [collapsed, setCollapsed]     = useState(() => localStorage.getItem(COLLAPSE_KEY) === 'true')
   const [artistId, setArtistId]       = useState<string | null>(null)

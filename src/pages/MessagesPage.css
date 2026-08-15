@@ -43,6 +43,63 @@
   flex-direction: column;
 }
 
+/* ── Role badge ── */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.role-badge--artist {
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.role-badge--customer {
+  background: rgba(100, 120, 180, 0.12);
+  color: #7a9cdf;
+  border: 1px solid rgba(100, 120, 180, 0.25);
+}
+
+.role-badge--support {
+  background: rgba(80, 180, 120, 0.12);
+  color: #5cb87a;
+  border: 1px solid rgba(80, 180, 120, 0.25);
+}
+
+/* White theme: toned down */
+[data-tier="free"] .role-badge--artist {
+  background: rgba(0,0,0,0.06);
+  color: #333;
+  border-color: rgba(0,0,0,0.18);
+}
+[data-tier="free"] .role-badge--customer {
+  background: rgba(40, 80, 160, 0.08);
+  color: #2855a0;
+  border-color: rgba(40, 80, 160,0.18);
+}
+
+/* ── Conversation card wrapper (holds card + action menu) ── */
+.messages-convo-card-wrap {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.messages-convo-card-wrap .messages-convo-card {
+  border-bottom: none;
+  flex: 1;
+  min-width: 0;
+}
+
 /* ── Conversation card ── */
 .messages-convo-card {
   display: flex;
@@ -108,7 +165,7 @@
   height: 13px;
   border-radius: 50%;
   background: var(--gold);
-  border: 2px solid #000;
+  border: 2px solid var(--bg);
 }
 
 .messages-convo-card__body {
@@ -121,13 +178,13 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .messages-convo-card__name {
   font-size: 0.95rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -139,6 +196,19 @@
   flex-shrink: 0;
 }
 
+.messages-convo-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.messages-convo-card__purge {
+  font-size: 0.67rem;
+  color: #f87171;
+  font-style: italic;
+}
+
 .messages-convo-card__preview {
   font-size: 0.82rem;
   color: var(--text-muted);
@@ -146,4 +216,112 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* ── Artist action menu ── */
+.messages-card-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
+}
+
+.messages-card-actions__trigger {
+  width: 36px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s, color 0.12s;
+}
+.messages-card-actions__trigger:hover { background: var(--bg-elevated); color: var(--text-muted); }
+
+.messages-card-actions__dots {
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.messages-card-actions__menu {
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.messages-card-actions__menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, color 0.12s;
+}
+.messages-card-actions__menu button:hover { background: var(--bg-elevated); color: var(--text); }
+.messages-card-actions__menu button + button { border-top: 1px solid var(--border-subtle); }
+
+.messages-card-actions__danger { color: #f87171 !important; }
+.messages-card-actions__danger:hover { color: #fca5a5 !important; }
+
+/* White theme menu */
+[data-tier="free"] .messages-card-actions__menu {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+}
+[data-tier="free"] .messages-card-actions__menu button:hover { background: rgba(0,0,0,0.04); }
+
+/* ── Collapsible archived / deleted sections ── */
+.messages-section {
+  margin-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.messages-section__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px var(--page-pad);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.messages-section__toggle:hover { background: var(--bg-elevated); }
+
+.messages-section__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.messages-section__note {
+  padding: 8px var(--page-pad) 4px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin: 0;
 }

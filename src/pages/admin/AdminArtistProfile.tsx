@@ -17,7 +17,7 @@ type ArtistList = { id: string; name: string; profile_id: string | null }
 
 export function AdminArtistProfile() {
   const { profile } = useAuth()
-  const isSuper = profile?.email?.toLowerCase() === 'info@digitalsolutionssa.co.za'
+  const isSuper = !!profile?.is_super_admin
 
   const [artistList, setArtistList] = useState<ArtistList[]>([])
   const [artistId, setArtistId]     = useState('')

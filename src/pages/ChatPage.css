@@ -181,6 +181,28 @@
   margin-top: 2px;
 }
 
+/* ── Role badge (shared; also used in MessagesPage) ── */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.67rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.role-badge--artist  { background: rgba(var(--accent-rgb),0.15); color: var(--gold); border: 1px solid rgba(var(--accent-rgb),0.3); }
+.role-badge--customer{ background: rgba(100,120,180,0.12); color: #7a9cdf; border: 1px solid rgba(100,120,180,0.25); }
+.role-badge--support { background: rgba(80,180,120,0.12);  color: #5cb87a; border: 1px solid rgba(80,180,120,0.25); }
+
+/* In chat header the badge sits below the name */
+.chat-role-badge { margin-top: 2px; }
+
+[data-tier="free"] .role-badge--artist   { background: rgba(0,0,0,0.06); color: #333; border-color: rgba(0,0,0,0.18); }
+[data-tier="free"] .role-badge--customer { background: rgba(40,80,160,0.08); color: #2855a0; border-color: rgba(40,80,160,0.18); }
+
 /* ── Input bar ── */
 .chat-page__input-bar {
   flex-shrink: 0;
@@ -295,7 +317,7 @@
   border-radius: 50%;
   background: var(--gold);
   border: none;
-  color: #000;
+  color: var(--text-on-gold);
   display: flex;
   align-items: center;
   justify-content: center;

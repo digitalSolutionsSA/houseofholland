@@ -12,10 +12,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="HOH Tattoos" />
     <title>House of Holland — Tattoo Emporium</title>
-    <link rel="preload" href="/logo-white.webp" as="image" type="image/webp" />
+
+    <!-- Preconnect to external origins early -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Non-blocking font load: preload as style, swap to stylesheet once loaded -->
+    <link rel="preconnect" href="https://tgaxteclhzmzfsvaulzr.supabase.co" crossorigin />
+
+    <!-- Preload the default logo (shown before auth check) -->
+    <link rel="preload" href="/logo-gold.webp" as="image" type="image/webp" fetchpriority="high" />
+
+    <!-- Preload the banner backgrounds — they're large but critical above-fold -->
+    <link rel="preload" href="/NAVBAR BANNERS/banner-gold.webp" as="image" type="image/webp" />
+
+    <!-- Non-blocking font load -->
     <link
       rel="preload"
       as="style"

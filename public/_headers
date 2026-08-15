@@ -1,0 +1,27 @@
+# Cache static assets aggressively (Vite hashes JS/CSS filenames)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache WebP images for 1 year
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/artists/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/NAVBAR BANNERS/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/Graphics/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts cached by browser anyway, but be explicit
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML — always revalidate so new deploys are picked up immediately
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
