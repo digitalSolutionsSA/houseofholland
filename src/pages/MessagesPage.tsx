@@ -304,8 +304,7 @@ export function MessagesPage() {
   )
 
   function renderCard(c: ConversationRow) {
-    const isDeleted  = !!c.artist_deleted_at
-    const isArchived = !!c.artist_archived_at && !isDeleted
+    const isDeleted = !!c.artist_deleted_at
     return (
       <ConvoCard
         key={c.id}
