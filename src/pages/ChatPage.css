@@ -25,7 +25,9 @@
   border-bottom: 1px solid var(--border-subtle);
   backdrop-filter: blur(12px);
   flex-shrink: 0;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .chat-page__back {
