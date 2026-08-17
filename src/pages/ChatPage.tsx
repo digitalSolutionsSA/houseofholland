@@ -281,19 +281,7 @@ export function ChatPage() {
       setMessages(prev => prev.some(m => m.id === (inserted as Message).id) ? prev : [...prev, inserted as Message])
     }
 
-    // Notify the recipient in the notifications table
-    if (meta?.recipient_profile_id) {
-      const preview = body
-        ? (body.length > 60 ? body.slice(0, 57) + '…' : body)
-        : '📎 Attachment'
-      await supabase.from('notifications').insert({
-        profile_id: meta.recipient_profile_id,
-        title: `New message from ${meta.my_display_name}`,
-        body: preview,
-        type: 'message',
-        link: `/chat/${conversationId}`,
-      })
-    }
+    // Notification is sent by the DB trigger trg_notify_recipient_on_message — no client insert needed.
 
     setText('')
     setAttachPreview(null)
