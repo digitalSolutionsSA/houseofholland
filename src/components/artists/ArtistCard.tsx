@@ -10,25 +10,41 @@ export type ArtistSummary = {
   avatar_url: string | null
 }
 
+const MAX_TAGS = 3
+
 export function ArtistCard({ artist }: { artist: ArtistSummary }) {
-  const isEmpty = !artist.avatar_url
+  const tags = artist.specialties.slice(0, MAX_TAGS)
+  const initials = artist.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <Link
-      to={`/artists/${artist.slug}`}
-      className={`artist-card${isEmpty ? ' artist-card--placeholder' : ''}`}
-    >
-      {isEmpty ? (
-        <div className="artist-card__avatar artist-card__avatar--empty" aria-hidden />
+    <Link to={`/artists/${artist.slug}`} className="artist-card">
+      {artist.avatar_url ? (
+        <img
+          src={artist.avatar_url}
+          alt={artist.name}
+          className="artist-card__photo"
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
-        <img src={artist.avatar_url!} alt="" className="artist-card__avatar" loading="lazy" decoding="async" />
+        <div className="artist-card__photo--empty" aria-hidden>
+          <span className="artist-card__initials">{initials}</span>
+        </div>
       )}
+
       <div className="artist-card__info">
         <h3 className="artist-card__name">{artist.name}</h3>
-        <p className="artist-card__specs">{artist.specialties.join(' • ')}</p>
-        <span className="artist-card__link">View Work</span>
+        {tags.length > 0 && (
+          <div className="artist-card__tags">
+            {tags.map(t => (
+              <span key={t} className="artist-card__tag">{t}</span>
+            ))}
+          </div>
+        )}
+        <span className="artist-card__footer">
+          View Work <ChevronRight size={13} strokeWidth={2} />
+        </span>
       </div>
-      <ChevronRight className="artist-card__chevron" size={18} strokeWidth={1.5} />
     </Link>
   )
 }
