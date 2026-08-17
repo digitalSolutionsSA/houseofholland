@@ -4,6 +4,7 @@ import { ChevronLeft, Send, Paperclip, X, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { STUDIO_TZ } from '../lib/studioTime'
+import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
 import './ChatPage.css'
 
 function RoleBadge({ role }: { role: 'artist' | 'customer' | 'support' }) {
@@ -166,23 +167,35 @@ export function ChatPage() {
     const artistName   = (convo.artist as any)?.name ?? 'Artist'
     const customerRole = (convo.customer as any)?.role as string | null
 
+    // Detect if this is the admin/support account
+    const adminProfileId = await getAdminProfileId()
+    const isSupport = !!artistProfileId && artistProfileId === adminProfileId
+
     // Determine what role the OTHER person has from this user's perspective
     let otherRole: ConvoMeta['other_role'] = 'customer'
-    if (iAmArtist) {
-      // I'm the artist — other is the customer; they might be an artist/manager themselves
+    if (isSupport) {
+      otherRole = 'support'
+    } else if (iAmArtist) {
       otherRole = (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer'
     } else {
-      // I'm the customer — other is always an artist
       otherRole = 'artist'
     }
+
+    const otherName = isSupport
+      ? SUPPORT_DISPLAY_NAME
+      : iAmArtist ? customerName : artistName
+
+    const otherAvatar = isSupport
+      ? SUPPORT_AVATAR
+      : iAmArtist
+        ? ((convo.customer as any)?.avatar_url ?? null)
+        : ((convo.artist as any)?.avatar_url ?? null)
 
     setMeta({
       customer_id: convo.customer_id,
       artist_id: convo.artist_id,
-      other_name: iAmArtist ? customerName : artistName,
-      other_avatar: iAmArtist
-        ? ((convo.customer as any)?.avatar_url ?? null)
-        : ((convo.artist as any)?.avatar_url ?? null),
+      other_name: otherName,
+      other_avatar: otherAvatar,
       other_role: otherRole,
       recipient_profile_id: iAmArtist ? convo.customer_id : (artistProfileId ?? null),
       my_display_name: iAmArtist ? artistName : customerName,
@@ -326,7 +339,7 @@ export function ChatPage() {
         <button className="chat-page__back" onClick={() => navigate('/messages')} aria-label="Back">
           <ChevronLeft size={22} strokeWidth={1.5} />
         </button>
-        <div className="chat-page__header-avatar">
+        <div className={`chat-page__header-avatar${meta.other_role === 'support' ? ' chat-page__header-avatar--support' : ''}`}>
           {meta.other_avatar
             ? <img src={meta.other_avatar} alt="" />
             : <span>{(meta.other_name[0] ?? '?').toUpperCase()}</span>

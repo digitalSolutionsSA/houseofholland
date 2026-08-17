@@ -1,33 +1,44 @@
 import { supabase } from './supabase'
 
 export const SUPPORT_EMAIL = 'support@hohtattoos.com'
+export const SUPPORT_DISPLAY_NAME = 'HoH Support'
+export const SUPPORT_AVATAR = '/logo-gold.webp'
 const ADMIN_EMAIL = 'info@digitalsolutionssa.co.za'
+
+// Module-level cache so we only hit the DB once per session
+let _adminProfileId: string | null | undefined = undefined
+
+/** Returns the admin's profile ID (cached after first call). */
+export async function getAdminProfileId(): Promise<string | null> {
+  if (_adminProfileId !== undefined) return _adminProfileId
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', ADMIN_EMAIL)
+    .maybeSingle()
+  _adminProfileId = data?.id ?? null
+  return _adminProfileId
+}
 
 /**
  * Opens an in-app support conversation with the studio admin.
- * Looks up the admin by email, then by their linked artist record.
- * Falls back to email if no artist record is found (e.g. after Leonard vR
- * profile is removed — the email fallback keeps the feature working).
+ * Looks up the admin by email → linked artist record → conversation.
+ * Falls back gracefully to email when the admin has no artist profile.
  */
 export async function openSupportChat(
   currentUserId: string,
   navigate: (path: string) => void,
 ): Promise<'navigated' | 'email' | 'self'> {
-  const { data: adminProfile } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('email', ADMIN_EMAIL)
-    .maybeSingle()
-
-  if (!adminProfile) return 'email'
+  const adminId = await getAdminProfileId()
+  if (!adminId) return 'email'
 
   // Admin messaging themselves makes no sense
-  if (adminProfile.id === currentUserId) return 'self'
+  if (adminId === currentUserId) return 'self'
 
   const { data: adminArtist } = await supabase
     .from('artists')
     .select('id')
-    .eq('profile_id', adminProfile.id)
+    .eq('profile_id', adminId)
     .maybeSingle()
 
   if (!adminArtist) return 'email'

@@ -63,6 +63,18 @@
   object-fit: cover;
 }
 
+/* Support avatar shows the logo — use contain so it isn't cropped */
+.chat-page__header-avatar--support {
+  background: #000;
+  padding: 4px;
+}
+.chat-page__header-avatar--support img {
+  object-fit: contain;
+}
+[data-tier="free"] .chat-page__header-avatar--support {
+  background: #f0f0f0;
+}
+
 .chat-page__header-info {
   display: flex;
   flex-direction: column;

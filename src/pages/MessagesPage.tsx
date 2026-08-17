@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
 import './MessagesPage.css'
 
 type ConversationRow = {
@@ -76,7 +77,7 @@ function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnar
         className={`messages-convo-card${c.unread ? ' messages-convo-card--unread' : ''}`}
         onClick={onOpen}
       >
-        <div className="messages-convo-card__avatar">
+        <div className={`messages-convo-card__avatar${c.other_role === 'support' ? ' messages-convo-card__avatar--support' : ''}`}>
           {c.other_avatar
             ? <img src={c.other_avatar} alt="" />
             : <span>{(c.other_name[0] ?? '?').toUpperCase()}</span>
@@ -236,23 +237,27 @@ export function MessagesPage() {
     }
 
     // Customer-side: conversations where user is the customer
+    const adminProfileId = await getAdminProfileId()
+
     const { data: customerData } = await supabase
       .from('conversations')
-      .select('id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, artists(name, avatar_url)')
+      .select('id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, artists(name, avatar_url, profile_id)')
       .eq('customer_id', user.id)
       .order('last_message_at', { ascending: false })
 
     for (const c of customerData ?? []) {
       if (allRows.some(r => r.id === (c as any).id)) continue
+      const artistProfileId = (c as any).artists?.profile_id ?? null
+      const isSupport = !!adminProfileId && artistProfileId === adminProfileId
       allRows.push({
         id: (c as any).id,
         last_message_at: (c as any).last_message_at,
         last_message_preview: (c as any).last_message_preview,
         last_sender_id: (c as any).last_sender_id,
-        other_name: (c as any).artists?.name ?? 'Artist',
-        other_avatar: (c as any).artists?.avatar_url ?? null,
+        other_name: isSupport ? SUPPORT_DISPLAY_NAME : ((c as any).artists?.name ?? 'Artist'),
+        other_avatar: isSupport ? SUPPORT_AVATAR : ((c as any).artists?.avatar_url ?? null),
         unread: (c as any).last_sender_id !== null && (c as any).last_sender_id !== user.id,
-        other_role: 'artist',
+        other_role: isSupport ? 'support' : 'artist',
         artist_archived_at: (c as any).artist_archived_at ?? null,
         artist_deleted_at: (c as any).artist_deleted_at ?? null,
       })
