@@ -86,6 +86,23 @@ export function AdminNotifications() {
       }
     }
 
+    // ── Send message into each support conversation ───────────────────────
+    // Compose the chat message: title on first line, body below (if provided)
+    const messageBody = body.trim()
+      ? `${title.trim()}\n\n${body.trim()}`
+      : title.trim()
+
+    const messageRows = [...convoMap.entries()].map(([, convoId]) => ({
+      conversation_id: convoId,
+      sender_id: adminProfileId,
+      body: messageBody,
+    }))
+
+    if (messageRows.length > 0) {
+      const { error: msgErr } = await supabase.from('messages').insert(messageRows)
+      if (msgErr) { setError(msgErr.message); setSending(false); return }
+    }
+
     // ── Build and insert notification rows ────────────────────────────────
     const rows = recipients.map(profile_id => ({
       profile_id,
