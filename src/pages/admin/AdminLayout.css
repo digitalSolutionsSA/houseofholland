@@ -1362,6 +1362,47 @@
 
 /* ── Tier overrides ── */
 
+/* Artist cards (admin panel) — white theme */
+[data-tier="free"] .artist-card {
+  background: rgba(255, 255, 255, 0.80);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+[data-tier="free"] .artist-card--open {
+  border-color: rgba(0, 0, 0, 0.28);
+}
+[data-tier="free"] .artist-card__header:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+[data-tier="free"] .artist-card__body {
+  border-top-color: rgba(0, 0, 0, 0.09);
+}
+[data-tier="free"] .artist-card__actions {
+  border-top-color: rgba(0, 0, 0, 0.09);
+}
+[data-tier="free"] .artist-card__tag {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #444;
+}
+[data-tier="free"] .admin-badge--active {
+  background: rgba(0, 160, 100, 0.12);
+  color: #008055;
+}
+[data-tier="free"] .admin-badge--inactive {
+  background: rgba(0, 0, 0, 0.07);
+  color: #666;
+}
+[data-tier="free"] .admin-table tbody tr {
+  background: rgba(255, 255, 255, 0.70);
+}
+[data-tier="free"] .admin-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.90);
+}
+[data-tier="free"] .admin-table td,
+[data-tier="free"] .admin-table th {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
 [data-tier="free"] .admin-shell {
   background: rgba(255, 255, 255, 0.42);
 }
