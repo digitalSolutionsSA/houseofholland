@@ -12,7 +12,7 @@ export type ArtistSummary = {
   review_count: number
 }
 
-const MAX_TAGS = 3
+const MAX_TAGS = 4
 
 export function ArtistCard({ artist }: { artist: ArtistSummary }) {
   const tags = artist.specialties.slice(0, MAX_TAGS)
@@ -40,9 +40,9 @@ export function ArtistCard({ artist }: { artist: ArtistSummary }) {
 
         {hasRating && (
           <div className="artist-card__rating">
-            <Star size={11} fill="currentColor" strokeWidth={0} />
+            <Star size={12} fill="currentColor" strokeWidth={0} />
             <span className="artist-card__rating-score">{artist.rating.toFixed(1)}</span>
-            <span className="artist-card__rating-count">({artist.review_count})</span>
+            <span className="artist-card__rating-count">({artist.review_count} review{artist.review_count !== 1 ? 's' : ''})</span>
           </div>
         )}
 
@@ -53,6 +53,7 @@ export function ArtistCard({ artist }: { artist: ArtistSummary }) {
             ))}
           </div>
         )}
+
         <span className="artist-card__footer">
           View Work <ChevronRight size={13} strokeWidth={2} />
         </span>

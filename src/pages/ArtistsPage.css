@@ -34,28 +34,21 @@
 }
 
 .artists-page__list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 16px var(--page-pad) 80px;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 640px) {
   .artists-page__list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 768px) {
-  .artists-page__list {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 12px;
   }
 }
 
 @media (min-width: 1024px) {
   .artists-page__list {
-    grid-template-columns: repeat(4, 1fr);
+    max-width: 720px;
   }
 }
 
