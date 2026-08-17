@@ -117,11 +117,10 @@ export function ArtistsPage() {
     setChatLoading(true)
     const result = await openSupportChat(user.id, navigate)
     setChatLoading(false)
-    if (result === 'email') {
-      window.location.href = `mailto:${SUPPORT_EMAIL}`
-    }
-    if (result === 'navigated') {
+    if (result === 'navigated' || result === 'self') {
       setShowFaq(false)
+    } else if (result === 'email') {
+      window.location.href = `mailto:${SUPPORT_EMAIL}`
     }
   }
 

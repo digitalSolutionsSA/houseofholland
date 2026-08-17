@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
+import { getAdminProfileId, openSupportChat, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
 import './MessagesPage.css'
 
 type ConversationRow = {
@@ -164,6 +164,40 @@ function CollapsibleSection({
   )
 }
 
+// ── Pinned support card ───────────────────────────────────────────
+function PinnedSupportCard({
+  convo, onOpen, loading,
+}: { convo?: ConversationRow; onOpen: () => void; loading: boolean }) {
+  return (
+    <button
+      type="button"
+      className={`pinned-support-card${convo?.unread ? ' pinned-support-card--unread' : ''}`}
+      onClick={onOpen}
+      disabled={loading}
+    >
+      <div className="pinned-support-card__avatar">
+        <img src={SUPPORT_AVATAR} alt="HoH Support" />
+        {convo?.unread && <span className="pinned-support-card__badge" aria-label="Unread" />}
+      </div>
+      <div className="pinned-support-card__body">
+        <div className="pinned-support-card__top">
+          <span className="pinned-support-card__name">{SUPPORT_DISPLAY_NAME}</span>
+          <span className="pinned-support-card__time">
+            {convo?.last_message_at ? timeAgo(convo.last_message_at) : ''}
+          </span>
+        </div>
+        <div className="pinned-support-card__meta">
+          <span className="role-badge role-badge--support">Support</span>
+          <span className="pinned-support-card__pin-label">Pinned</span>
+        </div>
+        <p className="pinned-support-card__preview">
+          {convo ? (convo.last_message_preview ?? 'Say hello!') : 'Your direct line to HoH Support'}
+        </p>
+      </div>
+    </button>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────
 export function MessagesPage() {
   const { user, profile } = useAuth()
@@ -173,6 +207,8 @@ export function MessagesPage() {
   const [convos, setConvos] = useState<ConversationRow[]>([])
   const [loading, setLoading] = useState(true)
   const [artistId, setArtistId] = useState<string | null>(null)
+  const [adminProfileId, setAdminProfileId] = useState<string | null | undefined>(undefined)
+  const [supportLoading, setSupportLoading] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -237,7 +273,8 @@ export function MessagesPage() {
     }
 
     // Customer-side: conversations where user is the customer
-    const adminProfileId = await getAdminProfileId()
+    const adminId = await getAdminProfileId()
+    setAdminProfileId(adminId)
 
     const { data: customerData } = await supabase
       .from('conversations')
@@ -248,7 +285,7 @@ export function MessagesPage() {
     for (const c of customerData ?? []) {
       if (allRows.some(r => r.id === (c as any).id)) continue
       const artistProfileId = (c as any).artists?.profile_id ?? null
-      const isSupport = !!adminProfileId && artistProfileId === adminProfileId
+      const isSupport = !!adminId && artistProfileId === adminId
       allRows.push({
         id: (c as any).id,
         last_message_at: (c as any).last_message_at,
@@ -299,9 +336,21 @@ export function MessagesPage() {
     await setField(id, 'artist_archived_at', null)
   }
 
+  async function handleSupportOpen(existingConvoId?: string) {
+    if (!user) return
+    if (existingConvoId) { navigate(`/messages/${existingConvoId}`); return }
+    setSupportLoading(true)
+    await openSupportChat(user.id, navigate)
+    setSupportLoading(false)
+  }
+
   // Partition conversations into three buckets
   const THIRTY_DAYS = 30 * 24 * 3600 * 1000
-  const active   = convos.filter(c => !c.artist_archived_at && !c.artist_deleted_at)
+  const allActive  = convos.filter(c => !c.artist_archived_at && !c.artist_deleted_at)
+  // Support conversation is always pinned at top — keep it out of the regular list
+  const isCurrentUserAdmin = !!user && adminProfileId !== undefined && adminProfileId === user.id
+  const supportConvo = isCurrentUserAdmin ? undefined : allActive.find(c => c.other_role === 'support')
+  const active   = allActive.filter(c => c.other_role !== 'support' || isCurrentUserAdmin)
   const archived = convos.filter(c => !!c.artist_archived_at && !c.artist_deleted_at)
   const deleted  = convos.filter(c =>
     !!c.artist_deleted_at &&
@@ -332,6 +381,8 @@ export function MessagesPage() {
   )
 
   const hasAny = convos.length > 0
+  // Show pinned support card for every non-admin user (even if they have no convos yet)
+  const showPinnedSupport = !isCurrentUserAdmin && adminProfileId !== undefined
 
   return (
     <div className="page messages-page">
@@ -339,7 +390,15 @@ export function MessagesPage() {
         <h1 className="messages-page__title">Messages</h1>
       </div>
 
-      {!hasAny ? (
+      {showPinnedSupport && (
+        <PinnedSupportCard
+          convo={supportConvo}
+          onOpen={() => handleSupportOpen(supportConvo?.id)}
+          loading={supportLoading}
+        />
+      )}
+
+      {!hasAny && !showPinnedSupport ? (
         <div className="messages-page__empty">
           <MessageCircle size={40} strokeWidth={1} />
           <p>No conversations yet.</p>
@@ -347,16 +406,18 @@ export function MessagesPage() {
         </div>
       ) : (
         <>
-          {active.length === 0 && archived.length === 0 && deleted.length === 0 && (
+          {active.length === 0 && archived.length === 0 && deleted.length === 0 && hasAny && (
             <div className="messages-page__empty">
               <MessageCircle size={40} strokeWidth={1} />
               <p>No active conversations.</p>
             </div>
           )}
 
-          <div className="messages-page__list">
-            {active.map(renderCard)}
-          </div>
+          {active.length > 0 && (
+            <div className="messages-page__list">
+              {active.map(renderCard)}
+            </div>
+          )}
 
           {isArtist && (
             <>
