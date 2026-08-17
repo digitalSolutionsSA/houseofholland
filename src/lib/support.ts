@@ -3,7 +3,6 @@ import { supabase } from './supabase'
 export const SUPPORT_EMAIL = 'support@hohtattoos.com'
 export const SUPPORT_DISPLAY_NAME = 'HoH Support'
 export const SUPPORT_AVATAR = '/logo-gold.webp'
-const ADMIN_EMAIL = 'info@digitalsolutionssa.co.za'
 
 // Module-level cache so we only hit the DB once per session
 let _adminProfileId: string | null | undefined = undefined
@@ -11,12 +10,13 @@ let _adminProfileId: string | null | undefined = undefined
 /** Returns the admin's profile ID (cached after first call). */
 export async function getAdminProfileId(): Promise<string | null> {
   if (_adminProfileId !== undefined) return _adminProfileId
+  // Use the publicly-readable artists table (profiles RLS blocks email lookups for non-admins)
   const { data } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('email', ADMIN_EMAIL)
+    .from('artists')
+    .select('profile_id')
+    .eq('slug', 'hoh-support')
     .maybeSingle()
-  _adminProfileId = data?.id ?? null
+  _adminProfileId = (data as any)?.profile_id ?? null
   return _adminProfileId as string | null
 }
 
