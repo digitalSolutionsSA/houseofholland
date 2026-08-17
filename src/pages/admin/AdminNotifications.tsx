@@ -42,14 +42,23 @@ export function AdminNotifications() {
     if (!title.trim()) { setError('Title is required.'); return }
     setSending(true); setError(null); setSuccess(false)
 
-    // Resolve recipients (exclude admin from receiving their own broadcasts)
+    // Determine sender identity:
+    // Armand sends from his own artist profile (conversations owned by him).
+    // info@ sends from the HoH Support profile.
+    const isArmand = profile!.email?.toLowerCase() === 'armand@hohtatoos.com'
     const adminProfileId = await getAdminProfileId()
+    const senderProfileId = isArmand ? profile!.id : adminProfileId
+    const effectiveSenderId = senderProfileId  // must equal auth.uid() for RLS to pass
 
+    // Exclude the sender themselves from the recipient list
     let recipients: string[] = []
     if (target === 'all') {
-      recipients = profiles.map(p => p.id).filter(id => id !== adminProfileId)
+      recipients = profiles.map(p => p.id).filter(id => id !== senderProfileId && id !== adminProfileId)
     } else if (target === 'artists') {
-      recipients = profiles.filter(p => p.role === 'artist' || p.role === 'manager').map(p => p.id).filter(id => id !== adminProfileId)
+      recipients = profiles
+        .filter(p => p.role === 'artist' || p.role === 'manager')
+        .map(p => p.id)
+        .filter(id => id !== senderProfileId && id !== adminProfileId)
     } else {
       if (!targetId) { setError('Select a recipient.'); setSending(false); return }
       recipients = [targetId]
@@ -57,20 +66,21 @@ export function AdminNotifications() {
 
     if (recipients.length === 0) { setError('No matching recipients found.'); setSending(false); return }
 
-    // ── Resolve HoH Support conversation link for each recipient ──────────
-    // Get admin's artist record so we can find/create the support conversation.
-    const { data: adminArtist } = adminProfileId
-      ? await supabase.from('artists').select('id').eq('profile_id', adminProfileId).maybeSingle()
+    // ── Find/create conversations under the sender's artist record ──────────
+    // Conversations must have artist_id = senderProfileId's artist so that
+    // sender_id = auth.uid() satisfies the messages RLS participant check.
+    const { data: senderArtist } = senderProfileId
+      ? await supabase.from('artists').select('id').eq('profile_id', senderProfileId).maybeSingle()
       : { data: null }
 
     let convoMap = new Map<string, string>() // profile_id → conversationId
 
-    if (adminArtist) {
-      // Batch-fetch existing support conversations for all recipients
+    if (senderArtist) {
+      // Batch-fetch existing conversations for all recipients
       const { data: existing } = await supabase
         .from('conversations')
         .select('id, customer_id')
-        .eq('artist_id', adminArtist.id)
+        .eq('artist_id', senderArtist.id)
         .in('customer_id', recipients)
 
       existing?.forEach(c => convoMap.set(c.customer_id, c.id))
@@ -80,24 +90,16 @@ export function AdminNotifications() {
       if (missing.length > 0) {
         const { data: created } = await supabase
           .from('conversations')
-          .insert(missing.map(customer_id => ({ customer_id, artist_id: adminArtist.id })))
+          .insert(missing.map(customer_id => ({ customer_id, artist_id: senderArtist.id })))
           .select('id, customer_id')
         created?.forEach(c => convoMap.set(c.customer_id, c.id))
       }
     }
 
-    // ── Send message into each support conversation ───────────────────────
-    // Compose the chat message: title on first line, body below (if provided)
+    // ── Send message into each conversation ───────────────────────────────
     const messageBody = body.trim()
       ? `${title.trim()}\n\n${body.trim()}`
       : title.trim()
-
-    // Armand uses his own profile as sender so his name/avatar appear in chat.
-    // info@ routes through the HoH Support profile.
-    const effectiveSenderId =
-      profile!.email?.toLowerCase() === 'armand@hohtatoos.com'
-        ? profile!.id
-        : adminProfileId
 
     const messageRows = [...convoMap.entries()].map(([, convoId]) => ({
       conversation_id: convoId,
