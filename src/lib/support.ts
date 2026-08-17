@@ -17,7 +17,7 @@ export async function getAdminProfileId(): Promise<string | null> {
     .eq('email', ADMIN_EMAIL)
     .maybeSingle()
   _adminProfileId = data?.id ?? null
-  return _adminProfileId
+  return _adminProfileId as string | null
 }
 
 /**
