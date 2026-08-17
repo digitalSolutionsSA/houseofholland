@@ -252,21 +252,26 @@ export function MessagesPage() {
 
         const { data } = await supabase
           .from('conversations')
-          .select('id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, profiles!conversations_customer_id_fkey(full_name, avatar_url, role)')
+          .select('id, customer_id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, profiles!conversations_customer_id_fkey(full_name, avatar_url, role)')
           .eq('artist_id', artistRecord.id)
           .order('last_message_at', { ascending: false })
 
+        // Resolve adminId so we can detect admin-as-customer conversations
+        const adminId = await getAdminProfileId()
+
         for (const c of data ?? []) {
           const customerRole = (c as any).profiles?.role as string | null
+          const customerId   = (c as any).customer_id as string | null
+          const isAdminCustomer = !!adminId && customerId === adminId
           allRows.push({
             id: (c as any).id,
             last_message_at: (c as any).last_message_at,
             last_message_preview: (c as any).last_message_preview,
             last_sender_id: (c as any).last_sender_id,
-            other_name: (c as any).profiles?.full_name ?? 'Customer',
-            other_avatar: (c as any).profiles?.avatar_url ?? null,
+            other_name: isAdminCustomer ? SUPPORT_DISPLAY_NAME : ((c as any).profiles?.full_name ?? 'Customer'),
+            other_avatar: isAdminCustomer ? SUPPORT_AVATAR : ((c as any).profiles?.avatar_url ?? null),
             unread: (c as any).last_sender_id !== null && (c as any).last_sender_id !== user.id,
-            other_role: (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer',
+            other_role: isAdminCustomer ? 'support' : (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer',
             artist_archived_at: (c as any).artist_archived_at ?? null,
             artist_deleted_at: (c as any).artist_deleted_at ?? null,
           })
@@ -342,8 +347,12 @@ export function MessagesPage() {
     if (!user) return
     if (existingConvoId) { navigate(`/messages/${existingConvoId}`); return }
     setSupportLoading(true)
-    await openSupportChat(user.id, navigate)
+    const result = await openSupportChat(user.id, navigate)
     setSupportLoading(false)
+    if (result === 'email') {
+      window.location.href = 'mailto:info@digitalsolutionssa.co.za'
+    }
+    // 'self' means user IS the admin — no action needed
   }
 
   // Partition conversations into three buckets
