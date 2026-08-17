@@ -108,7 +108,7 @@ export function AdminNotifications() {
     }))
 
     if (messageRows.length > 0) {
-      const { error: msgErr } = await supabase.from('messages').insert(messageRows)
+      const { error: msgErr } = await supabase.rpc('send_notification_messages', { p_messages: messageRows })
       if (msgErr) { setError(msgErr.message); setSending(false); return }
     }
 
