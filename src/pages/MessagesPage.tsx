@@ -166,14 +166,14 @@ function CollapsibleSection({
 
 // ── Pinned support card ───────────────────────────────────────────
 function PinnedSupportCard({
-  convo, onOpen, loading,
-}: { convo?: ConversationRow; onOpen: () => void; loading: boolean }) {
+  convo, onOpen, loading, isAdmin,
+}: { convo?: ConversationRow; onOpen: () => void; loading: boolean; isAdmin: boolean }) {
   return (
     <button
       type="button"
-      className={`pinned-support-card${convo?.unread ? ' pinned-support-card--unread' : ''}`}
-      onClick={onOpen}
-      disabled={loading}
+      className={`pinned-support-card${convo?.unread ? ' pinned-support-card--unread' : ''}${isAdmin ? ' pinned-support-card--is-admin' : ''}`}
+      onClick={isAdmin ? undefined : onOpen}
+      disabled={loading || isAdmin}
     >
       <div className="pinned-support-card__avatar">
         <img src={SUPPORT_AVATAR} alt="HoH Support" />
@@ -191,7 +191,9 @@ function PinnedSupportCard({
           <span className="pinned-support-card__pin-label">Pinned</span>
         </div>
         <p className="pinned-support-card__preview">
-          {convo ? (convo.last_message_preview ?? 'Say hello!') : 'Your direct line to HoH Support'}
+          {isAdmin
+            ? 'You are the HoH Support contact — customers & artists message you here'
+            : convo ? (convo.last_message_preview ?? 'Say hello!') : 'Your direct line to HoH Support'}
         </p>
       </div>
     </button>
@@ -395,6 +397,7 @@ export function MessagesPage() {
           convo={supportConvo}
           onOpen={() => handleSupportOpen(supportConvo?.id)}
           loading={supportLoading}
+          isAdmin={isCurrentUserAdmin}
         />
       )}
 

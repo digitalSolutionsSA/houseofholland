@@ -203,6 +203,16 @@
   font-weight: 500;
 }
 
+/* Admin view: card is informational only, not clickable */
+.pinned-support-card--is-admin {
+  cursor: default;
+  opacity: 0.7;
+}
+.pinned-support-card--is-admin:hover,
+.pinned-support-card--is-admin:active {
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
 /* White theme */
 [data-tier="free"] .pinned-support-card {
   background: rgba(0,0,0,0.03);
