@@ -1,7 +1,6 @@
 .artist-card {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  flex-direction: column;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-gold);
   background: var(--bg-card);
@@ -16,19 +15,17 @@
   border-color: var(--gold);
 }
 
-/* ── Photo (square-ish thumbnail on the left) ── */
+/* ── Photo ── */
 .artist-card__photo {
-  width: 110px;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
   object-position: center top;
   display: block;
-  aspect-ratio: 3 / 4;
 }
 
 .artist-card__photo--empty {
-  width: 110px;
-  flex-shrink: 0;
+  width: 100%;
   aspect-ratio: 3 / 4;
   background: rgba(var(--accent-rgb), 0.08);
   display: flex;
@@ -37,25 +34,23 @@
 }
 
 .artist-card__initials {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--gold);
   opacity: 0.5;
 }
 
-/* ── Info panel (right side) ── */
+/* ── Info panel ── */
 .artist-card__info {
-  flex: 1;
-  padding: 14px 14px 12px;
+  padding: 10px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  min-width: 0;
+  gap: 6px;
 }
 
 .artist-card__name {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: var(--text);
   margin: 0;
   white-space: nowrap;
@@ -66,19 +61,19 @@
 .artist-card__rating {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   color: var(--gold);
 }
 
 .artist-card__rating-score {
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--gold);
   line-height: 1;
 }
 
 .artist-card__rating-count {
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   line-height: 1;
 }
@@ -93,14 +88,14 @@
 .artist-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
 }
 
 .artist-card__tag {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-pill);
   background: rgba(var(--accent-rgb), 0.12);
   color: var(--gold);
@@ -111,11 +106,11 @@
 .artist-card__footer {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 0.78rem;
   font-weight: 500;
   color: var(--gold);
-  margin-top: auto;
+  margin-top: 2px;
 }
 
 /* ── White-theme overrides ── */
