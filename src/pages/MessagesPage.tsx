@@ -381,8 +381,8 @@ export function MessagesPage() {
   )
 
   const hasAny = convos.length > 0
-  // Show pinned support card for every non-admin user (even if they have no convos yet)
-  const showPinnedSupport = !isCurrentUserAdmin && adminProfileId !== undefined
+  // Show pinned support card for ALL users (including admin) once admin ID is resolved
+  const showPinnedSupport = adminProfileId !== undefined
 
   return (
     <div className="page messages-page">
