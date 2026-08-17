@@ -121,7 +121,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #0a0a0a;
+  color: var(--text-on-gold);
   background: var(--gold-gradient-btn, linear-gradient(135deg, #d4af37, #f5e27a));
 }
 
@@ -469,6 +469,10 @@
     background: rgba(28,28,30,0.55);
   }
 
+  [data-tier="free"] .profile-page__hero {
+    background: var(--bg-card);
+  }
+
   .profile-page__hero-text {
     align-items: center;
   }
@@ -483,6 +487,12 @@
     border-radius: var(--radius-lg);
     background: rgba(28,28,30,0.35);
     padding: 8px 20px;
+  }
+
+  [data-tier="free"] .profile-page__nav,
+  [data-tier="free"] .profile-page__form,
+  [data-tier="free"] .profile-page__info-grid {
+    background: var(--bg-card);
   }
 
   .profile-page__success,

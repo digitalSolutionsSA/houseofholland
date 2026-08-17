@@ -19,12 +19,13 @@
   padding: 16px 8px;
   border-radius: var(--radius-md);
   background: var(--bg-card);
+  border: 1px solid var(--border-gold);
   text-align: center;
   transition: background 0.15s;
 }
 
 .quick-actions__item:hover {
-  background: rgba(var(--accent-rgb), 0.08);
+  background: var(--bg-elevated);
 }
 
 .quick-actions__icon-wrap {

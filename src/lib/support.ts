@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 
 export const SUPPORT_EMAIL = 'support@hohtattoos.com'
 export const SUPPORT_DISPLAY_NAME = 'HoH Support'
-export const SUPPORT_AVATAR = '/logo-gold.webp'
+export const SUPPORT_AVATAR = '/hoh-support-avatar.png'
 
 // Module-level cache so we only hit the DB once per session
 let _adminProfileId: string | null | undefined = undefined

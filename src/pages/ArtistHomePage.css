@@ -55,8 +55,8 @@
 .artist-home__stats {
   display: flex;
   align-items: center;
-  background: rgba(var(--accent-rgb),0.05);
-  border: 1px solid rgba(var(--accent-rgb),0.18);
+  background: var(--bg-card);
+  border: 1px solid rgba(var(--accent-rgb),0.28);
   border-radius: 14px;
   padding: 14px 0;
 }
@@ -87,7 +87,7 @@
 .artist-home__stat-div {
   width: 1px;
   height: 32px;
-  background: rgba(var(--accent-rgb),0.18);
+  background: rgba(var(--accent-rgb),0.30);
   flex-shrink: 0;
 }
 
@@ -150,18 +150,18 @@
 }
 
 .artist-home__reminder--urgent {
-  background: rgba(255,107,107,0.07);
-  border: 1px solid rgba(255,107,107,0.22);
+  background: rgba(255,107,107,0.13);
+  border: 1px solid rgba(255,107,107,0.35);
 }
 
 .artist-home__reminder--warn {
-  background: rgba(245,158,11,0.07);
-  border: 1px solid rgba(245,158,11,0.22);
+  background: rgba(245,158,11,0.13);
+  border: 1px solid rgba(245,158,11,0.35);
 }
 
 .artist-home__reminder--info {
-  background: rgba(var(--accent-rgb),0.05);
-  border: 1px solid rgba(var(--accent-rgb),0.18);
+  background: rgba(var(--accent-rgb),0.10);
+  border: 1px solid rgba(var(--accent-rgb),0.30);
 }
 
 .artist-home__rem-icon {
@@ -220,8 +220,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   padding: 12px 14px;
 }
@@ -302,8 +302,8 @@
   align-items: center;
   gap: 8px;
   padding: 16px 8px;
-  background: rgba(var(--accent-rgb),0.05);
-  border: 1px solid rgba(var(--accent-rgb),0.15);
+  background: var(--bg-card);
+  border: 1px solid var(--border-gold);
   border-radius: 14px;
   text-decoration: none;
   color: var(--text-muted);
@@ -315,7 +315,7 @@
 .artist-home__quick-item svg { color: var(--gold); }
 
 .artist-home__quick-item:hover {
-  background: rgba(var(--accent-rgb),0.1);
+  background: var(--bg-elevated);
   color: var(--text);
 }
 

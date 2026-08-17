@@ -292,7 +292,7 @@ export function MyCustomersSection() {
       {!collapsed && (
         <>
           {/* Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 12px', marginBottom: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 12px', marginBottom: 10 }}>
             <Search size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
               style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--text)', fontSize: '0.85rem', flex: 1, minWidth: 0 }}
@@ -323,13 +323,13 @@ export function MyCustomersSection() {
               const isReferralOnly = isAdmin && !c.preferred_artist && !!c.artist_name
 
               return (
-                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10 }}>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 10 }}>
 
                   {/* Avatar */}
                   {c.avatar_url ? (
                     <img src={c.avatar_url} alt="" style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-gold)', flexShrink: 0 }} />
                   ) : (
-                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(212,175,55,0.10)', border: '1px solid rgba(212,175,55,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.73rem', fontWeight: 700, color: 'var(--gold)' }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(var(--accent-rgb),0.12)', border: '1px solid rgba(var(--accent-rgb),0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.73rem', fontWeight: 700, color: 'var(--gold)' }}>
                       {initials(c.full_name)}
                     </div>
                   )}
@@ -375,14 +375,14 @@ export function MyCustomersSection() {
                       onClick={() => openChat(c)}
                       disabled={openingChat === c.id}
                       title="Message this customer"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.28)', color: openingChat === c.id ? 'var(--text-dim)' : 'var(--gold)', cursor: openingChat === c.id ? 'default' : 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(var(--accent-rgb),0.12)', border: '1px solid rgba(var(--accent-rgb),0.35)', color: openingChat === c.id ? 'var(--text-dim)' : 'var(--gold)', cursor: openingChat === c.id ? 'default' : 'pointer' }}
                     >
                       <MessageCircle size={15} strokeWidth={1.8} />
                     </button>
                     <button
                       onClick={() => { setFlagTarget(c); setFlagType(''); setFlagComment(''); setFlagSuccess(false) }}
                       title="Flag this customer"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(248,113,113,0.07)', border: '1px solid rgba(248,113,113,0.18)', color: '#f87171', cursor: 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.30)', color: '#f87171', cursor: 'pointer' }}
                     >
                       <Flag size={14} strokeWidth={1.8} />
                     </button>
@@ -390,7 +390,7 @@ export function MyCustomersSection() {
                       <button
                         onClick={() => { setDeleteTarget(c); setDeleteConfirmText(''); setDeleteError(null) }}
                         title="Delete customer"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', cursor: 'pointer' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.30)', color: '#ef4444', cursor: 'pointer' }}
                       >
                         <Trash2 size={14} strokeWidth={1.8} />
                       </button>

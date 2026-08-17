@@ -92,9 +92,16 @@ export function AdminNotifications() {
       ? `${title.trim()}\n\n${body.trim()}`
       : title.trim()
 
+    // Armand uses his own profile as sender so his name/avatar appear in chat.
+    // info@ routes through the HoH Support profile.
+    const effectiveSenderId =
+      profile!.email?.toLowerCase() === 'armand@hohtatoos.com'
+        ? profile!.id
+        : adminProfileId
+
     const messageRows = [...convoMap.entries()].map(([, convoId]) => ({
       conversation_id: convoId,
-      sender_id: adminProfileId,
+      sender_id: effectiveSenderId,
       body: messageBody,
     }))
 

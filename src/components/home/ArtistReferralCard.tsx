@@ -38,7 +38,7 @@ function TierBar({ paid }: { paid: number }) {
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Commission tier</span>
           <span style={{ fontSize: '0.72rem', color: '#e8c97e', fontWeight: 700 }}>Max tier reached — 10%</span>
         </div>
-        <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+        <div style={{ height: 6, borderRadius: 99, background: 'rgba(var(--accent-rgb),0.18)', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: '100%', background: 'linear-gradient(90deg, #8ab4a0, var(--gold), #e8c97e)', borderRadius: 99 }} />
         </div>
       </div>
@@ -57,11 +57,11 @@ function TierBar({ paid }: { paid: number }) {
         </span>
         <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{paid}/{next}</span>
       </div>
-      <div style={{ height: 6, borderRadius: 99, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+      <div style={{ height: 6, borderRadius: 99, background: 'rgba(var(--accent-rgb),0.18)', overflow: 'hidden' }}>
         <div style={{
           height: '100%',
           width: `${progress * 100}%`,
-          background: paid === 0 ? 'rgba(255,255,255,0.15)' : getTierColor(paid),
+          background: paid === 0 ? 'rgba(var(--accent-rgb),0.25)' : getTierColor(paid),
           borderRadius: 99,
           transition: 'width 0.6s ease',
         }} />
@@ -122,15 +122,15 @@ export function ArtistReferralCard() {
       </h2>
 
       <div style={{
-        background: 'var(--surface)',
+        background: 'var(--bg-card)',
         border: '1px solid var(--border-gold)',
         borderRadius: 12,
         padding: '16px',
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Subtle gold glow top-right */}
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(212,175,55,0.07)', pointerEvents: 'none' }} />
+        {/* Subtle accent glow top-right */}
+        <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(var(--accent-rgb),0.07)', pointerEvents: 'none' }} />
 
         {/* Code + tier row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -138,7 +138,7 @@ export function ArtistReferralCard() {
             <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 3 }}>Your referral code</div>
             <button
               onClick={copyCode}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(var(--accent-rgb),0.15)', border: '1px solid rgba(var(--accent-rgb),0.45)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}
             >
               <GitBranch size={13} style={{ color: 'var(--gold)' }} />
               <code style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.15em', fontFamily: 'monospace' }}>{code}</code>
@@ -163,7 +163,7 @@ export function ArtistReferralCard() {
             { val: paid,             label: 'Paid plans' },
             { val: commission > 0 ? `$${commission.toFixed(2)}` : '—', label: '6mo estimate', gold: commission > 0 },
           ].map(({ val, label, gold }) => (
-            <div key={label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '10px 0', textAlign: 'center' }}>
+            <div key={label} style={{ background: 'var(--bg-elevated)', borderRadius: 8, padding: '10px 0', textAlign: 'center' }}>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: gold ? 'var(--gold)' : 'var(--text)' }}>{val}</div>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 2 }}>{label}</div>
             </div>

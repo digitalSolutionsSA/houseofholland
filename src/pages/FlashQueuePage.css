@@ -309,7 +309,7 @@
 .flash-queue-page__bar-track {
   height: 3px;
   border-radius: 2px;
-  background: rgba(255,255,255,0.07);
+  background: rgba(var(--accent-rgb),0.12);
   overflow: hidden;
 }
 

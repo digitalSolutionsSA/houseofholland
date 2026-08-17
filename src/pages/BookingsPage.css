@@ -188,7 +188,7 @@
 
 .bookings-popup {
   position: relative;
-  background: var(--surface-1, #1a1a1a);
+  background: var(--bg-elevated);
   border: 1px solid var(--border-gold);
   border-radius: 18px;
   padding: 32px 24px 24px;
@@ -197,6 +197,12 @@
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   animation: popup-in 0.25s ease;
+}
+
+[data-tier="free"] .bookings-popup {
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.14);
+  border-color: rgba(0,0,0,0.12);
 }
 
 @keyframes popup-in {
@@ -288,7 +294,7 @@
   padding: 11px 16px;
   border-radius: 10px;
   background: var(--gold);
-  color: #000;
+  color: var(--text-on-gold);
   font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
@@ -398,6 +404,9 @@
   margin: 10px auto 0;
   flex-shrink: 0;
 }
+[data-tier="free"] .bookings-detail-sheet__handle {
+  background: rgba(0,0,0,0.15);
+}
 
 .bookings-detail-sheet__head {
   display: flex;
@@ -430,6 +439,9 @@
   margin-top: 18px;
   padding-top: 16px;
   border-top: 1px solid rgba(255,255,255,0.06);
+}
+[data-tier="free"] .bookings-detail-sheet__section {
+  border-top-color: rgba(0,0,0,0.08);
 }
 
 .bookings-detail-sheet__section-head {

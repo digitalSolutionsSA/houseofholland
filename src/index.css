@@ -210,10 +210,10 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
 /* ── Free tier ── */
 
 [data-tier="free"] .bottom-nav {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.20);
+  background: var(--bg-card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 1px solid var(--border-gold);
 }
 [data-tier="free"] .bottom-nav__item        { color: rgba(0, 0, 0, 0.40); }
 [data-tier="free"] .bottom-nav__item--active { color: rgba(0, 0, 0, 0.88); }
@@ -405,6 +405,57 @@ html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-whi
     background: rgba(255, 255, 255, 0.88);
     border-color: rgba(0, 0, 0, 0.12);
   }
+}
+
+/* White theme: subtle text shadow so text pops against the marble background */
+[data-tier="free"] .page {
+  text-shadow: 0 0 1px rgba(0,0,0,0.10);
+}
+
+/* White theme: card/block elements that need visible borders */
+[data-tier="free"] .appointment-card {
+  border: 1px solid rgba(0,0,0,0.10);
+}
+[data-tier="free"] .artist-home__appt {
+  border-color: rgba(0,0,0,0.14);
+}
+[data-tier="free"] .home-page__profile-nudge {
+  border-color: rgba(0,0,0,0.25);
+}
+[data-tier="free"] .bp-points-card {
+  border-color: rgba(0,0,0,0.18);
+}
+[data-tier="free"] .bp-tier {
+  border-color: rgba(0,0,0,0.14);
+}
+[data-tier="free"] .bp-tier--unlocked {
+  border-color: rgba(0,0,0,0.30);
+}
+[data-tier="free"] .bp-earn__item {
+  border-color: rgba(0,0,0,0.14);
+}
+[data-tier="free"] .vault-page__locked-icon {
+  border-color: rgba(0,0,0,0.25);
+}
+[data-tier="free"] .vault-card {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.12);
+}
+[data-tier="free"] .vault-card:hover {
+  background: rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.25);
+}
+[data-tier="free"] .membership-tier {
+  border-color: rgba(0,0,0,0.14);
+  background: rgba(255,255,255,0.75);
+}
+[data-tier="free"] .bookings-page__today-card {
+  border-color: rgba(0,0,0,0.20);
+  background: rgba(0,0,0,0.06);
+}
+[data-tier="free"] .select-time-page__confirm-summary {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.25);
 }
 
 /* ── Premium tier ── */

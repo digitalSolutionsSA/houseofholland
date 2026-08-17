@@ -4,7 +4,7 @@
   align-items: flex-start;
   padding: 20px 22px;
   border-radius: var(--radius-md);
-  background: rgba(var(--accent-rgb), 0.05);
+  background: var(--bg-card);
   border: 1px solid var(--border-gold);
   max-width: 480px;
 }
@@ -67,8 +67,8 @@
 .dash-support__btn--primary:hover:not(:disabled) { opacity: 0.85; }
 
 .dash-support__btn--email {
-  background: rgba(255,255,255,0.06);
+  background: var(--bg-elevated);
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-subtle);
 }
-.dash-support__btn--email:hover { color: var(--text); background: rgba(255,255,255,0.10); }
+.dash-support__btn--email:hover { color: var(--text); background: var(--bg-chip); }

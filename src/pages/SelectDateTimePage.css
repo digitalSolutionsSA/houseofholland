@@ -93,6 +93,9 @@
   border-color: transparent;
   font-weight: 400;
 }
+[data-tier="free"] .select-time-page__days button.is-disabled {
+  color: rgba(0, 0, 0, 0.2);
+}
 
 /* ── Confirm step ── */
 .select-time-page__confirm {
@@ -112,7 +115,7 @@
   padding: 16px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-gold);
-  background: rgba(var(--accent-rgb),0.05);
+  background: rgba(var(--accent-rgb),0.10);
 }
 
 .select-time-page__confirm-avatar {
@@ -188,6 +191,9 @@
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: var(--bg-elevated);
+}
+[data-tier="free"] .select-time-page__calendar {
+  border-color: rgba(0,0,0,0.10);
 }
 
 .select-time-page__month {
@@ -294,6 +300,17 @@
 .select-time-page__grid button:hover:not(.is-selected) {
   background: rgba(var(--accent-rgb), 0.18);
   border-color: rgba(var(--accent-rgb), 0.75);
+}
+
+[data-tier="free"] .select-time-page__grid button {
+  color: var(--gold);
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.22);
+}
+
+[data-tier="free"] .select-time-page__grid button:hover:not(.is-selected) {
+  background: rgba(0,0,0,0.10);
+  border-color: rgba(0,0,0,0.45);
 }
 
 .select-time-page__grid button.is-selected {
