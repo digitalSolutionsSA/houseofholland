@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, X, CheckCheck, Zap, CalendarCheck, Info, AlertCircle, MessageCircle } from 'lucide-react'
+import { Bell, X, CheckCheck, Zap, CalendarCheck, Info, AlertCircle, MessageCircle, Tag, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import './NotificationPanel.css'
@@ -16,9 +16,14 @@ type Notification = {
 }
 
 const TYPE_ICON: Record<string, ReactElement> = {
+  // broadcast types
+  general: <Info size={14} strokeWidth={1.5} />,
   flash:   <Zap size={14} strokeWidth={2} />,
-  booking: <CalendarCheck size={14} strokeWidth={1.5} />,
   alert:   <AlertCircle size={14} strokeWidth={1.5} />,
+  update:  <RefreshCw size={14} strokeWidth={1.5} />,
+  sale:    <Tag size={14} strokeWidth={1.5} />,
+  // system types
+  booking: <CalendarCheck size={14} strokeWidth={1.5} />,
   message: <MessageCircle size={14} strokeWidth={1.5} />,
   info:    <Info size={14} strokeWidth={1.5} />,
 }
