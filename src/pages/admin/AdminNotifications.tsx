@@ -6,6 +6,9 @@ import { getAdminProfileId } from '../../lib/support'
 
 type Profile = { id: string; full_name: string | null; email: string | null; role: string }
 
+// Only these two accounts may send broadcast notifications
+const ALLOWED_SENDERS = ['info@digitalsolutionssa.co.za', 'armand@hohtatoos.com']
+
 const TYPES = [
   { value: 'general', label: 'General Information' },
   { value: 'flash',   label: 'Flash Days' },
@@ -17,6 +20,7 @@ const TYPES = [
 export function AdminNotifications() {
   const { profile } = useAuth()
   const isSuper = !!profile?.is_super_admin
+  const canSend = isSuper && !!profile?.email && ALLOWED_SENDERS.includes(profile.email.toLowerCase())
 
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading]   = useState(true)
@@ -99,7 +103,7 @@ export function AdminNotifications() {
     setSending(false)
   }
 
-  if (!isSuper) return (
+  if (!canSend) return (
     <div className="admin-page__access-denied">
       <ShieldOff size={40} strokeWidth={1.2} />
       <p>Access restricted.</p>
