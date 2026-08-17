@@ -58,6 +58,33 @@
   text-overflow: ellipsis;
 }
 
+.artist-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--gold);
+}
+
+.artist-card__rating-score {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.artist-card__rating-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+[data-tier="free"] .artist-card__rating {
+  color: #b8860b;
+}
+[data-tier="free"] .artist-card__rating-score {
+  color: #b8860b;
+}
+
 .artist-card__tags {
   display: flex;
   flex-wrap: wrap;

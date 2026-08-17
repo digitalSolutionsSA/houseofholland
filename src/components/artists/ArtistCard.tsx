@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Star } from 'lucide-react'
 import './ArtistCard.css'
 
 export type ArtistSummary = {
@@ -8,6 +8,8 @@ export type ArtistSummary = {
   name: string
   specialties: string[]
   avatar_url: string | null
+  rating: number
+  review_count: number
 }
 
 const MAX_TAGS = 3
@@ -15,6 +17,7 @@ const MAX_TAGS = 3
 export function ArtistCard({ artist }: { artist: ArtistSummary }) {
   const tags = artist.specialties.slice(0, MAX_TAGS)
   const initials = artist.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const hasRating = artist.review_count > 0
 
   return (
     <Link to={`/artists/${artist.slug}`} className="artist-card">
@@ -34,6 +37,15 @@ export function ArtistCard({ artist }: { artist: ArtistSummary }) {
 
       <div className="artist-card__info">
         <h3 className="artist-card__name">{artist.name}</h3>
+
+        {hasRating && (
+          <div className="artist-card__rating">
+            <Star size={11} fill="currentColor" strokeWidth={0} />
+            <span className="artist-card__rating-score">{artist.rating.toFixed(1)}</span>
+            <span className="artist-card__rating-count">({artist.review_count})</span>
+          </div>
+        )}
+
         {tags.length > 0 && (
           <div className="artist-card__tags">
             {tags.map(t => (
