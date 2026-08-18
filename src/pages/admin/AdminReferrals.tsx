@@ -11,7 +11,7 @@ import {
 } from '../../lib/commission'
 
 // Only these two accounts may view commission data
-const ALLOWED_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtatoos.com']
+const ALLOWED_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtattoos.com']
 
 const PLAN_LABELS: Record<MembershipPlan, string> = {
   free: 'Member (Free)',

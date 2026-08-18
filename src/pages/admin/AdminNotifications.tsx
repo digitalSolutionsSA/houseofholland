@@ -7,7 +7,7 @@ import { getAdminProfileId } from '../../lib/support'
 type Profile = { id: string; full_name: string | null; email: string | null; role: string }
 
 // Only these two accounts may send broadcast notifications
-const ALLOWED_SENDERS = ['info@digitalsolutionssa.co.za', 'armand@hohtatoos.com']
+const ALLOWED_SENDERS = ['info@digitalsolutionssa.co.za', 'armand@hohtattoos.com']
 
 const TYPES = [
   { value: 'general', label: 'General Information' },
@@ -45,7 +45,7 @@ export function AdminNotifications() {
     // Determine sender identity:
     // Armand sends from his own artist profile (conversations owned by him).
     // info@ sends from the HoH Support profile.
-    const isArmand = profile!.email?.toLowerCase() === 'armand@hohtatoos.com'
+    const isArmand = profile!.email?.toLowerCase() === 'armand@hohtattoos.com'
     const adminProfileId = await getAdminProfileId()
     const senderProfileId = isArmand ? profile!.id : adminProfileId
     const effectiveSenderId = senderProfileId  // must equal auth.uid() for RLS to pass

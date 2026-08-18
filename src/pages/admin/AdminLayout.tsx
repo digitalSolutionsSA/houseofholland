@@ -34,7 +34,7 @@ const SUPER_LINKS: NavLink[] = [
   { to: '/admin/points',        label: 'Client Points',    icon: Trophy },
 ]
 
-const REFERRAL_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtatoos.com']
+const REFERRAL_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtattoos.com']
 
 const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/bookings',       label: 'Appointments',    icon: CalendarCheck },
