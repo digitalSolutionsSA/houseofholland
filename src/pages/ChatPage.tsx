@@ -75,7 +75,7 @@ export function ChatPage() {
   const [uploading, setUploading] = useState(false)
   const [attachPreview, setAttachPreview] = useState<{ file: File; url: string } | null>(null)
 
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -107,7 +107,6 @@ export function ChatPage() {
           (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         )
       })
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
     }
 
     const channel = supabase
@@ -138,11 +137,11 @@ export function ChatPage() {
     return () => { supabase.removeChannel(channel) }
   }, [conversationId])
 
-  // Scroll to bottom on new messages
-  useEffect(() => { scrollBottom() }, [messages])
-
+  // With flex-direction: column-reverse, scrollTop=0 always shows the latest messages.
+  // Call this when a new realtime message arrives while the user has scrolled up.
   function scrollBottom() {
-    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 60)
+    const el = messagesContainerRef.current
+    if (el) el.scrollTop = 0
   }
 
   async function loadConvo() {
@@ -356,17 +355,18 @@ export function ChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="chat-page__messages">
+      <div className="chat-page__messages" ref={messagesContainerRef}>
         {messages.length === 0 && (
           <div className="chat-page__empty">
             Send a message to start the conversation.
           </div>
         )}
 
-        {groups.map(group => (
-          <div key={group.label}>
-            <div className="chat-page__day-label">{group.label}</div>
-            {group.messages.map(m => {
+        {/* Render in reverse order — flex-direction: column-reverse flips it back to chronological.
+            This means scrollTop=0 always shows the latest messages on Android WebView. */}
+        {[...groups].reverse().map(group => (
+          <div key={group.label} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+            {[...group.messages].reverse().map(m => {
               const mine = m.sender_id === user?.id
               return (
                 <div key={m.id} className={`chat-bubble-row${mine ? ' chat-bubble-row--mine' : ''}`}>
@@ -393,9 +393,9 @@ export function ChatPage() {
                 </div>
               )
             })}
+            <div className="chat-page__day-label">{group.label}</div>
           </div>
         ))}
-        <div ref={bottomRef} />
       </div>
 
       {/* Input bar */}

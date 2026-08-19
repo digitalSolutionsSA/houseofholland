@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp } from 'lucide-react'
+import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, X, Radio, Zap, AlertCircle, RefreshCw, Tag, Info, Headphones } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { getAdminProfileId, openSupportChat, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
+import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
+import { SupportChatPopup } from '../components/shared/SupportChatPopup'
 import './MessagesPage.css'
 
 type ConversationRow = {
@@ -15,9 +16,27 @@ type ConversationRow = {
   other_avatar: string | null
   unread: boolean
   other_role: 'artist' | 'customer' | 'support'
-  // archive / delete (artist-side only)
   artist_archived_at: string | null
   artist_deleted_at: string | null
+}
+
+type BroadcastNotif = {
+  id: string
+  title: string
+  body: string | null
+  type: string
+  created_at: string
+  read_at: string | null
+}
+
+const BROADCAST_TYPES = ['general', 'flash', 'alert', 'update', 'sale']
+
+const TYPE_ICON: Record<string, React.ReactNode> = {
+  general: <Info size={14} strokeWidth={1.5} />,
+  flash:   <Zap size={14} strokeWidth={2} />,
+  alert:   <AlertCircle size={14} strokeWidth={1.5} />,
+  update:  <RefreshCw size={14} strokeWidth={1.5} />,
+  sale:    <Tag size={14} strokeWidth={1.5} />,
 }
 
 function timeAgo(iso: string | null) {
@@ -38,13 +57,11 @@ function daysUntilPurge(deletedAt: string) {
   return Math.max(0, Math.ceil(msLeft / (24 * 3600 * 1000)))
 }
 
-// ── Role badge ────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: ConversationRow['other_role'] }) {
   const label = role === 'artist' ? 'Artist' : role === 'support' ? 'Support' : 'Customer'
   return <span className={`role-badge role-badge--${role}`}>{label}</span>
 }
 
-// ── Swipe-action card ─────────────────────────────────────────────
 type CardProps = {
   c: ConversationRow
   isArtist: boolean
@@ -60,7 +77,6 @@ function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnar
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
   useEffect(() => {
     if (!menuOpen) return
     function handle(e: MouseEvent) {
@@ -103,7 +119,6 @@ function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnar
         </div>
       </button>
 
-      {/* Artist-only action menu */}
       {isArtist && (
         <div className="messages-card-actions" ref={menuRef}>
           <button
@@ -147,10 +162,7 @@ function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnar
   )
 }
 
-// ── Collapsible section ───────────────────────────────────────────
-function CollapsibleSection({
-  label, count, children,
-}: { label: string; count: number; children: React.ReactNode }) {
+function CollapsibleSection({ label, count, children }: { label: string; count: number; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   if (count === 0) return null
   return (
@@ -164,39 +176,91 @@ function CollapsibleSection({
   )
 }
 
-// ── Pinned support card ───────────────────────────────────────────
-function PinnedSupportCard({
-  convo, onOpen, loading, isAdmin,
-}: { convo?: ConversationRow; onOpen: () => void; loading: boolean; isAdmin: boolean }) {
+// ── Broadcast channel card (replaces pinned support card) ─────────
+function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      className={`pinned-support-card${convo?.unread ? ' pinned-support-card--unread' : ''}${isAdmin ? ' pinned-support-card--is-admin' : ''}`}
-      onClick={isAdmin ? undefined : onOpen}
-      disabled={loading || isAdmin}
-    >
-      <div className="pinned-support-card__avatar">
-        <img src={SUPPORT_AVATAR} alt="HoH Support" />
-        {convo?.unread && <span className="pinned-support-card__badge" aria-label="Unread" />}
+    <button type="button" className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}`} onClick={onClick}>
+      <div className="broadcast-card__icon">
+        <Radio size={22} strokeWidth={1.5} />
       </div>
-      <div className="pinned-support-card__body">
-        <div className="pinned-support-card__top">
-          <span className="pinned-support-card__name">{SUPPORT_DISPLAY_NAME}</span>
-          <span className="pinned-support-card__time">
-            {convo?.last_message_at ? timeAgo(convo.last_message_at) : ''}
-          </span>
+      <div className="broadcast-card__body">
+        <div className="broadcast-card__top">
+          <span className="broadcast-card__name">HoH Broadcast</span>
+          {latest && <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>}
         </div>
-        <div className="pinned-support-card__meta">
-          <span className="role-badge role-badge--support">Support</span>
-          <span className="pinned-support-card__pin-label">Pinned</span>
+        <div className="broadcast-card__meta">
+          <span className="role-badge role-badge--support">Channel</span>
+          <span className="broadcast-card__pin-label">Pinned</span>
         </div>
-        <p className="pinned-support-card__preview">
-          {isAdmin
-            ? 'You are the HoH Support contact — customers & artists message you here'
-            : convo ? (convo.last_message_preview ?? 'Say hello!') : 'Your direct line to HoH Support'}
+        <p className="broadcast-card__preview">
+          {latest ? latest.title : 'Announcements and updates from HoH Tattoos'}
         </p>
       </div>
     </button>
+  )
+}
+
+// ── Broadcast feed modal ──────────────────────────────────────────
+function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => void }) {
+  const [notifs, setNotifs] = useState<BroadcastNotif[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('notifications')
+      .select('id, title, body, type, created_at, read_at')
+      .eq('profile_id', userId)
+      .in('type', BROADCAST_TYPES)
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => { setNotifs((data as BroadcastNotif[]) ?? []); setLoading(false) })
+
+    // Mark all broadcast notifications as read
+    supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('profile_id', userId)
+      .in('type', BROADCAST_TYPES)
+      .is('read_at', null)
+      .then(() => {})
+  }, [userId])
+
+  return (
+    <div className="broadcast-modal__overlay" onClick={onClose}>
+      <div className="broadcast-modal" onClick={e => e.stopPropagation()}>
+        <div className="broadcast-modal__header">
+          <div className="broadcast-modal__header-left">
+            <Radio size={18} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
+            <span className="broadcast-modal__title">HoH Broadcast</span>
+          </div>
+          <button className="broadcast-modal__close" onClick={onClose} aria-label="Close">
+            <X size={20} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="broadcast-modal__body">
+          {loading && <p className="broadcast-modal__empty">Loading…</p>}
+          {!loading && notifs.length === 0 && (
+            <div className="broadcast-modal__empty">
+              <Radio size={32} strokeWidth={1} style={{ opacity: 0.3 }} />
+              <p>No broadcasts yet.</p>
+            </div>
+          )}
+          {notifs.map(n => (
+            <div key={n.id} className={`broadcast-modal__item broadcast-modal__item--${n.type}${!n.read_at ? ' broadcast-modal__item--unread' : ''}`}>
+              <div className="broadcast-modal__item-icon">
+                {TYPE_ICON[n.type] ?? <Info size={14} strokeWidth={1.5} />}
+              </div>
+              <div className="broadcast-modal__item-body">
+                <p className="broadcast-modal__item-title">{n.title}</p>
+                {n.body && <p className="broadcast-modal__item-desc">{n.body}</p>}
+                <p className="broadcast-modal__item-time">{timeAgo(n.created_at)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -210,12 +274,33 @@ export function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [artistId, setArtistId] = useState<string | null>(null)
   const [adminProfileId, setAdminProfileId] = useState<string | null | undefined>(undefined)
-  const [supportLoading, setSupportLoading] = useState(false)
+
+  const [supportPopupOpen, setSupportPopupOpen] = useState(false)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
+  const [latestBroadcast, setLatestBroadcast] = useState<BroadcastNotif | undefined>(undefined)
+  const [unreadBroadcast, setUnreadBroadcast] = useState(false)
 
   useEffect(() => {
     if (!user) return
     load(false)
   }, [user, isArtist])
+
+  useEffect(() => {
+    if (!user || !profile) return
+    // Load latest broadcast for card preview + check for unread
+    supabase
+      .from('notifications')
+      .select('id, title, body, type, created_at, read_at')
+      .eq('profile_id', user.id)
+      .in('type', BROADCAST_TYPES)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        const rows = (data as BroadcastNotif[]) ?? []
+        if (rows[0]) setLatestBroadcast(rows[0])
+        setUnreadBroadcast(rows.some(n => !n.read_at))
+      })
+  }, [user, profile])
 
   useEffect(() => {
     if (!user) return
@@ -242,21 +327,16 @@ export function MessagesPage() {
 
     if (isArtist) {
       const { data: artistRecord } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('profile_id', user.id)
-        .maybeSingle()
+        .from('artists').select('id').eq('profile_id', user.id).maybeSingle()
 
       if (artistRecord) {
         setArtistId(artistRecord.id)
-
         const { data } = await supabase
           .from('conversations')
           .select('id, customer_id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, profiles!conversations_customer_id_fkey(full_name, avatar_url, role)')
           .eq('artist_id', artistRecord.id)
           .order('last_message_at', { ascending: false })
 
-        // Resolve adminId so we can detect admin-as-customer conversations
         const adminId = await getAdminProfileId()
 
         for (const c of data ?? []) {
@@ -279,7 +359,6 @@ export function MessagesPage() {
       }
     }
 
-    // Customer-side: conversations where user is the customer
     const adminId = await getAdminProfileId()
     setAdminProfileId(adminId)
 
@@ -324,13 +403,11 @@ export function MessagesPage() {
 
   async function archiveConvo(id: string) {
     await setField(id, 'artist_archived_at', new Date().toISOString())
-    // Undelete if it was deleted
     await setField(id, 'artist_deleted_at', null)
   }
 
   async function deleteConvo(id: string) {
     await setField(id, 'artist_deleted_at', new Date().toISOString())
-    // Unarchive if it was archived
     await setField(id, 'artist_archived_at', null)
   }
 
@@ -343,22 +420,8 @@ export function MessagesPage() {
     await setField(id, 'artist_archived_at', null)
   }
 
-  async function handleSupportOpen(existingConvoId?: string) {
-    if (!user) return
-    if (existingConvoId) { navigate(`/messages/${existingConvoId}`); return }
-    setSupportLoading(true)
-    const result = await openSupportChat(user.id, navigate)
-    setSupportLoading(false)
-    if (result === 'email') {
-      window.location.href = 'mailto:info@digitalsolutionssa.co.za'
-    }
-    // 'self' means user IS the admin — no action needed
-  }
-
-  // Partition conversations into three buckets
   const THIRTY_DAYS = 30 * 24 * 3600 * 1000
   const allActive  = convos.filter(c => !c.artist_archived_at && !c.artist_deleted_at)
-  // Support conversation is always pinned at top — keep it out of the regular list
   const isCurrentUserAdmin = !!user && adminProfileId !== undefined && adminProfileId === user.id
   const supportConvo = isCurrentUserAdmin ? undefined : allActive.find(c => c.other_role === 'support')
   const active   = allActive.filter(c => c.other_role !== 'support' || isCurrentUserAdmin)
@@ -367,6 +430,8 @@ export function MessagesPage() {
     !!c.artist_deleted_at &&
     (Date.now() - new Date(c.artist_deleted_at).getTime()) < THIRTY_DAYS
   )
+
+  const supportUnread = !!supportConvo?.unread
 
   function renderCard(c: ConversationRow) {
     const isDeleted = !!c.artist_deleted_at
@@ -392,8 +457,7 @@ export function MessagesPage() {
   )
 
   const hasAny = convos.length > 0
-  // Show pinned support card for ALL users (including admin) once admin ID is resolved
-  const showPinnedSupport = adminProfileId !== undefined
+  const showPinnedArea = adminProfileId !== undefined
 
   return (
     <div className="page messages-page">
@@ -401,16 +465,16 @@ export function MessagesPage() {
         <h1 className="messages-page__title">Messages</h1>
       </div>
 
-      {showPinnedSupport && (
-        <PinnedSupportCard
-          convo={supportConvo}
-          onOpen={() => handleSupportOpen(supportConvo?.id)}
-          loading={supportLoading}
-          isAdmin={isCurrentUserAdmin}
+      {/* Broadcast channel card (pinned at top for all users) */}
+      {showPinnedArea && (
+        <BroadcastCard
+          latest={latestBroadcast}
+          unread={unreadBroadcast}
+          onClick={() => { setBroadcastOpen(true); setUnreadBroadcast(false) }}
         />
       )}
 
-      {!hasAny && !showPinnedSupport ? (
+      {!hasAny && !showPinnedArea ? (
         <div className="messages-page__empty">
           <MessageCircle size={40} strokeWidth={1} />
           <p>No conversations yet.</p>
@@ -446,6 +510,38 @@ export function MessagesPage() {
             </>
           )}
         </>
+      )}
+
+      {/* HoH Support FAB — shown for all users */}
+      {showPinnedArea && (
+        <button
+          type="button"
+          className={`support-fab${supportUnread ? ' support-fab--unread' : ''}`}
+          onClick={() => setSupportPopupOpen(true)}
+          aria-label="Open HoH Support chat"
+        >
+          <Headphones size={22} strokeWidth={1.8} />
+          {supportUnread && <span className="support-fab__badge" aria-label="Unread messages" />}
+        </button>
+      )}
+
+      {/* Support chat popup */}
+      {supportPopupOpen && user && (
+        <SupportChatPopup
+          conversationId={supportConvo?.id}
+          userId={user.id}
+          onClose={() => {
+            setSupportPopupOpen(false)
+            // Refresh list so unread badge clears
+            load(true)
+          }}
+          onConversationCreated={() => load(true)}
+        />
+      )}
+
+      {/* Broadcast modal */}
+      {broadcastOpen && user && (
+        <BroadcastModal userId={user.id} onClose={() => setBroadcastOpen(false)} />
       )}
     </div>
   )

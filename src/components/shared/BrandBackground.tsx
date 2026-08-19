@@ -85,7 +85,7 @@ export function BrandBackground({ className = '', vignette = true }: Props) {
 
     const onResize = () => {
       clearTimeout(resizeTimer)
-      resizeTimer = setTimeout(setSize, 200)
+      resizeTimer = setTimeout(setSize, 0)
     }
     window.addEventListener('resize', onResize, { passive: true })
 

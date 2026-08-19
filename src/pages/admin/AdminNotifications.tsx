@@ -27,6 +27,7 @@ export function AdminNotifications() {
   const [title, setTitle]       = useState('')
   const [body, setBody]         = useState('')
   const [type, setType]         = useState('general')
+  const [sendAs, setSendAs]     = useState<'broadcast' | 'self'>('broadcast')
   const [target, setTarget]     = useState<'all' | 'artists' | 'one'>('all')
   const [targetId, setTargetId] = useState('')
   const [sending, setSending]   = useState(false)
@@ -42,13 +43,14 @@ export function AdminNotifications() {
     if (!title.trim()) { setError('Title is required.'); return }
     setSending(true); setError(null); setSuccess(false)
 
-    // Determine sender identity:
-    // Armand sends from his own artist profile (conversations owned by him).
-    // info@ sends from the HoH Support profile.
-    const isArmand = profile!.email?.toLowerCase() === 'armand@hohtattoos.com'
+    // Determine sender identity based on "Send as" choice.
+    // 'broadcast' → always HoH Support admin profile (official channel).
+    // 'self'      → sender's own profile (personal identity).
+    // Note: RLS requires sender_id = auth.uid(), so effectiveSenderId must be
+    // the currently authenticated user's profile id.
     const adminProfileId = await getAdminProfileId()
-    const senderProfileId = isArmand ? profile!.id : adminProfileId
-    const effectiveSenderId = senderProfileId  // must equal auth.uid() for RLS to pass
+    const senderProfileId = sendAs === 'broadcast' ? adminProfileId : profile!.id
+    const effectiveSenderId = profile!.id  // auth.uid() — always current user for RLS
 
     // Exclude the sender themselves from the recipient list
     let recipients: string[] = []
@@ -143,6 +145,14 @@ export function AdminNotifications() {
       </div>
 
       <div style={{ maxWidth: 560 }}>
+        <div className="admin-modal__field">
+          <label className="admin-modal__label">Send As</label>
+          <select className="admin-modal__select" value={sendAs} onChange={e => setSendAs(e.target.value as 'broadcast' | 'self')}>
+            <option value="broadcast">HoH Broadcast (official channel)</option>
+            <option value="self">{profile?.full_name ?? profile?.email ?? 'Myself'} (personal)</option>
+          </select>
+        </div>
+
         <div className="admin-modal__field">
           <label className="admin-modal__label">Type</label>
           <select className="admin-modal__select" value={type} onChange={e => setType(e.target.value)}>
