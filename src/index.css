@@ -18,7 +18,7 @@ body,
 
 body {
   font-family: var(--font-sans);
-  background: transparent;
+  background: #000000;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,16 +61,12 @@ ol {
   40%, 60% { transform: translateX(110%); }
 }
 
-/* ── Tier banner backgrounds on html root ── */
-html[data-tier] {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-}
-html[data-tier="black-card"] { background-image: url('/NAVBAR BANNERS/banner-gold.webp'); }
-html[data-tier="premium"]    { background-image: url('/NAVBAR BANNERS/banner-red.webp'); }
-html[data-tier="free"]       { background-image: url('/NAVBAR BANNERS/banner-white.webp'); }
+/* ── Tier banner backgrounds on the fixed marble layer ── */
+/* background-attachment:fixed is broken on Android WebView, so we put the
+   image on .app-shell__marble which is already position:fixed; inset:0 */
+html[data-tier="black-card"] .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-gold.webp');  background-size: cover; background-position: center; }
+html[data-tier="premium"]    .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-red.webp');   background-size: cover; background-position: center; }
+html[data-tier="free"]       .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-white.webp'); background-size: cover; background-position: center; }
 
 /* ── App shell ── */
 .app-shell {
