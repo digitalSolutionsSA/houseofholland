@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: rgba(0, 0, 0, 0.18);
+  background: transparent;
   position: relative;
   z-index: 1;
   color: var(--text);
@@ -1404,7 +1404,7 @@
 }
 
 [data-tier="free"] .admin-shell {
-  background: rgba(255, 255, 255, 0.42);
+  background: transparent;
 }
 [data-tier="free"] .admin-sidebar {
   background: #ffffff;
