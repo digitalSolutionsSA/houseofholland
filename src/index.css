@@ -23,8 +23,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.45;
-  /* prevent horizontal scroll on any screen */
-  overflow-x: hidden;
+  /* NOTE: overflow-x:hidden on body breaks position:fixed on Android WebView.
+     Horizontal overflow is handled by .app-main instead. */
 }
 
 button,
