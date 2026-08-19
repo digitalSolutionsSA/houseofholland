@@ -224,7 +224,7 @@
   background: var(--bg-elevated);
   border-top: 1px solid var(--border-subtle);
   padding: 10px 12px;
-  padding-bottom: max(10px, calc(env(safe-area-inset-bottom) + var(--nav-height) + 4px));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   backdrop-filter: blur(12px);
 }
 
