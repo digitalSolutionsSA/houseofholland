@@ -167,10 +167,11 @@ export function ChatPage() {
     const artistName   = (convo.artist as any)?.name ?? 'Artist'
     const customerRole = (convo.customer as any)?.role as string | null
 
-    // Detect if this is the admin/support account (either as artist OR as customer)
+    // Detect if the OTHER party is the admin/support account.
+    // Only flag as support when the admin is NOT the current user.
     const adminProfileId = await getAdminProfileId()
-    const isAdminArtist    = !!artistProfileId && artistProfileId === adminProfileId
-    const isAdminCustomer  = !!adminProfileId && convo.customer_id === adminProfileId
+    const isAdminArtist   = !!artistProfileId && artistProfileId === adminProfileId && !iAmArtist
+    const isAdminCustomer = !!adminProfileId && convo.customer_id === adminProfileId && iAmArtist
     const isSupport = isAdminArtist || isAdminCustomer
 
     // Determine what role the OTHER person has from this user's perspective
