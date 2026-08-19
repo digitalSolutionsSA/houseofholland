@@ -95,24 +95,12 @@ export function MyCustomersSection() {
   function toggleCollapsed() {
     setCollapsed(v => {
       const next = !v
-      // On mobile WebView, collapsing shrinks page height and can lock scroll.
-      // Scroll the section header into view after the DOM updates.
-      if (next) {
-        requestAnimationFrame(() => {
-          const section = sectionRef.current
-          if (!section) return
-          let parent = section.parentElement
-          while (parent) {
-            const { overflowY } = window.getComputedStyle(parent)
-            if (overflowY === 'auto' || overflowY === 'scroll') {
-              const targetTop = section.offsetTop - parent.clientHeight + section.clientHeight + 32
-              parent.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' })
-              break
-            }
-            parent = parent.parentElement
-          }
-        })
-      }
+      // After collapsing on Android WebView the scroll can lock up (offset
+      // exceeds new content height). scrollIntoView resets it and keeps the
+      // header button visible so the user can always re-expand.
+      requestAnimationFrame(() => {
+        sectionRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      })
       return next
     })
   }
