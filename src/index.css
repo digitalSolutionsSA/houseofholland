@@ -77,7 +77,7 @@ html[data-tier="free"]       .app-shell__marble { background-image: url('/NAVBAR
 }
 
 .app-shell__marble {
-  position: fixed;
+  position: fixed !important;
   inset: 0;
   z-index: 0;
   pointer-events: none;
