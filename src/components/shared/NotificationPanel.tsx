@@ -66,18 +66,21 @@ export function NotificationPanel() {
     if (!profile?.id) return
     load()
 
-    // Realtime subscription — no server-side filter, client-side check for reliability
+    // Realtime: listen for both INSERT (new conversation) and UPDATE
+    // (same conversation — trigger resets read_at via ON CONFLICT DO UPDATE)
+    const handleNotif = (payload: { new: unknown }) => {
+      const n = payload.new as Notification & { profile_id: string }
+      if (n.profile_id !== profile.id) return
+      setItems(prev => {
+        const without = prev.filter(item => item.id !== n.id)
+        return [n, ...without]
+      })
+    }
+
     const channel = supabase
       .channel(`notifications-${profile.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        (payload) => {
-          const n = payload.new as Notification & { profile_id: string }
-          if (n.profile_id !== profile.id) return
-          setItems(prev => [n, ...prev])
-        }
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, handleNotif)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, handleNotif)
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
