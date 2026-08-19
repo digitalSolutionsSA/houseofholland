@@ -11,6 +11,9 @@ import type { MembershipPlan } from '../../lib/supabase'
 const SUPABASE_FUNCTIONS_URL = 'https://tgaxteclhzmzfsvaulzr.supabase.co/functions/v1'
 const COLLAPSE_KEY = 'customers_section_collapsed'
 
+// Clear any persisted collapsed state — always start expanded
+try { localStorage.removeItem(COLLAPSE_KEY) } catch (_) { /* ignore */ }
+
 type Customer = {
   id: string
   full_name: string | null
@@ -68,7 +71,7 @@ export function MyCustomersSection() {
   const isAdmin = !!profile?.is_super_admin
   const sectionRef = useRef<HTMLElement>(null)
 
-  const [collapsed, setCollapsed]     = useState(() => localStorage.getItem(COLLAPSE_KEY) === 'true')
+  const [collapsed, setCollapsed]     = useState(false)
   const [artistId, setArtistId]       = useState<string | null>(null)
   const [customers, setCustomers]     = useState<Customer[]>([])
   const [loading, setLoading]         = useState(true)
@@ -92,7 +95,6 @@ export function MyCustomersSection() {
   function toggleCollapsed() {
     setCollapsed(v => {
       const next = !v
-      localStorage.setItem(COLLAPSE_KEY, String(next))
       // On mobile WebView, collapsing shrinks page height and can lock scroll.
       // Scroll the section header into view after the DOM updates.
       if (next) {
