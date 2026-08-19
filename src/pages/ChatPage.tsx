@@ -78,6 +78,17 @@ export function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Lock document scroll so Android WebView can't scroll the whole page
+  useEffect(() => {
+    const prev = document.documentElement.style.overscrollBehavior
+    document.documentElement.style.overscrollBehavior = 'none'
+    document.body.style.overflowY = 'hidden'
+    return () => {
+      document.documentElement.style.overscrollBehavior = prev
+      document.body.style.overflowY = ''
+    }
+  }, [])
   // Stable ref so the realtime callback always sees the current user id without re-subscribing
   const userRef = useRef<string | undefined>(user?.id)
   useEffect(() => { userRef.current = user?.id }, [user])

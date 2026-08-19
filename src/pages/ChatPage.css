@@ -2,12 +2,14 @@
 .page.chat-page {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  height: calc(var(--vh, 1vh) * 100);
+  /* Sit above the bottom nav so the parent container is exactly 100dvh tall */
+  height: calc(100dvh - var(--nav-height) - var(--safe-bottom));
   overflow: hidden;
+  overscroll-behavior: none;
   max-width: none;
   padding: 0;
   padding-bottom: 0;
+  -webkit-overflow-scrolling: auto;
 }
 
 .chat-page__loading {
@@ -101,9 +103,11 @@
 /* ── Message list ── */
 .chat-page__messages {
   flex: 1;
-  min-height: 0;          /* critical: lets flex child shrink so header+input stay pinned */
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 16px 14px 8px;
   display: flex;
   flex-direction: column;

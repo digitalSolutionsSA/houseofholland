@@ -16,11 +16,6 @@ const HIDE_MOBILE_NAV = [
   '/bookings/select-time',
 ]
 
-// Routes matched by prefix — nav is hidden on individual conversation pages
-function isNavHiddenRoute(path: string) {
-  return HIDE_MOBILE_NAV.includes(path) || /^\/messages\/.+/.test(path)
-}
-
 export function AppLayout() {
   const { pathname } = useLocation()
   const { profile } = useAuth()
@@ -40,7 +35,7 @@ export function AppLayout() {
   }, [tier, profile])
 
   const isAuth = AUTH_ROUTES.includes(pathname)
-  const showMobileNav = !isNavHiddenRoute(pathname)
+  const showMobileNav = !HIDE_MOBILE_NAV.includes(pathname)
   const showDesktopNav = !isAuth
 
   return (
