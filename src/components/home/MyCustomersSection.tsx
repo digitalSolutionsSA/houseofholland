@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, MessageCircle, ShieldAlert, Search, ChevronDown, ChevronUp,
@@ -66,6 +66,7 @@ export function MyCustomersSection() {
   const navigate = useNavigate()
 
   const isAdmin = !!profile?.is_super_admin
+  const sectionRef = useRef<HTMLElement>(null)
 
   const [collapsed, setCollapsed]     = useState(() => localStorage.getItem(COLLAPSE_KEY) === 'true')
   const [artistId, setArtistId]       = useState<string | null>(null)
@@ -90,8 +91,27 @@ export function MyCustomersSection() {
 
   function toggleCollapsed() {
     setCollapsed(v => {
-      localStorage.setItem(COLLAPSE_KEY, String(!v))
-      return !v
+      const next = !v
+      localStorage.setItem(COLLAPSE_KEY, String(next))
+      // On mobile WebView, collapsing shrinks page height and can lock scroll.
+      // Scroll the section header into view after the DOM updates.
+      if (next) {
+        requestAnimationFrame(() => {
+          const section = sectionRef.current
+          if (!section) return
+          let parent = section.parentElement
+          while (parent) {
+            const { overflowY } = window.getComputedStyle(parent)
+            if (overflowY === 'auto' || overflowY === 'scroll') {
+              const targetTop = section.offsetTop - parent.clientHeight + section.clientHeight + 32
+              parent.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' })
+              break
+            }
+            parent = parent.parentElement
+          }
+        })
+      }
+      return next
     })
   }
 
@@ -274,7 +294,7 @@ export function MyCustomersSection() {
   const title = isAdmin ? `All Customers (${customers.length})` : `My Customers (${customers.length})`
 
   return (
-    <section className="artist-home__section">
+    <section ref={sectionRef} className="artist-home__section">
 
       {/* Collapsible header */}
       <button
