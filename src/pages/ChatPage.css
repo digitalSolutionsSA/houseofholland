@@ -1,14 +1,13 @@
-/* Two-class selector beats the single-class .page rule in specificity */
+/* Chat page: full viewport column, only the message list scrolls */
 .page.chat-page {
+  position: relative;
   display: flex;
   flex-direction: column;
-  /* Sit above the bottom nav so the parent container is exactly 100dvh tall */
   height: calc(100dvh - var(--nav-height) - var(--safe-bottom));
-  overflow: hidden;
-  overscroll-behavior: none;
   max-width: none;
   padding: 0;
   padding-bottom: 0;
+  overflow: hidden;
   -webkit-overflow-scrolling: auto;
 }
 
@@ -18,7 +17,7 @@
   text-align: center;
 }
 
-/* ── Header ── */
+/* ── Header — sticky via flex, never scrolls ── */
 .chat-page__header {
   display: flex;
   align-items: center;
@@ -100,11 +99,11 @@
   color: var(--text-muted);
 }
 
-/* ── Message list ── */
+/* ── Message list — only this area scrolls ── */
 .chat-page__messages {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
