@@ -109,7 +109,7 @@ export function MyCustomersSection() {
       .from('profiles')
       .select('id, full_name, email, avatar_url, membership_plan, created_at, referred_by_code')
       .eq('role', 'public')
-      .order('created_at', { ascending: false })
+      .order('full_name', { ascending: true, nullsFirst: false })
 
     const profileIds = (profiles ?? []).map((p: any) => p.id)
 
@@ -160,7 +160,7 @@ export function MyCustomersSection() {
       .from('profiles')
       .select('id, full_name, email, avatar_url, membership_plan, created_at, referred_by_code')
       .eq('referred_by_code', artist.referral_code)
-      .order('created_at', { ascending: false })
+      .order('full_name', { ascending: true, nullsFirst: false })
 
     setCustomers((data ?? []).map((p: any) => ({
       ...p,
