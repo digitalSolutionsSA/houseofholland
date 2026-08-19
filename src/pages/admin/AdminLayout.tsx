@@ -6,8 +6,6 @@ import {
   FileText, UserCog, GitBranch, Trophy, Menu, X, type LucideIcon,
 } from 'lucide-react'
 import { Logo } from '../../components/shared/Logo'
-import { BottomNav } from '../../components/shared/BottomNav'
-import { BrandBackground } from '../../components/shared/BrandBackground'
 import { useAuth } from '../../context/AuthContext'
 import './AdminLayout.css'
 
@@ -89,7 +87,6 @@ export function AdminLayout() {
 
   return (
     <>
-    <BrandBackground className="app-shell__marble" />
     <div className="admin-shell">
       {/* ── Desktop sidebar ── */}
       <aside className="admin-sidebar">
@@ -142,7 +139,6 @@ export function AdminLayout() {
         </div>
       )}
 
-      <BottomNav />
     </div>
     </>
   )
