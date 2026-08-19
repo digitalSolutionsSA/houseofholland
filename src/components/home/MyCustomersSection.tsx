@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, MessageCircle, ShieldAlert, Search, ChevronDown, ChevronUp,
@@ -9,10 +9,6 @@ import { useAuth } from '../../context/AuthContext'
 import type { MembershipPlan } from '../../lib/supabase'
 
 const SUPABASE_FUNCTIONS_URL = 'https://tgaxteclhzmzfsvaulzr.supabase.co/functions/v1'
-const COLLAPSE_KEY = 'customers_section_collapsed'
-
-// Clear any persisted collapsed state — always start expanded
-try { localStorage.removeItem(COLLAPSE_KEY) } catch (_) { /* ignore */ }
 
 type Customer = {
   id: string
@@ -69,9 +65,7 @@ export function MyCustomersSection() {
   const navigate = useNavigate()
 
   const isAdmin = !!profile?.is_super_admin
-  const sectionRef = useRef<HTMLElement>(null)
 
-  const [collapsed, setCollapsed]     = useState(false)
   const [artistId, setArtistId]       = useState<string | null>(null)
   const [customers, setCustomers]     = useState<Customer[]>([])
   const [loading, setLoading]         = useState(true)
@@ -91,19 +85,6 @@ export function MyCustomersSection() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting]                 = useState(false)
   const [deleteError, setDeleteError]           = useState<string | null>(null)
-
-  function toggleCollapsed() {
-    setCollapsed(v => {
-      const next = !v
-      // After collapsing on Android WebView the scroll can lock up (offset
-      // exceeds new content height). scrollIntoView resets it and keeps the
-      // header button visible so the user can always re-expand.
-      requestAnimationFrame(() => {
-        sectionRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-      })
-      return next
-    })
-  }
 
   useEffect(() => {
     if (!profile?.id) return
@@ -284,24 +265,14 @@ export function MyCustomersSection() {
   const title = isAdmin ? `All Customers (${customers.length})` : `My Customers (${customers.length})`
 
   return (
-    <section ref={sectionRef} className="artist-home__section">
+    <section className="artist-home__section">
 
-      {/* Collapsible header */}
-      <button
-        onClick={toggleCollapsed}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: collapsed ? 0 : 10 }}
-      >
-        <h2 className="artist-home__section-title" style={{ margin: 0, pointerEvents: 'none' }}>
-          <Users size={14} strokeWidth={2} /> {title}
-        </h2>
-        {collapsed
-          ? <ChevronDown size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-          : <ChevronUp   size={16} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
-      </button>
+      <h2 className="artist-home__section-title">
+        <Users size={14} strokeWidth={2} /> {title}
+      </h2>
 
-      {!collapsed && (
-        <>
-          {/* Search */}
+      <>
+        {/* Search */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)', borderRadius: 8, padding: '8px 12px', marginBottom: 10 }}>
             <Search size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <input
@@ -422,8 +393,7 @@ export function MyCustomersSection() {
                 : <><ChevronDown size={13} /> Show all {filtered.length} customers</>}
             </button>
           )}
-        </>
-      )}
+      </>
 
       {/* ── Flag modal ── */}
       {flagTarget && (
