@@ -186,34 +186,56 @@ const TYPE_LABEL: Record<string, string> = {
 }
 
 function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
+  const [expanded, setExpanded] = useState(false)
+
+  function handleToggle() {
+    if (expanded) {
+      onClick()
+    } else {
+      setExpanded(true)
+    }
+  }
+
   return (
-    <button type="button" className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}`} onClick={onClick}>
-      <div className="broadcast-card__icon">
-        <Radio size={22} strokeWidth={1.5} />
-      </div>
-      <div className="broadcast-card__body">
-        <div className="broadcast-card__top">
-          <span className="broadcast-card__name">HoH Broadcast</span>
-          {latest && <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>}
+    <div className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}${expanded ? ' broadcast-card--expanded' : ''}`}>
+      <button type="button" className="broadcast-card__main" onClick={handleToggle} aria-expanded={expanded}>
+        <div className="broadcast-card__icon">
+          <Radio size={22} strokeWidth={1.5} />
         </div>
-        <div className="broadcast-card__meta">
-          <span className="role-badge role-badge--support">Channel</span>
-          {latest && (
-            <span className="broadcast-card__type-chip">
-              {TYPE_ICON[latest.type]}
-              {TYPE_LABEL[latest.type] ?? latest.type}
-            </span>
+        <div className="broadcast-card__body">
+          <div className="broadcast-card__top">
+            <span className="broadcast-card__name">HoH Broadcast</span>
+            <span className="broadcast-card__chevron">{expanded ? '▲' : '▼'}</span>
+          </div>
+          <div className="broadcast-card__meta">
+            <span className="role-badge role-badge--support">Channel</span>
+          </div>
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="broadcast-card__expand">
+          {latest ? (
+            <>
+              <div className="broadcast-card__expand-meta">
+                <span className="broadcast-card__type-chip">
+                  {TYPE_ICON[latest.type]}
+                  {TYPE_LABEL[latest.type] ?? latest.type}
+                </span>
+                <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>
+              </div>
+              <p className="broadcast-card__preview">{latest.title}</p>
+              {latest.body && <p className="broadcast-card__preview-body">{latest.body}</p>}
+            </>
+          ) : (
+            <p className="broadcast-card__preview-body">No messages yet.</p>
           )}
-          {!latest && <span className="broadcast-card__pin-label">Pinned</span>}
+          <button type="button" className="broadcast-card__view-all" onClick={onClick}>
+            View all messages
+          </button>
         </div>
-        <p className="broadcast-card__preview">
-          {latest ? latest.title : 'Announcements and updates from HoH Tattoos'}
-        </p>
-        {latest?.body && (
-          <p className="broadcast-card__preview-body">{latest.body}</p>
-        )}
-      </div>
-    </button>
+      )}
+    </div>
   )
 }
 

@@ -496,10 +496,6 @@
 
 /* ── Broadcast channel card ── */
 .broadcast-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 14px 14px 0;
   margin: 8px var(--page-pad) 4px;
   box-sizing: border-box;
   width: calc(100% - 2 * var(--page-pad));
@@ -513,15 +509,26 @@
   border-left: 5px solid var(--gold);
   border-radius: var(--radius-md);
   box-shadow: 0 2px 18px rgba(0,0,0,0.60), 0 0 14px rgba(var(--accent-rgb), 0.20);
-  cursor: pointer;
-  text-align: left;
+  overflow: hidden;
   transition: box-shadow 0.15s, border-color 0.15s;
 }
 
-.broadcast-card:hover,
-.broadcast-card:active {
-  box-shadow: 0 4px 24px rgba(0,0,0,0.65), 0 0 22px rgba(var(--accent-rgb), 0.38);
-  border-color: rgba(var(--accent-rgb), 0.80);
+/* Inner button — the always-visible collapsed row */
+.broadcast-card__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 14px 14px 0;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.broadcast-card__main:hover,
+.broadcast-card__main:active {
+  background: rgba(var(--accent-rgb), 0.06);
 }
 
 .broadcast-card__icon {
@@ -558,10 +565,55 @@
   color: var(--gold);
 }
 
+.broadcast-card__chevron {
+  font-size: 0.6rem;
+  color: var(--gold);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
 .broadcast-card__time {
   font-size: 0.73rem;
   color: var(--text-muted);
   flex-shrink: 0;
+}
+
+/* Expanded panel */
+.broadcast-card__expand {
+  padding: 0 14px 14px 80px; /* align with body, skip icon area */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid rgba(var(--accent-rgb), 0.20);
+  padding-top: 12px;
+  margin-top: 0;
+}
+
+.broadcast-card__expand-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.broadcast-card__view-all {
+  margin-top: 6px;
+  align-self: flex-start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.30);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.broadcast-card__view-all:hover {
+  background: rgba(var(--accent-rgb), 0.22);
 }
 
 .broadcast-card__meta {
