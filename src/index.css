@@ -64,9 +64,9 @@ ol {
 /* ── Tier banner backgrounds on the fixed marble layer ── */
 /* background-attachment:fixed is broken on Android WebView, so we put the
    image on .app-shell__marble which is already position:fixed; inset:0 */
-html[data-tier="free"]        .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-gold.webp'); background-size: cover; background-position: center; }
-html[data-tier="premium"]    .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-red.webp');  background-size: cover; background-position: center; }
-html[data-tier="black-card"] .app-shell__marble { background-size: cover; background-position: center; }
+html[data-tier="free"]        .app-shell__marble { background-image: url('/free_tier.png');                  background-size: cover; background-position: center; }
+html[data-tier="premium"]    .app-shell__marble { background-image: url('/premium_tier.png');              background-size: cover; background-position: center; }
+html[data-tier="black-card"] .app-shell__marble { background-image: url('/NAVBAR BANNERS/black_card.png'); background-size: cover; background-position: center; }
 
 /* ── App shell ── */
 .app-shell {
