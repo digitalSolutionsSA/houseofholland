@@ -68,6 +68,17 @@ html[data-tier="free"]        .app-shell__marble { background-image: url('/free_
 html[data-tier="premium"]    .app-shell__marble { background-image: url('/premium_tier.png');              background-size: cover; background-position: center; }
 html[data-tier="black-card"] .app-shell__marble { background-image: url('/NAVBAR BANNERS/black_card.png'); background-size: cover; background-position: center; }
 
+/* Dark overlay on the marble layer so UI elements stay readable */
+.app-shell__marble::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  pointer-events: none;
+}
+html[data-tier="premium"]    .app-shell__marble::after { background: rgba(10, 4, 8,  0.58); }
+html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10, 8, 0.55); }
+
 /* ── App shell ── */
 .app-shell {
   min-height: 100%;
