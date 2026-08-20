@@ -64,9 +64,9 @@ ol {
 /* ── Tier banner backgrounds on the fixed marble layer ── */
 /* background-attachment:fixed is broken on Android WebView, so we put the
    image on .app-shell__marble which is already position:fixed; inset:0 */
-html[data-tier="black-card"] .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-gold.webp');  background-size: cover; background-position: center; }
-html[data-tier="premium"]    .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-red.webp');   background-size: cover; background-position: center; }
-html[data-tier="free"]       .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-white.webp'); background-size: cover; background-position: center; }
+html[data-tier="free"]        .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-gold.webp'); background-size: cover; background-position: center; }
+html[data-tier="premium"]    .app-shell__marble { background-image: url('/NAVBAR BANNERS/banner-red.webp');  background-size: cover; background-position: center; }
+html[data-tier="black-card"] .app-shell__marble { background-size: cover; background-position: center; }
 
 /* ── App shell ── */
 .app-shell {
@@ -203,296 +203,60 @@ html[data-tier="free"]       .app-shell__marble { background-image: url('/NAVBAR
    Placed last so they win the cascade over all component rules.
    ════════════════════════════════════════════════════════════════ */
 
-/* ── Free tier ── */
-
-[data-tier="free"] .bottom-nav {
-  background: var(--bg-card);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-top: 1px solid var(--border-gold);
-}
-[data-tier="free"] .bottom-nav__item        { color: rgba(0, 0, 0, 0.40); }
-[data-tier="free"] .bottom-nav__item--active { color: rgba(0, 0, 0, 0.88); }
-[data-tier="free"] .bottom-nav__indicator    { background: rgba(0, 0, 0, 0.80); }
-
-[data-tier="free"] .desktop-nav {
-  background: #ffffff;
-  border-right-color: rgba(0, 0, 0, 0.10);
-}
-[data-tier="free"] .desktop-nav__section-label { color: rgba(0, 0, 0, 0.45); }
-[data-tier="free"] .desktop-nav__link          { color: rgba(0, 0, 0, 0.55); }
-[data-tier="free"] .desktop-nav__link:hover    { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.90); }
-[data-tier="free"] .desktop-nav__link--active  { background: rgba(0,0,0,0.10); color: rgba(0,0,0,0.90); }
-[data-tier="free"] .desktop-nav__brand,
-[data-tier="free"] .desktop-nav__section       { border-color: rgba(0, 0, 0, 0.10); }
-
-[data-tier="free"] .app-frame { background: rgba(255, 255, 255, 0.42); }
-@media (min-width: 768px) {
-  [data-tier="free"] .app-frame { background: rgba(255, 255, 255, 0.42); }
-  [data-tier="free"] .app-frame--auth .app-main { background: rgba(255, 255, 255, 0.88); }
-}
-
-[data-tier="free"] input,
-[data-tier="free"] textarea,
-[data-tier="free"] select {
-  background: rgba(0, 0, 0, 0.04) !important;
-  border-color: rgba(0, 0, 0, 0.25) !important;
-  color: var(--text) !important;
-}
-[data-tier="free"] .profile-page__save-btn {
-  background: linear-gradient(135deg, #111 0%, #3a3a3a 50%, #111 100%);
-  color: #fff;
-}
-
-/* InputField wrapper (inner <input> handled above; this fixes the dark wrapper) */
-[data-tier="free"] .input-field {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-/* NotificationPanel — hardcoded rgba(255,255,255,...) borders/hover invisible on white */
-[data-tier="free"] .notif-panel__head {
-  border-bottom-color: rgba(0, 0, 0, 0.10);
-}
-[data-tier="free"] .notif-item {
-  border-bottom-color: rgba(0, 0, 0, 0.07);
-}
-[data-tier="free"] .notif-item:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-[data-tier="free"] .notif-item--expanded {
-  background: rgba(0, 0, 0, 0.05);
-}
-[data-tier="free"] .notif-item__time {
-  color: rgba(0, 0, 0, 0.45);
-}
-[data-tier="free"] .notif-panel__close:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text);
-}
-[data-tier="free"] .notif-bell__badge {
-  border-color: #ffffff;
-}
-
-/* ProfilePage — tablet+ dark panel backgrounds */
-@media (min-width: 768px) {
-  [data-tier="free"] .profile-page__hero {
-    background: rgba(255, 255, 255, 0.75);
-    border-color: rgba(0, 0, 0, 0.12);
-  }
-  [data-tier="free"] .profile-page__nav,
-  [data-tier="free"] .profile-page__form,
-  [data-tier="free"] .profile-page__info-grid {
-    background: rgba(255, 255, 255, 0.75);
-    border-color: rgba(0, 0, 0, 0.12);
-  }
-}
-/* ProfilePage input near-invisible on white */
-[data-tier="free"] .profile-page__input {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.20);
-}
-
-/* AdminLayout — shell, sidebar, drawer dark backgrounds */
-[data-tier="free"] .admin-shell {
-  background: rgba(255, 255, 255, 0.25);
-}
-[data-tier="free"] .admin-sidebar {
-  background: #ffffff;
-  border-right-color: rgba(0, 0, 0, 0.12);
-}
-[data-tier="free"] .admin-drawer {
-  background: #ffffff;
-  border-left-color: rgba(0, 0, 0, 0.12);
-}
-
-/* AdminLayout — table rows dark on white */
-[data-tier="free"] .admin-table tbody tr {
-  background: rgba(0, 0, 0, 0.03);
-}
-[data-tier="free"] .admin-table tbody tr:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-
-/* AdminLayout — modal inputs near-invisible on white */
-[data-tier="free"] .admin-modal__input,
-[data-tier="free"] .admin-modal__textarea,
-[data-tier="free"] .admin-modal__select {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.20);
-}
-
-/* AdminLayout — artist card subtle whites invisible on white bg */
-[data-tier="free"] .artist-card {
-  background: rgba(0, 0, 0, 0.03);
-}
-[data-tier="free"] .artist-card__header:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-[data-tier="free"] .artist-card__avatar--empty {
-  background: rgba(0, 0, 0, 0.07);
-}
-
-/* AdminLayout — status badges with near-invisible white backgrounds */
-[data-tier="free"] .admin-badge--closed,
-[data-tier="free"] .admin-badge--inactive {
-  background: rgba(0, 0, 0, 0.07);
-}
-
-/* AdminLayout — schedule tab bar */
-[data-tier="free"] .sched-tabs {
-  background: rgba(0, 0, 0, 0.06);
-}
-[data-tier="free"] .sched-tab--active {
-  background: rgba(255, 255, 255, 0.90);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-}
-
-/* MessagesPage — hardcoded white name text on white background */
-[data-tier="free"] .messages-convo-card__name {
-  color: rgba(0, 0, 0, 0.85);
-}
-[data-tier="free"] .messages-convo-card__badge {
-  border-color: #f0f0f0;
-}
-
-/* BookingsPage — popup and detail sheet dark fallbacks */
-[data-tier="free"] .bookings-popup {
-  background: #ffffff;
-}
-[data-tier="free"] .bookings-detail-sheet__handle {
-  background: rgba(0, 0, 0, 0.12);
-}
-[data-tier="free"] .bookings-detail-sheet__section {
-  border-top-color: rgba(0, 0, 0, 0.10);
-}
-
-/* ArtistProfilePage — lightbox inner dark background */
-[data-tier="free"] .artist-profile-lightbox__inner {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.15);
-}
-[data-tier="free"] .artist-profile-lightbox__img {
-  background: #f0f0f0;
-}
-
-/* Review modal — dark background on white theme */
-[data-tier="free"] .review-modal {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.12);
-}
-[data-tier="free"] .review-modal__close {
-  background: #f0f0f0;
-  border-color: rgba(0, 0, 0, 0.12);
-}
-[data-tier="free"] .review-modal__textarea {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.18);
-}
-
-/* BookingsPage detail sheet textarea */
-[data-tier="free"] .bookings-detail-sheet__textarea {
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.20);
-}
-
-/* Auth frame — dark card wrapping login form on tablet+ */
-@media (min-width: 768px) {
-  [data-tier="free"] .app-frame--auth .app-main {
-    background: rgba(255, 255, 255, 0.88);
-    border-color: rgba(0, 0, 0, 0.12);
-  }
-}
-
-/* White theme: subtle text shadow so text pops against the marble background */
-[data-tier="free"] .page {
-  text-shadow: 0 0 1px rgba(0,0,0,0.10);
-}
-
-/* White theme: card/block elements that need visible borders */
-[data-tier="free"] .appointment-card {
-  border: 1px solid rgba(0,0,0,0.10);
-}
-[data-tier="free"] .artist-home__appt {
-  border-color: rgba(0,0,0,0.14);
-}
-[data-tier="free"] .home-page__profile-nudge {
-  border-color: rgba(0,0,0,0.25);
-}
-[data-tier="free"] .bp-points-card {
-  border-color: rgba(0,0,0,0.18);
-}
-[data-tier="free"] .bp-tier {
-  border-color: rgba(0,0,0,0.14);
-}
-[data-tier="free"] .bp-tier--unlocked {
-  border-color: rgba(0,0,0,0.30);
-}
-[data-tier="free"] .bp-earn__item {
-  border-color: rgba(0,0,0,0.14);
-}
-[data-tier="free"] .vault-page__locked-icon {
-  border-color: rgba(0,0,0,0.25);
-}
-[data-tier="free"] .vault-card {
-  background: rgba(0,0,0,0.04);
-  border-color: rgba(0,0,0,0.12);
-}
-[data-tier="free"] .vault-card:hover {
-  background: rgba(0,0,0,0.08);
-  border-color: rgba(0,0,0,0.25);
-}
-[data-tier="free"] .membership-tier {
-  border-color: rgba(0,0,0,0.14);
-  background: rgba(255,255,255,0.75);
-}
-[data-tier="free"] .bookings-page__today-card {
-  border-color: rgba(0,0,0,0.20);
-  background: rgba(0,0,0,0.06);
-}
-[data-tier="free"] .select-time-page__confirm-summary {
-  background: rgba(0,0,0,0.06);
-  border-color: rgba(0,0,0,0.25);
-}
+/* ── Free tier: inherits :root gold/dark defaults — no overrides needed ── */
 
 /* ── Premium tier ── */
 
-[data-tier="premium"] .bottom-nav            { background: #000000; }
-[data-tier="premium"] .bottom-nav__item        { color: rgba(220, 38, 38, 0.50); }
-[data-tier="premium"] .bottom-nav__item--active { color: #dc2626; }
-[data-tier="premium"] .bottom-nav__indicator    { background: #dc2626; }
+[data-tier="premium"] .bottom-nav            { background: #0F0F12; }
+[data-tier="premium"] .bottom-nav__item        { color: rgba(141, 42, 62, 0.55); }
+[data-tier="premium"] .bottom-nav__item--active { color: #8D2A3E; }
+[data-tier="premium"] .bottom-nav__indicator    { background: #8D2A3E; }
 
 [data-tier="premium"] .desktop-nav {
-  background: #000000;
-  border-right-color: rgba(220, 38, 38, 0.18);
+  background: #0F0F12;
+  border-right-color: rgba(141, 42, 62, 0.20);
 }
-[data-tier="premium"] .desktop-nav__section-label { color: rgba(220, 38, 38, 0.50); }
-[data-tier="premium"] .desktop-nav__link          { color: rgba(220, 38, 38, 0.60); }
-[data-tier="premium"] .desktop-nav__link:hover    { background: rgba(220,38,38,0.10); color: #dc2626; }
-[data-tier="premium"] .desktop-nav__link--active  { background: rgba(220,38,38,0.16); color: #dc2626; }
+[data-tier="premium"] .desktop-nav__section-label { color: rgba(141, 42, 62, 0.55); }
+[data-tier="premium"] .desktop-nav__link          { color: rgba(248, 241, 234, 0.55); }
+[data-tier="premium"] .desktop-nav__link:hover    { background: rgba(141,42,62,0.12); color: #F8F1EA; }
+[data-tier="premium"] .desktop-nav__link--active  { background: rgba(141,42,62,0.20); color: #F8F1EA; }
 [data-tier="premium"] .desktop-nav__brand,
-[data-tier="premium"] .desktop-nav__section       { border-color: rgba(220, 38, 38, 0.18); }
+[data-tier="premium"] .desktop-nav__section       { border-color: rgba(141, 42, 62, 0.20); }
 
 [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
 @media (min-width: 768px) {
   [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
 }
 
-/* ── Premium tier: subtle white glow on red-coloured elements ── */
-[data-tier="premium"] .artist-profile-page__icon-btn,
-[data-tier="premium"] .artist-profile-page__spec-tag,
-[data-tier="premium"] .artist-profile-page__rating svg,
-[data-tier="premium"] .artist-profile-page__actions > *,
-[data-tier="premium"] .artist-reviews-section__title,
-[data-tier="premium"] .artist-reviews-section__title svg,
-[data-tier="premium"] .artist-reviews-section__read-btn,
-[data-tier="premium"] .review-display-stars,
-[data-tier="premium"] .review-modal__title,
-[data-tier="premium"] .review-star-btn,
-[data-tier="premium"] .review-modal__success {
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+[data-tier="premium"] .profile-page__save-btn {
+  background: linear-gradient(135deg, #6A1226 0%, #a83550 50%, #8D2A3E 100%);
+  color: #F8F1EA;
 }
 
-[data-tier="premium"] .profile-page__save-btn {
-  background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
-  color: #fff;
+/* ── Black Card tier ── */
+
+[data-tier="black-card"] .bottom-nav            { background: #050F0F; }
+[data-tier="black-card"] .bottom-nav__item        { color: rgba(180, 143, 60, 0.50); }
+[data-tier="black-card"] .bottom-nav__item--active { color: #B48F3C; }
+[data-tier="black-card"] .bottom-nav__indicator    { background: #B48F3C; }
+
+[data-tier="black-card"] .desktop-nav {
+  background: #050F0F;
+  border-right-color: rgba(180, 143, 60, 0.20);
+}
+[data-tier="black-card"] .desktop-nav__section-label { color: rgba(180, 143, 60, 0.55); }
+[data-tier="black-card"] .desktop-nav__link          { color: rgba(255, 255, 255, 0.55); }
+[data-tier="black-card"] .desktop-nav__link:hover    { background: rgba(180,143,60,0.10); color: #ffffff; }
+[data-tier="black-card"] .desktop-nav__link--active  { background: rgba(180,143,60,0.18); color: #ffffff; }
+[data-tier="black-card"] .desktop-nav__brand,
+[data-tier="black-card"] .desktop-nav__section       { border-color: rgba(180, 143, 60, 0.20); }
+
+[data-tier="black-card"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+@media (min-width: 768px) {
+  [data-tier="black-card"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+}
+
+[data-tier="black-card"] .profile-page__save-btn {
+  background: linear-gradient(135deg, #7a5e25 0%, #d4aa50 50%, #B48F3C 100%);
+  color: #050F0F;
 }

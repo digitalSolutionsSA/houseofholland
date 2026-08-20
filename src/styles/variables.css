@@ -48,61 +48,61 @@
 /* ══════════════════════════════════════════════════════════════════
    TIER THEMES  —  override CSS variables per membership plan.
    Applied via data-tier attribute on <html> from AppLayout.
-   Black Card = :root defaults above (gold/dark — no override needed)
+   Free = :root defaults above (gold/dark — no override needed)
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── Free tier: white / minimalist / pure black accents ── */
-[data-tier="free"] {
-  --accent-rgb:        0, 0, 0;
+/* ── Premium tier: deep burgundy / crimson ── */
+[data-tier="premium"] {
+  --accent-rgb:        141, 42, 62;
 
-  --bg:                #ffffff;
-  --bg-elevated:       #f0f0f0;
-  --bg-card:           #e8e8e8;
-  --bg-muted:          #f4f4f4;
-  --bg-chip:           #d4d4d4;
+  --bg:                #0F0F12;
+  --bg-elevated:       #1a1015;
+  --bg-card:           #231520;
+  --bg-muted:          #1d1218;
+  --bg-chip:           #2d1a22;
 
-  --gold:              #111111;
-  --gold-bright:       #333333;
-  --gold-warm:         #222222;
-  --gold-deep:         #000000;
-  --gold-muted:        #555555;
-  --gold-gradient:     linear-gradient(90deg, #000 0%, #333 50%, #000 100%);
-  --gold-gradient-btn: linear-gradient(90deg, #111 0%, #3a3a3a 50%, #111 100%);
+  --gold:              #8D2A3E;
+  --gold-bright:       #a83550;
+  --gold-warm:         #6A1226;
+  --gold-deep:         #4a0d1a;
+  --gold-muted:        #7a2235;
+  --gold-gradient:     linear-gradient(90deg, #6A1226 0%, #a83550 45%, #8D2A3E 70%, #6A1226 100%);
+  --gold-gradient-btn: linear-gradient(90deg, #8D2A3E 0%, #a83550 50%, #6A1226 100%);
 
-  --text:              #0a0a0a;
-  --text-muted:        #444444;
-  --text-dim:          #777777;
-  --text-on-gold:      #ffffff;
+  --text:              #F8F1EA;
+  --text-muted:        #b09090;
+  --text-dim:          #7a6060;
+  --text-on-gold:      #F8F1EA;
 
-  --border-gold:       rgba(0, 0, 0, 0.40);
-  --border-subtle:     rgba(0, 0, 0, 0.22);
+  --border-gold:       rgba(141, 42, 62, 0.55);
+  --border-subtle:     rgba(248, 241, 234, 0.14);
 }
 
-/* ── Premium tier: dark grey / red accent ── */
-[data-tier="premium"] {
-  --accent-rgb:        220, 38, 38;
+/* ── Black Card tier: dark forest green / antique gold ── */
+[data-tier="black-card"] {
+  --accent-rgb:        180, 143, 60;
 
-  --bg:                #0f0f0f;
-  --bg-elevated:       #1e1e1e;
-  --bg-card:           #2a2a2a;
-  --bg-muted:          #222222;
-  --bg-chip:           #333333;
+  --bg:                #050F0F;
+  --bg-elevated:       #0d1a14;
+  --bg-card:           #19230F;
+  --bg-muted:          #111a10;
+  --bg-chip:           #243018;
 
-  --gold:              #dc2626;
-  --gold-bright:       #ef4444;
-  --gold-warm:         #b91c1c;
-  --gold-deep:         #991b1b;
-  --gold-muted:        #c03030;
-  --gold-gradient:     linear-gradient(90deg, #991b1b 0%, #ef4444 45%, #dc2626 70%, #991b1b 100%);
-  --gold-gradient-btn: linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #b91c1c 100%);
+  --gold:              #B48F3C;
+  --gold-bright:       #d4aa50;
+  --gold-warm:         #9a7830;
+  --gold-deep:         #7a5e25;
+  --gold-muted:        #9a7d35;
+  --gold-gradient:     linear-gradient(90deg, #7a5e25 0%, #d4aa50 45%, #B48F3C 70%, #7a5e25 100%);
+  --gold-gradient-btn: linear-gradient(90deg, #B48F3C 0%, #d4aa50 50%, #9a7830 100%);
 
-  --text:              #f0f0f0;
-  --text-muted:        #909090;
-  --text-dim:          #606060;
-  --text-on-gold:      #ffffff;
+  --text:              #ffffff;
+  --text-muted:        #a0b0a0;
+  --text-dim:          #607060;
+  --text-on-gold:      #050F0F;
 
-  --border-gold:       rgba(220, 38, 38, 0.55);
-  --border-subtle:     rgba(255, 255, 255, 0.16);
+  --border-gold:       rgba(180, 143, 60, 0.50);
+  --border-subtle:     rgba(255, 255, 255, 0.14);
 }
 
 /* Tablet: sidebar appears, bottom nav hidden */

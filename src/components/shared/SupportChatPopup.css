@@ -64,9 +64,6 @@
   object-fit: contain;
 }
 
-[data-tier="free"] .support-popup__header-avatar {
-  background: #1a1a1a;
-}
 
 .support-popup__header-info {
   flex: 1;
@@ -232,28 +229,3 @@
   transform: scale(0.92);
 }
 
-/* ── White theme ── */
-[data-tier="free"] .support-popup {
-  background: #ffffff;
-  border-top-color: rgba(0,0,0,0.1);
-}
-
-[data-tier="free"] .support-popup__header {
-  background: #f8f8f8;
-  border-bottom-color: rgba(0,0,0,0.1);
-}
-
-[data-tier="free"] .support-popup__bubble--theirs {
-  background: rgba(0,0,0,0.05);
-  border-color: rgba(0,0,0,0.12);
-}
-
-[data-tier="free"] .support-popup__input-bar {
-  background: #f8f8f8;
-  border-top-color: rgba(0,0,0,0.1);
-}
-
-[data-tier="free"] .support-popup__input {
-  background: #fff;
-  border-color: rgba(0,0,0,0.15);
-}
