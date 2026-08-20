@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, X, Radio, Zap, AlertCircle, RefreshCw, Tag, Info } from 'lucide-react'
+import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, Radio, Zap, AlertCircle, RefreshCw, Tag, Info } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
@@ -186,56 +186,26 @@ const TYPE_LABEL: Record<string, string> = {
 }
 
 function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
-  const [expanded, setExpanded] = useState(false)
-
-  function handleToggle() {
-    if (expanded) {
-      onClick()
-    } else {
-      setExpanded(true)
-    }
-  }
-
   return (
-    <div className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}${expanded ? ' broadcast-card--expanded' : ''}`}>
-      <button type="button" className="broadcast-card__main" onClick={handleToggle} aria-expanded={expanded}>
-        <div className="broadcast-card__icon">
-          <Radio size={22} strokeWidth={1.5} />
+    <button
+      type="button"
+      className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}`}
+      onClick={onClick}
+    >
+      <div className="broadcast-card__icon">
+        <Radio size={22} strokeWidth={1.5} />
+      </div>
+      <div className="broadcast-card__body">
+        <div className="broadcast-card__top">
+          <span className="broadcast-card__name">HoH Broadcast</span>
+          {latest && <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>}
         </div>
-        <div className="broadcast-card__body">
-          <div className="broadcast-card__top">
-            <span className="broadcast-card__name">HoH Broadcast</span>
-            <span className="broadcast-card__chevron">{expanded ? '▲' : '▼'}</span>
-          </div>
-          <div className="broadcast-card__meta">
-            <span className="role-badge role-badge--support">Channel</span>
-          </div>
+        <div className="broadcast-card__meta">
+          <span className="role-badge role-badge--support">Channel</span>
+          {unread && <span className="broadcast-card__type-chip">New message</span>}
         </div>
-      </button>
-
-      {expanded && (
-        <div className="broadcast-card__expand">
-          {latest ? (
-            <>
-              <div className="broadcast-card__expand-meta">
-                <span className="broadcast-card__type-chip">
-                  {TYPE_ICON[latest.type]}
-                  {TYPE_LABEL[latest.type] ?? latest.type}
-                </span>
-                <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>
-              </div>
-              <p className="broadcast-card__preview">{latest.title}</p>
-              {latest.body && <p className="broadcast-card__preview-body">{latest.body}</p>}
-            </>
-          ) : (
-            <p className="broadcast-card__preview-body">No messages yet.</p>
-          )}
-          <button type="button" className="broadcast-card__view-all" onClick={onClick}>
-            View all messages
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
+    </button>
   )
 }
 
@@ -265,37 +235,42 @@ function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => vo
   }, [userId])
 
   return (
-    <div className="broadcast-modal__overlay" onClick={onClose}>
-      <div className="broadcast-modal" onClick={e => e.stopPropagation()}>
-        <div className="broadcast-modal__header">
-          <div className="broadcast-modal__header-left">
-            <Radio size={18} strokeWidth={1.5} style={{ color: 'var(--gold)' }} />
-            <span className="broadcast-modal__title">HoH Broadcast</span>
-          </div>
-          <button className="broadcast-modal__close" onClick={onClose} aria-label="Close">
-            <X size={20} strokeWidth={1.5} />
+    <div className="broadcast-chat__overlay">
+      <div className="broadcast-chat">
+        <div className="broadcast-chat__header">
+          <button className="broadcast-chat__back" onClick={onClose} aria-label="Close">
+            <ChevronDown size={22} strokeWidth={2} />
           </button>
+          <div className="broadcast-chat__header-info">
+            <div className="broadcast-chat__header-icon">
+              <Radio size={18} strokeWidth={1.5} />
+            </div>
+            <div>
+              <p className="broadcast-chat__header-name">HoH Broadcast</p>
+              <p className="broadcast-chat__header-sub">Official announcements channel</p>
+            </div>
+          </div>
         </div>
 
-        <div className="broadcast-modal__body">
-          {loading && <p className="broadcast-modal__empty">Loading…</p>}
+        <div className="broadcast-chat__body">
+          {loading && <p className="broadcast-chat__empty">Loading…</p>}
           {!loading && notifs.length === 0 && (
-            <div className="broadcast-modal__empty">
+            <div className="broadcast-chat__empty">
               <Radio size={32} strokeWidth={1} style={{ opacity: 0.3 }} />
               <p>No broadcasts yet.</p>
             </div>
           )}
-          {notifs.map(n => (
-            <div key={n.id} className={`broadcast-modal__item broadcast-modal__item--${n.type}${!n.read_at ? ' broadcast-modal__item--unread' : ''}`}>
-              <div className="broadcast-modal__item-icon">
-                {TYPE_ICON[n.type] ?? <Info size={14} strokeWidth={1.5} />}
+          {[...notifs].reverse().map(n => (
+            <div key={n.id} className="broadcast-chat__bubble-wrap">
+              <div className={`broadcast-chat__bubble broadcast-chat__bubble--${n.type}${!n.read_at ? ' broadcast-chat__bubble--unread' : ''}`}>
+                <div className="broadcast-chat__bubble-type">
+                  {TYPE_ICON[n.type] ?? <Info size={12} strokeWidth={1.5} />}
+                  <span>{TYPE_LABEL[n.type] ?? n.type}</span>
+                </div>
+                <p className="broadcast-chat__bubble-title">{n.title}</p>
+                {n.body && <p className="broadcast-chat__bubble-body">{n.body}</p>}
               </div>
-              <div className="broadcast-modal__item-body">
-                <p className="broadcast-modal__item-type">{TYPE_LABEL[n.type] ?? n.type}</p>
-                <p className="broadcast-modal__item-title">{n.title}</p>
-                {n.body && <p className="broadcast-modal__item-desc">{n.body}</p>}
-                <p className="broadcast-modal__item-time">{timeAgo(n.created_at)}</p>
-              </div>
+              <p className="broadcast-chat__bubble-time">{timeAgo(n.created_at)}</p>
             </div>
           ))}
         </div>
@@ -311,6 +286,7 @@ export function MessagesPage() {
   const isArtist = profile?.role === 'artist' || profile?.role === 'manager'
 
   const [convos, setConvos] = useState<ConversationRow[]>([])
+  const [convosLoading, setConvosLoading] = useState(true)
   const [artistId, setArtistId] = useState<string | null>(null)
   const [adminProfileId, setAdminProfileId] = useState<string | null | undefined>(undefined)
 
@@ -358,8 +334,9 @@ export function MessagesPage() {
     return () => { supabase.removeChannel(channel) }
   }, [user, isArtist, artistId])
 
-  async function load(_background = false) {
+  async function load(background = false) {
     if (!user) return
+    if (!background) setConvosLoading(true)
 
     const allRows: ConversationRow[] = []
 
@@ -431,6 +408,7 @@ export function MessagesPage() {
     })
 
     setConvos(allRows)
+    setConvosLoading(false)
   }
 
   async function setField(convoId: string, field: 'artist_archived_at' | 'artist_deleted_at', value: string | null) {
@@ -505,7 +483,11 @@ export function MessagesPage() {
         />
       )}
 
-      {!hasAny && !showPinnedArea ? (
+      {convosLoading ? (
+        <div className="messages-page__skeleton">
+          {[1,2,3].map(i => <div key={i} className="messages-page__skeleton-row" />)}
+        </div>
+      ) : !hasAny && !showPinnedArea ? (
         <div className="messages-page__empty">
           <MessageCircle size={40} strokeWidth={1} />
           <p>No conversations yet.</p>
