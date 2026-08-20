@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/shared/AppLayout'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { useAuth } from './context/AuthContext'
+import { usePushNotifications } from './hooks/usePushNotifications'
 
 // Eagerly loaded — structural, always needed
 const OverviewPage        = lazy(() => import('./pages/OverviewPage').then(m        => ({ default: m.OverviewPage })))
@@ -44,6 +45,12 @@ const AdminArtistProfile  = lazy(() => import('./pages/admin/AdminArtistProfile'
 const AdminReferrals      = lazy(() => import('./pages/admin/AdminReferrals').then(m      => ({ default: m.AdminReferrals })))
 const AdminPoints         = lazy(() => import('./pages/admin/AdminPoints').then(m         => ({ default: m.AdminPoints })))
 
+function PushInit() {
+  const { user } = useAuth()
+  usePushNotifications(user?.id ?? null)
+  return null
+}
+
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
   if (loading) return null
@@ -74,6 +81,7 @@ function PageLoader() {
 export default function App() {
   return (
     <BrowserRouter>
+      <PushInit />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Admin portal — own layout, no app shell */}
