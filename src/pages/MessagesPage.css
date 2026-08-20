@@ -828,8 +828,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid var(--gold);
+  background: var(--gold);
+  border: 2px solid var(--bg);
 }
 
 /* Shake animation when there are unread messages */

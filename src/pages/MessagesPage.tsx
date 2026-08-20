@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, X, Radio, Zap, AlertCircle, RefreshCw, Tag, Info, Headphones } from 'lucide-react'
+import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, X, Radio, Zap, AlertCircle, RefreshCw, Tag, Info } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { getAdminProfileId, SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR } from '../lib/support'
@@ -538,7 +538,7 @@ export function MessagesPage() {
           onClick={() => setSupportPopupOpen(true)}
           aria-label="Open HoH Support chat"
         >
-          <Headphones size={22} strokeWidth={1.8} />
+          <img src="/Graphics/SUPPORT_ICON.png" alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} />
           {supportUnread && <span className="support-fab__badge" aria-label="Unread messages" />}
         </button>
       )}
