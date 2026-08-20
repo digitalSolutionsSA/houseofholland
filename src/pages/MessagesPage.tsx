@@ -52,15 +52,6 @@ function timeAgo(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })
 }
 
-function daysUntilPurge(deletedAt: string) {
-  const msLeft = new Date(deletedAt).getTime() + 30 * 24 * 3600 * 1000 - Date.now()
-  return Math.max(0, Math.ceil(msLeft / (24 * 3600 * 1000)))
-}
-
-function RoleBadge({ role }: { role: ConversationRow['other_role'] }) {
-  const label = role === 'artist' ? 'Artist' : role === 'support' ? 'Support' : 'Customer'
-  return <span className={`role-badge role-badge--${role}`}>{label}</span>
-}
 
 type CardProps = {
   c: ConversationRow
@@ -73,7 +64,7 @@ type CardProps = {
   showPurge?: boolean
 }
 
-function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnarchive, showPurge }: CardProps) {
+function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnarchive }: CardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -86,46 +77,35 @@ function ConvoCard({ c, isArtist, onOpen, onArchive, onDelete, onRestore, onUnar
     return () => document.removeEventListener('mousedown', handle)
   }, [menuOpen])
 
+  const initial = (c.other_name[0] ?? '?').toUpperCase()
+
   return (
-    <div className={`messages-convo-card-wrap${c.unread ? ' messages-convo-card-wrap--unread' : ''}`}>
+    <div className="convo-circle-wrap">
       <button
         type="button"
-        className={`messages-convo-card${c.unread ? ' messages-convo-card--unread' : ''}`}
+        className={`convo-circle__btn${c.unread ? ' convo-circle__btn--unread' : ''}`}
         onClick={onOpen}
+        aria-label={`Open chat with ${c.other_name}`}
       >
-        <div className={`messages-convo-card__avatar${c.other_role === 'support' ? ' messages-convo-card__avatar--support' : ''}`}>
+        <div className={`convo-circle__avatar convo-circle__avatar--${c.other_role}`}>
           {c.other_avatar
             ? <img src={c.other_avatar} alt="" />
-            : <span>{(c.other_name[0] ?? '?').toUpperCase()}</span>
+            : <span>{initial}</span>
           }
-          {c.unread && <span className="messages-convo-card__badge" aria-label="Unread" />}
         </div>
-        <div className="messages-convo-card__body">
-          <div className="messages-convo-card__top">
-            <span className="messages-convo-card__name">{c.other_name}</span>
-            <span className="messages-convo-card__time">{timeAgo(c.last_message_at)}</span>
-          </div>
-          <div className="messages-convo-card__meta">
-            <RoleBadge role={c.other_role} />
-            {showPurge && c.artist_deleted_at && (
-              <span className="messages-convo-card__purge">
-                Deleted — {daysUntilPurge(c.artist_deleted_at)}d left
-              </span>
-            )}
-          </div>
-          <p className="messages-convo-card__preview">
-            {c.last_message_preview ?? 'Say hello!'}
-          </p>
-        </div>
+        {c.unread && <span className="convo-circle__unread-dot" />}
       </button>
 
+      <p className="convo-circle__name">{c.other_name.split(' ')[0]}</p>
+      <p className="convo-circle__time">{timeAgo(c.last_message_at)}</p>
+
       {isArtist && (
-        <div className="messages-card-actions" ref={menuRef}>
+        <div className="messages-card-actions convo-circle__actions" ref={menuRef}>
           <button
             type="button"
             className="messages-card-actions__trigger"
             onClick={e => { e.stopPropagation(); setMenuOpen(v => !v) }}
-            aria-label="Conversation options"
+            aria-label="Options"
           >
             <span className="messages-card-actions__dots">•••</span>
           </button>
@@ -171,7 +151,7 @@ function CollapsibleSection({ label, count, children }: { label: string; count: 
         <span>{label} ({count})</span>
         {open ? <ChevronUp size={16} strokeWidth={1.5} /> : <ChevronDown size={16} strokeWidth={1.5} />}
       </button>
-      {open && <div className="messages-section__list">{children}</div>}
+      {open && <div className="convo-circles-grid convo-circles-grid--compact">{children}</div>}
     </div>
   )
 }
@@ -336,7 +316,15 @@ export function MessagesPage() {
 
   async function load(background = false) {
     if (!user) return
-    if (!background) setConvosLoading(true)
+    if (!background) {
+      // Show cached data immediately — feels instant on re-navigation
+      const cached = sessionStorage.getItem(`hoh_convos_${user.id}`)
+      if (cached) {
+        try { setConvos(JSON.parse(cached)); setConvosLoading(false) } catch {}
+      } else {
+        setConvosLoading(true)
+      }
+    }
 
     const allRows: ConversationRow[] = []
 
@@ -407,6 +395,7 @@ export function MessagesPage() {
       return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
     })
 
+    sessionStorage.setItem(`hoh_convos_${user.id}`, JSON.stringify(allRows))
     setConvos(allRows)
     setConvosLoading(false)
   }
@@ -484,8 +473,13 @@ export function MessagesPage() {
       )}
 
       {convosLoading ? (
-        <div className="messages-page__skeleton">
-          {[1,2,3].map(i => <div key={i} className="messages-page__skeleton-row" />)}
+        <div className="convo-circles-grid">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="convo-circle-wrap">
+              <div className="convo-circle__skeleton" />
+              <div className="convo-circle__skeleton-name" />
+            </div>
+          ))}
         </div>
       ) : !hasAny && !showPinnedArea ? (
         <div className="messages-page__empty">
@@ -503,7 +497,7 @@ export function MessagesPage() {
           )}
 
           {active.length > 0 && (
-            <div className="messages-page__list">
+            <div className="convo-circles-grid">
               {active.map(renderCard)}
             </div>
           )}
