@@ -233,26 +233,18 @@
   margin: 6px var(--page-pad);
   border-radius: var(--radius-md);
   border: 1.5px solid rgba(var(--accent-rgb), 0.40);
-  background: rgba(8, 8, 10, 0.82);
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.04);
-  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg-card);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+  transition: border-color 0.15s;
 }
-
-[data-tier="premium"]    .messages-convo-card-wrap { background: rgba(20, 6, 12, 0.84); }
-[data-tier="black-card"] .messages-convo-card-wrap { background: rgba(4,  12, 7,  0.84); }
 
 .messages-convo-card-wrap:hover {
-  background: rgba(8, 8, 10, 0.90);
-  border-color: rgba(var(--accent-rgb), 0.62);
+  border-color: rgba(var(--accent-rgb), 0.65);
 }
-
-[data-tier="premium"]    .messages-convo-card-wrap:hover { background: rgba(20, 6, 12, 0.92); }
-[data-tier="black-card"] .messages-convo-card-wrap:hover { background: rgba(4, 12, 7, 0.92); }
 
 .messages-convo-card-wrap--unread {
   border-color: var(--gold);
   border-left: 3.5px solid var(--gold);
-  box-shadow: 0 2px 18px rgba(0,0,0,0.60), 0 0 0 0 rgba(var(--accent-rgb),0), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .messages-convo-card-wrap .messages-convo-card {
@@ -511,21 +503,17 @@
   margin: 8px var(--page-pad) 4px;
   box-sizing: border-box;
   width: calc(100% - 2 * var(--page-pad));
-  background: rgba(8, 8, 10, 0.82);
+  background: var(--bg-card);
   border: 1.5px solid rgba(var(--accent-rgb), 0.42);
   border-radius: var(--radius-md);
-  box-shadow: 0 2px 14px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.55);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s, border-color 0.12s;
+  transition: border-color 0.12s;
 }
-
-[data-tier="premium"]    .broadcast-card { background: rgba(20, 6, 12, 0.84); }
-[data-tier="black-card"] .broadcast-card { background: rgba(4, 12, 7,  0.84); }
 
 .broadcast-card:hover,
 .broadcast-card:active {
-  background: rgba(8, 8, 10, 0.92);
   border-color: rgba(var(--accent-rgb), 0.65);
 }
 
