@@ -165,27 +165,23 @@ const TYPE_LABEL: Record<string, string> = {
   sale:    'Sale',
 }
 
-function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
+function BroadcastCircle({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}`}
-      onClick={onClick}
-    >
-      <div className="broadcast-card__icon">
-        <Radio size={22} strokeWidth={1.5} />
-      </div>
-      <div className="broadcast-card__body">
-        <div className="broadcast-card__top">
-          <span className="broadcast-card__name">HoH Broadcast</span>
-          {latest && <span className="broadcast-card__time">{timeAgo(latest.created_at)}</span>}
+    <div className="convo-circle-wrap">
+      <button
+        type="button"
+        className={`convo-circle__btn convo-circle__btn--broadcast${unread ? ' convo-circle__btn--unread' : ''}`}
+        onClick={onClick}
+        aria-label="Open HoH Broadcast channel"
+      >
+        <div className="convo-circle__avatar convo-circle__avatar--broadcast">
+          <Radio size={28} strokeWidth={1.5} />
         </div>
-        <div className="broadcast-card__meta">
-          <span className="role-badge role-badge--support">Channel</span>
-          {unread && <span className="broadcast-card__type-chip">New message</span>}
-        </div>
-      </div>
-    </button>
+        {unread && <span className="convo-circle__unread-dot" />}
+      </button>
+      <p className="convo-circle__name">HoH</p>
+      <p className="convo-circle__time">{latest ? timeAgo(latest.created_at) : 'Channel'}</p>
+    </div>
   )
 }
 
@@ -463,17 +459,15 @@ export function MessagesPage() {
         <h1 className="messages-page__title">Messages</h1>
       </div>
 
-      {/* Broadcast channel card (pinned at top for all users) */}
-      {showPinnedArea && (
-        <BroadcastCard
-          latest={latestBroadcast}
-          unread={unreadBroadcast}
-          onClick={() => { setBroadcastOpen(true); setUnreadBroadcast(false) }}
-        />
-      )}
-
       {convosLoading ? (
         <div className="convo-circles-grid">
+          {showPinnedArea && (
+            <BroadcastCircle
+              latest={latestBroadcast}
+              unread={unreadBroadcast}
+              onClick={() => { setBroadcastOpen(true); setUnreadBroadcast(false) }}
+            />
+          )}
           {[1,2,3,4].map(i => (
             <div key={i} className="convo-circle-wrap">
               <div className="convo-circle__skeleton" />
@@ -496,8 +490,15 @@ export function MessagesPage() {
             </div>
           )}
 
-          {active.length > 0 && (
+          {(showPinnedArea || active.length > 0) && (
             <div className="convo-circles-grid">
+              {showPinnedArea && (
+                <BroadcastCircle
+                  latest={latestBroadcast}
+                  unread={unreadBroadcast}
+                  onClick={() => { setBroadcastOpen(true); setUnreadBroadcast(false) }}
+                />
+              )}
               {active.map(renderCard)}
             </div>
           )}
