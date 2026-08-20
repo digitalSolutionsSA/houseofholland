@@ -311,7 +311,6 @@ export function MessagesPage() {
   const isArtist = profile?.role === 'artist' || profile?.role === 'manager'
 
   const [convos, setConvos] = useState<ConversationRow[]>([])
-  const [loading, setLoading] = useState(true)
   const [artistId, setArtistId] = useState<string | null>(null)
   const [adminProfileId, setAdminProfileId] = useState<string | null | undefined>(undefined)
 
@@ -359,9 +358,8 @@ export function MessagesPage() {
     return () => { supabase.removeChannel(channel) }
   }, [user, isArtist, artistId])
 
-  async function load(background = false) {
+  async function load(_background = false) {
     if (!user) return
-    if (!background) setLoading(true)
 
     const allRows: ConversationRow[] = []
 
@@ -433,7 +431,6 @@ export function MessagesPage() {
     })
 
     setConvos(allRows)
-    if (!background) setLoading(false)
   }
 
   async function setField(convoId: string, field: 'artist_archived_at' | 'artist_deleted_at', value: string | null) {
@@ -489,12 +486,6 @@ export function MessagesPage() {
       />
     )
   }
-
-  if (loading) return (
-    <div className="page messages-page">
-      <div className="messages-page__loading">Loading…</div>
-    </div>
-  )
 
   const hasAny = convos.length > 0
   const showPinnedArea = adminProfileId !== undefined

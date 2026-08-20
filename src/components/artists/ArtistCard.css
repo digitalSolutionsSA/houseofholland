@@ -78,12 +78,6 @@
   line-height: 1;
 }
 
-[data-tier="free"] .artist-card__rating {
-  color: #b8860b;
-}
-[data-tier="free"] .artist-card__rating-score {
-  color: #b8860b;
-}
 
 .artist-card__tags {
   display: flex;
@@ -113,20 +107,3 @@
   margin-top: 2px;
 }
 
-/* ── White-theme overrides ── */
-[data-tier="free"] .artist-card {
-  background: rgba(255,255,255,0.85);
-  border-color: rgba(0,0,0,0.10);
-}
-[data-tier="free"] .artist-card:hover {
-  border-color: rgba(0,0,0,0.28);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-}
-[data-tier="free"] .artist-card__tag {
-  background: rgba(0,0,0,0.05);
-  color: #333;
-  border-color: rgba(0,0,0,0.12);
-}
-[data-tier="free"] .artist-card__footer {
-  color: #555;
-}
