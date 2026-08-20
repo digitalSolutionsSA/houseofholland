@@ -229,12 +229,29 @@
 .messages-convo-card-wrap {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--border-subtle);
   position: relative;
+  margin: 5px var(--page-pad);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(var(--accent-rgb), 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.messages-convo-card-wrap:hover {
+  background: rgba(var(--accent-rgb), 0.07);
+  border-color: rgba(var(--accent-rgb), 0.32);
+}
+
+.messages-convo-card-wrap--unread {
+  background: rgba(var(--accent-rgb), 0.09);
+  border-color: rgba(var(--accent-rgb), 0.40);
+  border-left: 3px solid var(--gold);
 }
 
 .messages-convo-card-wrap .messages-convo-card {
   border-bottom: none;
+  border: none;
+  background: none !important;
   flex: 1;
   min-width: 0;
 }
@@ -244,10 +261,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px var(--page-pad);
+  padding: 12px 14px;
   background: none;
   border: none;
-  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -256,7 +272,7 @@
 
 .messages-convo-card:hover,
 .messages-convo-card:active {
-  background: var(--bg-elevated);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .messages-convo-card--unread .messages-convo-card__name {
@@ -276,7 +292,8 @@
   height: 52px;
   border-radius: 50%;
   background: rgba(var(--accent-rgb), 0.15);
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border: 2px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.12);
   overflow: visible;
   display: flex;
   align-items: center;
@@ -483,19 +500,21 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px var(--page-pad);
-  width: 100%;
-  background: rgba(var(--accent-rgb), 0.05);
-  border: none;
-  border-bottom: 2px solid rgba(var(--accent-rgb), 0.3);
+  padding: 12px 14px;
+  margin: 8px var(--page-pad) 4px;
+  width: calc(100% - 2 * var(--page-pad));
+  background: rgba(var(--accent-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s;
 }
 
 .broadcast-card:hover,
 .broadcast-card:active {
-  background: rgba(var(--accent-rgb), 0.1);
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.45);
 }
 
 .broadcast-card__icon {
@@ -551,10 +570,36 @@
   color: var(--text-dim);
 }
 
+.broadcast-card__type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
 .broadcast-card__preview {
-  font-size: 0.82rem;
-  color: var(--text-muted);
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--text);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.broadcast-card__preview-body {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin: 2px 0 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -562,14 +607,20 @@
 
 /* Unread highlight — pulses in the active theme's accent colour */
 .broadcast-card--unread {
-  background: rgba(var(--accent-rgb), 0.18);
-  border-bottom-color: var(--gold);
+  border-color: var(--gold);
+  border-left: 3px solid var(--gold);
   animation: broadcast-pulse 2.8s ease-in-out infinite;
 }
 
 @keyframes broadcast-pulse {
-  0%, 100% { background: rgba(var(--accent-rgb), 0.18); }
-  50%       { background: rgba(var(--accent-rgb), 0.30); }
+  0%, 100% { background: rgba(var(--accent-rgb), 0.14); box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  50%       { background: rgba(var(--accent-rgb), 0.26); box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35); }
+}
+
+.broadcast-card--unread .broadcast-card__icon {
+  border-color: var(--gold);
+  background: rgba(var(--accent-rgb), 0.22);
+  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
 }
 
 .broadcast-card--unread .broadcast-card__name {
@@ -727,9 +778,18 @@
   min-width: 0;
 }
 
+.broadcast-modal__item-type {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 0 0 3px;
+}
+
 .broadcast-modal__item-title {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text);
   margin: 0 0 4px;
 }

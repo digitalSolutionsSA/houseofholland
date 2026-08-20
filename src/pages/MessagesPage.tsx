@@ -177,6 +177,14 @@ function CollapsibleSection({ label, count, children }: { label: string; count: 
 }
 
 // ── Broadcast channel card (replaces pinned support card) ─────────
+const TYPE_LABEL: Record<string, string> = {
+  general: 'General',
+  flash:   'Flash',
+  alert:   'Alert',
+  update:  'Update',
+  sale:    'Sale',
+}
+
 function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; unread?: boolean; onClick: () => void }) {
   return (
     <button type="button" className={`broadcast-card${unread ? ' broadcast-card--unread' : ''}`} onClick={onClick}>
@@ -190,11 +198,20 @@ function BroadcastCard({ latest, unread, onClick }: { latest?: BroadcastNotif; u
         </div>
         <div className="broadcast-card__meta">
           <span className="role-badge role-badge--support">Channel</span>
-          <span className="broadcast-card__pin-label">Pinned</span>
+          {latest && (
+            <span className="broadcast-card__type-chip">
+              {TYPE_ICON[latest.type]}
+              {TYPE_LABEL[latest.type] ?? latest.type}
+            </span>
+          )}
+          {!latest && <span className="broadcast-card__pin-label">Pinned</span>}
         </div>
         <p className="broadcast-card__preview">
           {latest ? latest.title : 'Announcements and updates from HoH Tattoos'}
         </p>
+        {latest?.body && (
+          <p className="broadcast-card__preview-body">{latest.body}</p>
+        )}
       </div>
     </button>
   )
@@ -252,6 +269,7 @@ function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => vo
                 {TYPE_ICON[n.type] ?? <Info size={14} strokeWidth={1.5} />}
               </div>
               <div className="broadcast-modal__item-body">
+                <p className="broadcast-modal__item-type">{TYPE_LABEL[n.type] ?? n.type}</p>
                 <p className="broadcast-modal__item-title">{n.title}</p>
                 {n.body && <p className="broadcast-modal__item-desc">{n.body}</p>}
                 <p className="broadcast-modal__item-time">{timeAgo(n.created_at)}</p>
