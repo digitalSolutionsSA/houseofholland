@@ -17,26 +17,30 @@ export function VaultPage() {
   const [selected, setSelected] = useState<VaultEntry | null>(null)
 
   useEffect(() => {
-    // Skip fetch for free users and staff — they won't see the vault content
     if (!profile?.id || !isPremium) { setLoading(false); return }
+    const CACHE_KEY = `hoh_vault_${profile.id}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try { setEntries(JSON.parse(cached)); setLoading(false) } catch {}
+    }
     supabase
       .from('tattoo_completions')
       .select('id, photo_url, style, notes, completed_at, price, artists(name)')
       .eq('profile_id', profile.id)
       .order('completed_at', { ascending: false })
       .then(({ data }) => {
-        setEntries(
-          (data ?? []).map((d: any) => ({
-            id: d.id,
-            title: d.style ?? d.notes ?? 'Tattoo',
-            artist: d.artists?.name ?? 'Unknown Artist',
-            date: new Date(d.completed_at + 'T12:00:00').toLocaleDateString('en-US', {
-              month: 'long', day: 'numeric', year: 'numeric',
-            }),
-            image: d.photo_url,
-            price: d.price ?? null,
-          }))
-        )
+        const rows = (data ?? []).map((d: any) => ({
+          id: d.id,
+          title: d.style ?? d.notes ?? 'Tattoo',
+          artist: d.artists?.name ?? 'Unknown Artist',
+          date: new Date(d.completed_at + 'T12:00:00').toLocaleDateString('en-US', {
+            month: 'long', day: 'numeric', year: 'numeric',
+          }),
+          image: d.photo_url,
+          price: d.price ?? null,
+        }))
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(rows))
+        setEntries(rows)
         setLoading(false)
       })
   }, [profile?.id, isPremium])

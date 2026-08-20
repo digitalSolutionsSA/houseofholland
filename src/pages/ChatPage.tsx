@@ -337,6 +337,9 @@ export function ChatPage() {
 
   return (
     <div className="page page--flush chat-page">
+      {/* Ambient background */}
+      <div className={`chat-page__bg${meta.other_role === 'support' ? ' chat-page__bg--support' : ''}`} />
+
       {/* Header */}
       <div className="chat-page__header">
         <button className="chat-page__back" onClick={() => navigate('/messages')} aria-label="Back">

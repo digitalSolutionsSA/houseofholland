@@ -33,19 +33,25 @@ export function HomePage() {
   const [appointment, setAppointment] = useState<Appointment | null>(null)
 
   useEffect(() => {
+    if (!profile?.id) return
+    const CACHE_KEY = `hoh_home_appt_${profile.id}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try { setAppointment(JSON.parse(cached)) } catch {}
+    }
     supabase
       .from('bookings')
       .select('id, appointment_at, service, artists(name, avatar_url)')
-      .eq('profile_id', profile?.id ?? '')
+      .eq('profile_id', profile.id)
       .in('status', ['pending', 'accepted', 'confirmed'])
       .gte('appointment_at', new Date().toISOString())
       .order('appointment_at')
       .limit(1)
       .single()
       .then(({ data }) => {
-        if (!data) return
+        if (!data) { sessionStorage.removeItem(CACHE_KEY); setAppointment(null); return }
         const d = data as any
-        setAppointment({
+        const appt: Appointment = {
           id: d.id,
           dateLabel: new Date(d.appointment_at).toLocaleString('en-US', {
             month: 'short', day: 'numeric', year: 'numeric',
@@ -54,7 +60,9 @@ export function HomePage() {
           artist: d.artists?.name ?? 'Artist',
           service: d.service,
           avatar: d.artists?.avatar_url ?? null,
-        })
+        }
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(appt))
+        setAppointment(appt)
       })
   }, [profile?.id])
 

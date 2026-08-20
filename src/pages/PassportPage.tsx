@@ -43,7 +43,18 @@ export function PassportPage() {
   }, [profile?.id, isPremium])
 
   async function load() {
-    setLoading(true)
+    const CACHE_KEY = `hoh_passport_${profile!.id}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try {
+        const c = JSON.parse(cached)
+        setTattooCount(c.tattooCount); setTotalHours(c.totalHours); setTotalSpent(c.totalSpent)
+        setLoyaltyPoints(c.loyaltyPoints); setRewards(c.rewards); setClaims(c.claims)
+        setLoading(false)
+      } catch {}
+    } else {
+      setLoading(true)
+    }
     const [{ data: comps }, { data: orders }, { data: pts }, { data: rws }, { data: cls }] = await Promise.all([
       supabase.from('tattoo_completions').select('price, duration_hours').eq('profile_id', profile!.id),
       supabase.from('orders').select('total').eq('profile_id', profile!.id).in('status', ['paid', 'fulfilled']),
@@ -54,13 +65,18 @@ export function PassportPage() {
 
     const tattooSpend  = (comps   ?? []).reduce((s, c) => s + ((c as any).price ?? 0), 0)
     const merchSpend   = (orders  ?? []).reduce((s, o) => s + ((o as any).total ?? 0), 0)
+    const tc = comps?.length ?? 0
+    const th = (comps ?? []).reduce((s, c) => s + ((c as any).duration_hours ?? 0), 0)
+    const ts = tattooSpend + merchSpend
+    const lp = (pts ?? []).reduce((s, p) => s + p.points, 0)
 
-    setTattooCount(comps?.length ?? 0)
-    setTotalHours((comps ?? []).reduce((s, c) => s + ((c as any).duration_hours ?? 0), 0))
-    setTotalSpent(tattooSpend + merchSpend)
-    setLoyaltyPoints((pts ?? []).reduce((s, p) => s + p.points, 0))
+    setTattooCount(tc)
+    setTotalHours(th)
+    setTotalSpent(ts)
+    setLoyaltyPoints(lp)
     setRewards(rws ?? [])
     setClaims(cls ?? [])
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ tattooCount: tc, totalHours: th, totalSpent: ts, loyaltyPoints: lp, rewards: rws ?? [], claims: cls ?? [] }))
     setLoading(false)
   }
 

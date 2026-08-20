@@ -65,7 +65,17 @@ export function BattlePassPage() {
   }, [profile?.id, isPremium])
 
   async function load() {
-    setLoading(true)
+    const CACHE_KEY = `hoh_battlepass_${profile!.id}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try {
+        const c = JSON.parse(cached)
+        setTotalPoints(c.totalPoints); setRewards(c.rewards); setHistory(c.history); setClaims(c.claims)
+        setLoading(false)
+      } catch {}
+    } else {
+      setLoading(true)
+    }
     const [{ data: txs }, { data: rws }, { data: cls }] = await Promise.all([
       supabase
         .from('loyalty_points')
@@ -90,6 +100,7 @@ export function BattlePassPage() {
     setRewards(rws ?? [])
     setHistory(txs ?? [])
     setClaims(cls ?? [])
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ totalPoints: pts, rewards: rws ?? [], history: txs ?? [], claims: cls ?? [] }))
     setLoading(false)
   }
 

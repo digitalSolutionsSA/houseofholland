@@ -109,6 +109,15 @@ export function ArtistProfilePage() {
 
   useEffect(() => {
     if (!artistId) return
+    const CACHE_KEY = `hoh_artist_${artistId}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try {
+        const c = JSON.parse(cached)
+        setArtist(c.artist); setPortfolio(c.portfolio); setReviews(c.reviews)
+        setLoading(false)
+      } catch {}
+    }
     async function load() {
       const { data: a } = await supabase
         .from('artists')
@@ -133,6 +142,7 @@ export function ArtistProfilePage() {
         setPortfolio(photos ?? [])
         const allReviews = (reviewData ?? []) as unknown as Review[]
         setReviews(allReviews)
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ artist: a, portfolio: photos ?? [], reviews: allReviews }))
         if (user) {
           const { data: myR } = await supabase
             .from('reviews')

@@ -10,6 +10,33 @@
   background: transparent;
 }
 
+/* ── Ambient background — dark scrim so the marble shows through ── */
+.chat-page__bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 8%  8%,  rgba(var(--accent-rgb), 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 55% at 88% 85%, rgba(var(--accent-rgb), 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 52% 44%, rgba(var(--accent-rgb), 0.08) 0%, transparent 55%),
+    rgba(0, 0, 0, 0.52);
+}
+
+/* Support chat — warmer glow, slightly more opaque scrim */
+.chat-page__bg--support {
+  background:
+    radial-gradient(ellipse 65% 45% at 12% 12%, rgba(var(--accent-rgb), 0.28) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at 85% 88%, rgba(var(--accent-rgb), 0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 35% at 50% 50%, rgba(var(--accent-rgb), 0.10) 0%, transparent 55%),
+    rgba(0, 0, 0, 0.58);
+}
+
+/* Ensure all fixed children sit above the background */
+.chat-page__header,
+.chat-page__messages,
+.chat-page__input-bar { z-index: 10; }
+
 .chat-page__loading {
   padding: 40px 24px;
   color: var(--text-muted);
@@ -28,9 +55,10 @@
   gap: 10px;
   padding: 10px 14px;
   padding-top: max(10px, env(safe-area-inset-top));
-  background: var(--bg-elevated);
-  border-bottom: 1px solid var(--border-subtle);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.55);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.20);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .chat-page__back {
@@ -233,11 +261,12 @@
   left: 0;
   right: 0;
   z-index: 200;
-  background: var(--bg-elevated);
-  border-top: 1px solid var(--border-subtle);
+  background: rgba(0, 0, 0, 0.55);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.20);
   padding: 10px 12px;
   padding-bottom: max(12px, env(safe-area-inset-bottom));
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .chat-page__attach-preview {

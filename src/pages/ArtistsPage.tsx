@@ -120,12 +120,22 @@ export function ArtistsPage() {
   const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
+    const CACHE_KEY = 'hoh_artists_v1'
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try { setArtists(JSON.parse(cached)); setLoading(false) } catch {}
+    }
     supabase
       .from('artists')
       .select('id, name, slug, specialties, avatar_url, rating, review_count, bio')
       .eq('is_active', true)
       .order('name')
-      .then(({ data }) => { setArtists(data ?? []); setLoading(false) })
+      .then(({ data }) => {
+        if (!data) return
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(data))
+        setArtists(data)
+        setLoading(false)
+      })
   }, [])
 
   const filtered = useMemo(() => {

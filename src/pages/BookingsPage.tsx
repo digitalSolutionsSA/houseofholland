@@ -73,6 +73,11 @@ export function BookingsPage() {
 
   useEffect(() => {
     if (!profile?.id) return
+    const CACHE_KEY = `hoh_bookings_${profile.id}_v1`
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      try { setUpcoming(JSON.parse(cached)); setLoading(false) } catch {}
+    }
     const startOfToday = studioMidnightUTC()
     supabase
       .from('bookings')
@@ -83,6 +88,7 @@ export function BookingsPage() {
       .order('appointment_at')
       .then(({ data }) => {
         const rows = (data ?? []).map(mapRow)
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify(rows))
         setUpcoming(rows)
         setLoading(false)
 
