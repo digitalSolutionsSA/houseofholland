@@ -99,7 +99,7 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
 .app-frame {
   width: 100%;
   min-height: 100dvh;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.28);
   position: relative;
   z-index: 1;
   display: flex;
@@ -155,7 +155,7 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
   .app-frame {
     display: grid;
     grid-template-columns: var(--sidebar-width) 1fr;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.28);
     min-height: 100dvh;
   }
 
@@ -234,9 +234,9 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
 [data-tier="premium"] .desktop-nav__brand,
 [data-tier="premium"] .desktop-nav__section       { border-color: rgba(141, 42, 62, 0.20); }
 
-[data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+[data-tier="premium"] .app-frame { background: rgba(8, 2, 5, 0.28); }
 @media (min-width: 768px) {
-  [data-tier="premium"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+  [data-tier="premium"] .app-frame { background: rgba(8, 2, 5, 0.28); }
 }
 
 [data-tier="premium"] .profile-page__save-btn {
@@ -262,9 +262,9 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
 [data-tier="black-card"] .desktop-nav__brand,
 [data-tier="black-card"] .desktop-nav__section       { border-color: rgba(180, 143, 60, 0.20); }
 
-[data-tier="black-card"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+[data-tier="black-card"] .app-frame { background: rgba(2, 8, 4, 0.28); }
 @media (min-width: 768px) {
-  [data-tier="black-card"] .app-frame { background: rgba(0, 0, 0, 0.05); }
+  [data-tier="black-card"] .app-frame { background: rgba(2, 8, 4, 0.28); }
 }
 
 [data-tier="black-card"] .profile-page__save-btn {

@@ -12,10 +12,10 @@ import { supabase } from '../lib/supabase'
 import type { MembershipPlan } from '../lib/supabase'
 import './ProfilePage.css'
 
-const DEMO_TIERS: { id: MembershipPlan; label: string; swatch: string; border: string }[] = [
-  { id: 'free',       label: 'Free',       swatch: '#ffffff', border: 'rgba(0,0,0,0.2)'    },
-  { id: 'premium',    label: 'Premium',    swatch: '#dc2626', border: 'transparent'        },
-  { id: 'black-card', label: 'Black Card', swatch: '#d4af37', border: 'transparent'        },
+const DEMO_TIERS: { id: MembershipPlan; label: string }[] = [
+  { id: 'free',       label: 'Free'       },
+  { id: 'premium',    label: 'Premium'    },
+  { id: 'black-card', label: 'Black Card' },
 ]
 
 const DEMO_TIER_KEY = 'hoh_demo_tier'
@@ -420,17 +420,14 @@ export function ProfilePage() {
               Switch the app's look to show customers what each membership tier feels like.
             </p>
             <div className="profile-page__theme-pills">
-              {DEMO_TIERS.map(({ id, label, swatch, border }) => (
+              {DEMO_TIERS.map(({ id, label }) => (
                 <button
                   key={id}
                   type="button"
                   className={`profile-page__theme-pill${demoTier === id ? ' is-active' : ''}`}
                   onClick={() => applyDemoTier(id)}
                 >
-                  <span
-                    className="profile-page__theme-swatch"
-                    style={{ background: swatch, borderColor: border }}
-                  />
+                  <span className={`profile-page__theme-swatch profile-page__theme-swatch--${id}`} />
                   {label}
                 </button>
               ))}

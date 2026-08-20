@@ -53,6 +53,7 @@
   font-weight: 500;
   color: var(--text);
   line-height: 1.15;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
 }
 
 .page-header__title--serif {
@@ -71,6 +72,7 @@
   text-transform: uppercase;
   color: var(--gold);
   margin-bottom: 2px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.70);
 }
 
 @media (min-width: 1024px) {
