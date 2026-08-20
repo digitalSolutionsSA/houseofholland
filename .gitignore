@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Firebase / Android secrets — keep locally, never in repo
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

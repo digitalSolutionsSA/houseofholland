@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Info, Search, X, Mail, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Info, Search, X, Mail, MessageCircle, ChevronDown, ChevronUp, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '../components/shared/PageHeader'
 import { CategoryChips } from '../components/shared/CategoryChips'
-import { ArtistCard } from '../components/artists/ArtistCard'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { openSupportChat, SUPPORT_EMAIL } from '../lib/support'
@@ -61,6 +60,41 @@ const FAQ: FaqItem[] = [
     a: 'Absolutely. Open any artist profile to browse their full portfolio. Tap any photo to view it full-size.',
   },
 ]
+
+function ArtistCircle({ artist }: { artist: Artist }) {
+  const navigate = useNavigate()
+  const initial = (artist.name[0] ?? '?').toUpperCase()
+  const styles = artist.specialties.slice(0, 3)
+
+  return (
+    <button
+      type="button"
+      className="artist-circle"
+      onClick={() => navigate(`/artists/${artist.slug}`)}
+      aria-label={`View ${artist.name}'s profile`}
+    >
+      <div className="artist-circle__avatar">
+        {artist.avatar_url
+          ? <img src={artist.avatar_url} alt={artist.name} />
+          : <span>{initial}</span>
+        }
+      </div>
+      <p className="artist-circle__name">{artist.name}</p>
+      {artist.review_count > 0 && (
+        <div className="artist-circle__rating">
+          <Star size={11} fill="currentColor" strokeWidth={0} />
+          <span>{artist.rating.toFixed(1)}</span>
+          <span className="artist-circle__review-count">({artist.review_count})</span>
+        </div>
+      )}
+      {styles.length > 0 && (
+        <div className="artist-circle__styles">
+          {styles.map(s => <span key={s} className="artist-circle__style">{s}</span>)}
+        </div>
+      )}
+    </button>
+  )
+}
 
 function FaqRow({ item }: { item: FaqItem }) {
   const [open, setOpen] = useState(false)
@@ -152,13 +186,19 @@ export function ArtistsPage() {
 
       <CategoryChips items={STYLE_FILTERS} active={filter} onChange={setFilter} />
 
-      <div className="artists-page__list">
-        {loading && <p style={{ color: 'var(--text-muted)', padding: '24px', textAlign: 'center' }}>Loading…</p>}
+      <div className="artist-circles-grid">
+        {loading && [1, 2, 3, 4].map(i => (
+          <div key={i} className="artist-circle-skeleton">
+            <div className="artist-circle-skeleton__avatar" />
+            <div className="artist-circle-skeleton__name" />
+            <div className="artist-circle-skeleton__sub" />
+          </div>
+        ))}
         {!loading && filtered.length === 0 && (
-          <p style={{ color: 'var(--text-muted)', padding: '24px', textAlign: 'center' }}>No artists found.</p>
+          <p style={{ color: 'var(--text-muted)', padding: '24px', textAlign: 'center', gridColumn: '1/-1' }}>No artists found.</p>
         )}
-        {filtered.map((artist) => (
-          <ArtistCard key={artist.id} artist={artist} />
+        {filtered.map(artist => (
+          <ArtistCircle key={artist.id} artist={artist} />
         ))}
       </div>
 
