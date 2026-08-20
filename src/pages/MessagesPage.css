@@ -230,22 +230,29 @@
   display: flex;
   align-items: stretch;
   position: relative;
-  margin: 5px var(--page-pad);
+  margin: 6px var(--page-pad);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--accent-rgb), 0.18);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid rgba(var(--accent-rgb), 0.40);
+  background: rgba(8, 8, 10, 0.82);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255,255,255,0.04);
   transition: border-color 0.15s, background 0.15s;
 }
 
+[data-tier="premium"]    .messages-convo-card-wrap { background: rgba(20, 6, 12, 0.84); }
+[data-tier="black-card"] .messages-convo-card-wrap { background: rgba(4,  12, 7,  0.84); }
+
 .messages-convo-card-wrap:hover {
-  background: rgba(var(--accent-rgb), 0.07);
-  border-color: rgba(var(--accent-rgb), 0.32);
+  background: rgba(8, 8, 10, 0.90);
+  border-color: rgba(var(--accent-rgb), 0.62);
 }
 
+[data-tier="premium"]    .messages-convo-card-wrap:hover { background: rgba(20, 6, 12, 0.92); }
+[data-tier="black-card"] .messages-convo-card-wrap:hover { background: rgba(4, 12, 7, 0.92); }
+
 .messages-convo-card-wrap--unread {
-  background: rgba(var(--accent-rgb), 0.09);
-  border-color: rgba(var(--accent-rgb), 0.40);
-  border-left: 3px solid var(--gold);
+  border-color: var(--gold);
+  border-left: 3.5px solid var(--gold);
+  box-shadow: 0 2px 18px rgba(0,0,0,0.60), 0 0 0 0 rgba(var(--accent-rgb),0), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .messages-convo-card-wrap .messages-convo-card {
@@ -502,19 +509,24 @@
   gap: 14px;
   padding: 12px 14px;
   margin: 8px var(--page-pad) 4px;
+  box-sizing: border-box;
   width: calc(100% - 2 * var(--page-pad));
-  background: rgba(var(--accent-rgb), 0.07);
-  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: rgba(8, 8, 10, 0.82);
+  border: 1.5px solid rgba(var(--accent-rgb), 0.42);
   border-radius: var(--radius-md);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
   cursor: pointer;
   text-align: left;
   transition: background 0.12s, border-color 0.12s;
 }
 
+[data-tier="premium"]    .broadcast-card { background: rgba(20, 6, 12, 0.84); }
+[data-tier="black-card"] .broadcast-card { background: rgba(4, 12, 7,  0.84); }
+
 .broadcast-card:hover,
 .broadcast-card:active {
-  background: rgba(var(--accent-rgb), 0.12);
-  border-color: rgba(var(--accent-rgb), 0.45);
+  background: rgba(8, 8, 10, 0.92);
+  border-color: rgba(var(--accent-rgb), 0.65);
 }
 
 .broadcast-card__icon {
@@ -608,19 +620,19 @@
 /* Unread highlight — pulses in the active theme's accent colour */
 .broadcast-card--unread {
   border-color: var(--gold);
-  border-left: 3px solid var(--gold);
+  border-left: 4px solid var(--gold);
   animation: broadcast-pulse 2.8s ease-in-out infinite;
 }
 
 @keyframes broadcast-pulse {
-  0%, 100% { background: rgba(var(--accent-rgb), 0.14); box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
-  50%       { background: rgba(var(--accent-rgb), 0.26); box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35); }
+  0%, 100% { box-shadow: 0 2px 14px rgba(0,0,0,0.55), 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  50%       { box-shadow: 0 2px 22px rgba(0,0,0,0.65), 0 0 18px rgba(var(--accent-rgb), 0.50); }
 }
 
 .broadcast-card--unread .broadcast-card__icon {
   border-color: var(--gold);
-  background: rgba(var(--accent-rgb), 0.22);
-  box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.3);
+  background: rgba(var(--accent-rgb), 0.28);
+  box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45);
 }
 
 .broadcast-card--unread .broadcast-card__name {
@@ -633,29 +645,6 @@
   font-weight: 500;
 }
 
-[data-tier="free"] .broadcast-card {
-  background: rgba(0,0,0,0.03);
-  border-bottom-color: rgba(0,0,0,0.12);
-}
-[data-tier="free"] .broadcast-card:hover {
-  background: rgba(0,0,0,0.06);
-}
-[data-tier="free"] .broadcast-card__icon {
-  background: rgba(0,0,0,0.06);
-  border-color: rgba(0,0,0,0.15);
-  color: #333;
-}
-[data-tier="free"] .broadcast-card--unread {
-  background: rgba(0,0,0,0.08);
-  border-bottom-color: #333;
-  animation: broadcast-pulse-free 2.8s ease-in-out infinite;
-}
-@keyframes broadcast-pulse-free {
-  0%, 100% { background: rgba(0,0,0,0.08); }
-  50%       { background: rgba(0,0,0,0.14); }
-}
-[data-tier="free"] .broadcast-card--unread .broadcast-card__name { color: #111; }
-[data-tier="free"] .broadcast-card--unread .broadcast-card__preview { color: #333; }
 
 /* ── Broadcast modal ── */
 .broadcast-modal__overlay {
