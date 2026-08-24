@@ -21,11 +21,15 @@ npm ci
 # committing, but Xcode Cloud only clones raw source, so generate them here.
 npm run build
 
-echo "--- debug: pwd and ios/ contents before cap sync ---"
+echo "--- debug: CI_WORKSPACE=$CI_WORKSPACE ---"
+
+# Re-affirm the directory right before this — something between the first
+# cd and here was landing us in ios/App/ci_scripts instead (npm run build
+# itself still succeeded there since npm walks up looking for package.json,
+# which masked it until now).
+cd "$CI_WORKSPACE"
 pwd
 ls -la ios || echo "ios/ directory missing!"
-npx cap ls || true
-echo "--- end debug ---"
 
 npx cap sync ios
 
