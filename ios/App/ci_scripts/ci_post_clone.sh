@@ -23,14 +23,13 @@ npm run build
 npx cap sync ios
 
 # GoogleService-Info.plist is a real secret (Firebase API keys) and is
-# intentionally gitignored, so it doesn't exist in this clone at all. It
-# must be uploaded as a Secret File environment variable named
-# GOOGLE_SERVICE_INFO_PLIST on the Xcode Cloud workflow (App Store Connect
-# > Xcode Cloud > this workflow > Environment) — Xcode Cloud then exposes
-# its contents as a temp file at $GOOGLE_SERVICE_INFO_PLIST, which we copy
-# into the exact path the Xcode project references.
+# intentionally gitignored, so it doesn't exist in this clone at all.
+# App Store Connect's Xcode Cloud environment variables only accept text
+# (no file upload), so GOOGLE_SERVICE_INFO_PLIST holds the file's contents
+# base64-encoded as a secret text variable — decode it back into the exact
+# path the Xcode project references.
 if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-  cp "$GOOGLE_SERVICE_INFO_PLIST" "$CI_WORKSPACE/ios/App/GoogleService-Info.plist"
+  echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 -d > "$CI_WORKSPACE/ios/App/GoogleService-Info.plist"
 else
-  echo "warning: GOOGLE_SERVICE_INFO_PLIST secret file env var not set — build will fail on Copy GoogleService-Info.plist"
+  echo "warning: GOOGLE_SERVICE_INFO_PLIST env var not set — build will fail on Copy GoogleService-Info.plist"
 fi
