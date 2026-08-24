@@ -42,6 +42,7 @@ const ARTIST_LINKS: NavLink[] = [
   { to: '/admin/portfolio',      label: 'My Portfolio',    icon: Images },
   { to: '/admin/artist-profile', label: 'My Profile',      icon: UserCog },
   { to: '/admin/waivers',        label: 'Waivers',         icon: FileText },
+  { to: '/admin/flash',          label: 'Flash Events',    icon: Zap },
 ]
 
 export function AdminLayout() {

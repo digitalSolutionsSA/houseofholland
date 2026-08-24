@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { CalendarDays, Clock, AlertTriangle, CheckCircle2, ChevronRight, CreditCard, ClipboardList, Users, Bell, TrendingUp, Eye } from 'lucide-react'
+import { CalendarDays, Clock, AlertTriangle, CheckCircle2, ChevronRight, CreditCard, ClipboardList, Users, Bell, TrendingUp, Eye, Zap } from 'lucide-react'
 import { NotificationPanel } from '../components/shared/NotificationPanel'
 import { ArtistReferralCard } from '../components/home/ArtistReferralCard'
 import { MyCustomersSection } from '../components/home/MyCustomersSection'
@@ -55,6 +55,7 @@ export function ArtistHomePage() {
   const [boothRate, setBoothRate] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [reminderSent, setReminderSent] = useState<Set<string>>(new Set())
+  const [flashEvent, setFlashEvent] = useState<{ id: string; title: string; status: string } | null>(null)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -97,6 +98,30 @@ export function ArtistHomePage() {
         // Booth rent
         supabase.from('booth_rent').select('weekly_rate').eq('artist_id', aid).maybeSingle(),
       ])
+
+      // Most relevant flash day for the Quick Access shortcut — a currently
+      // open queue takes priority, otherwise the next upcoming one.
+      const { data: openEvent } = await supabase
+        .from('flash_events')
+        .select('id, title, status')
+        .eq('status', 'open')
+        .order('date')
+        .limit(1)
+        .maybeSingle()
+
+      if (openEvent) {
+        setFlashEvent(openEvent)
+      } else {
+        const { data: upcomingEvent } = await supabase
+          .from('flash_events')
+          .select('id, title, status')
+          .eq('status', 'upcoming')
+          .gte('date', new Date().toISOString().split('T')[0])
+          .order('date')
+          .limit(1)
+          .maybeSingle()
+        setFlashEvent(upcomingEvent ?? null)
+      }
 
       const rows: ApptRow[] = (bookingsRes.data ?? []).map((b: any) => ({
         id: b.id,
@@ -325,6 +350,12 @@ export function ArtistHomePage() {
               <Users size={20} strokeWidth={1.5} />
               <span>Admin Panel</span>
             </Link>
+            {flashEvent && (
+              <Link to={`/admin/flash/${flashEvent.id}/queue`} className="artist-home__quick-item">
+                <Zap size={20} strokeWidth={1.5} />
+                <span>Flash Queue</span>
+              </Link>
+            )}
           </div>
         </section>
 

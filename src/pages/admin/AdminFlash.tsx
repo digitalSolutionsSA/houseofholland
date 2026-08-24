@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Pencil, Trash2, Users, ImagePlus, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Plus, Pencil, Trash2, Users, ImagePlus, X, CalendarDays, Clock, ListOrdered } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 type FlashEvent = {
   id: string
@@ -32,24 +34,11 @@ const EMPTY_FORM: FormState = {
 
 const ACCEPTED = 'image/jpeg,image/png'
 
-function validateResolution(file: File): Promise<string | null> {
-  return new Promise(resolve => {
-    const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      URL.revokeObjectURL(url)
-      if (img.naturalWidth !== 2000 || img.naturalHeight !== 2000) {
-        resolve(`Image must be exactly 2000×2000 px. Yours is ${img.naturalWidth}×${img.naturalHeight} px.`)
-      } else {
-        resolve(null)
-      }
-    }
-    img.onerror = () => { URL.revokeObjectURL(url); resolve('Could not read image file.') }
-    img.src = url
-  })
-}
-
 export function AdminFlash() {
+  const navigate = useNavigate()
+  const { profile } = useAuth()
+  const isManager = profile?.role === 'manager'
+
   const [events, setEvents]             = useState<FlashEvent[]>([])
   const [artists, setArtists]           = useState<Artist[]>([])
   const [guestArtists, setGuestArtists] = useState<GuestArtist[]>([])
@@ -67,7 +56,6 @@ export function AdminFlash() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null)  // object URL or existing URL
   const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null)
   const [coverError, setCoverError]     = useState<string | null>(null)
-  const [coverValidating, setCoverValidating] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function load() {
@@ -126,7 +114,7 @@ export function AdminFlash() {
     setModal('edit')
   }
 
-  async function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -138,16 +126,6 @@ export function AdminFlash() {
     }
 
     setCoverError(null)
-    setCoverValidating(true)
-    const resError = await validateResolution(file)
-    setCoverValidating(false)
-
-    if (resError) {
-      setCoverError(resError)
-      e.target.value = ''
-      return
-    }
-
     setCoverFile(file)
     setCoverPreview(URL.createObjectURL(file))
   }
@@ -165,6 +143,15 @@ export function AdminFlash() {
   }
   function toggleGuest(id: string) {
     setSelectedGuestArtists(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  const allArtistsSelected = artists.length > 0 && selectedArtists.length === artists.length
+  function toggleAllArtists() {
+    setSelectedArtists(allArtistsSelected ? [] : artists.map(a => a.id))
+  }
+  const allGuestsSelected = guestArtists.length > 0 && selectedGuestArtists.length === guestArtists.length
+  function toggleAllGuests() {
+    setSelectedGuestArtists(allGuestsSelected ? [] : guestArtists.map(a => a.id))
   }
 
   async function save() {
@@ -237,77 +224,103 @@ export function AdminFlash() {
     load()
   }
 
-  function artistNames(ids: string[]) {
-    if (!ids.length) return '—'
-    return ids.map(id => artists.find(a => a.id === id)?.name ?? '?').join(', ')
+  function lineupFor(ev: FlashEvent): { id: string; name: string; avatar_url: string | null }[] {
+    const residents = ev.artistIds.map(id => artists.find(a => a.id === id)).filter(Boolean) as Artist[]
+    const guests = ev.guestArtistIds.map(id => guestArtists.find(a => a.id === id)).filter(Boolean) as GuestArtist[]
+    return [...residents, ...guests]
   }
 
   return (
     <div>
       <div className="admin-page__header">
         <h1 className="admin-page__title">Flash Events</h1>
-        <button className="admin-btn admin-btn--primary" onClick={openAdd}>
-          <Plus size={14} style={{ display: 'inline', marginRight: 6 }} />
-          Add Event
-        </button>
+        {isManager && (
+          <button className="admin-btn admin-btn--primary" onClick={openAdd}>
+            <Plus size={14} style={{ display: 'inline', marginRight: 6 }} />
+            Add Event
+          </button>
+        )}
       </div>
 
       {loading ? (
         <p className="admin-empty">Loading…</p>
       ) : events.length === 0 ? (
-        <p className="admin-empty">No flash events yet. Add one above.</p>
+        <p className="admin-empty">{isManager ? 'No flash events yet. Add one above.' : 'No flash events yet.'}</p>
       ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Cover</th>
-              <th>Title</th>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Artists</th>
-              <th>Spots</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.map((ev) => (
-              <tr key={ev.id}>
-                <td style={{ width: 48 }}>
-                  {ev.cover_image_url
-                    ? <img src={ev.cover_image_url} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gold)' }} />
-                    : <div style={{ width: 40, height: 40, borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ImagePlus size={14} style={{ color: 'var(--text-dim)' }} /></div>
-                  }
-                </td>
-                <td>{ev.title}</td>
-                <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                  {new Date(ev.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </td>
-                <td style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                  {ev.start_time.slice(0, 5)} – {ev.end_time.slice(0, 5)}
-                </td>
-                <td style={{ fontSize: '0.85rem' }}>
-                  {ev.artistIds.length > 0 ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <Users size={12} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-                      {artistNames(ev.artistIds)}
-                    </span>
-                  ) : '—'}
-                </td>
-                <td>{ev.max_spots}</td>
-                <td>
-                  <span className={`admin-badge admin-badge--${ev.status}`}>{ev.status}</span>
-                </td>
-                <td>
-                  <div className="admin-actions">
-                    <button className="admin-btn admin-btn--ghost" onClick={() => openEdit(ev)}><Pencil size={13} /></button>
-                    <button className="admin-btn admin-btn--danger" onClick={() => remove(ev.id, ev.title)}><Trash2 size={13} /></button>
+        <div className="flash-events-grid">
+          {events.map((ev) => {
+            const lineup = lineupFor(ev)
+            return (
+              <div key={ev.id} className="flash-event-card">
+                {ev.cover_image_url ? (
+                  <img src={ev.cover_image_url} alt="" className="flash-event-card__cover" />
+                ) : (
+                  <div className="flash-event-card__cover--empty">
+                    <ImagePlus size={22} strokeWidth={1.5} />
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+
+                <div className="flash-event-card__body">
+                  <div className="flash-event-card__top">
+                    <span className="flash-event-card__title">{ev.title}</span>
+                    <span className={`admin-badge admin-badge--${ev.status}`}>{ev.status}</span>
+                  </div>
+
+                  <div className="flash-event-card__meta">
+                    <span className="flash-event-card__meta-item">
+                      <CalendarDays size={13} strokeWidth={1.5} />
+                      {new Date(ev.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <span className="flash-event-card__meta-item">
+                      <Clock size={13} strokeWidth={1.5} />
+                      {ev.start_time.slice(0, 5)} – {ev.end_time.slice(0, 5)}
+                    </span>
+                  </div>
+
+                  {ev.description && (
+                    <p className="flash-event-card__desc">{ev.description}</p>
+                  )}
+
+                  {lineup.length > 0 ? (
+                    <div className="flash-event-card__artists">
+                      {lineup.map(a => (
+                        <span key={a.id} className="flash-event-card__artist-chip">
+                          {a.avatar_url
+                            ? <img src={a.avatar_url} alt="" className="flash-event-card__artist-avatar" />
+                            : <span className="flash-event-card__artist-chip--empty" />
+                          }
+                          {a.name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="flash-event-card__no-artists">
+                      <Users size={12} style={{ display: 'inline', marginRight: 5, verticalAlign: -1 }} />
+                      No artists assigned yet
+                    </p>
+                  )}
+
+                  <div className="flash-event-card__footer">
+                    <span className="flash-event-card__spots"><strong>{ev.max_spots}</strong> spots</span>
+                    <div className="admin-actions">
+                      <button className="admin-btn admin-btn--ghost" onClick={() => navigate(`/admin/flash/${ev.id}/queue`)}>
+                        <ListOrdered size={13} style={{ display: 'inline', marginRight: 5 }} />Queue
+                      </button>
+                      {isManager && (
+                        <>
+                          <button className="admin-btn admin-btn--ghost" onClick={() => openEdit(ev)}>
+                            <Pencil size={13} style={{ display: 'inline', marginRight: 5 }} />Edit
+                          </button>
+                          <button className="admin-btn admin-btn--danger" onClick={() => remove(ev.id, ev.title)}><Trash2 size={13} /></button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       )}
 
       {modal && (
@@ -319,7 +332,7 @@ export function AdminFlash() {
             <div className="admin-modal__field">
               <label className="admin-modal__label">
                 Event Poster
-                <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>JPG or PNG · exactly 2000×2000 px</span>
+                <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>JPG or PNG</span>
               </label>
 
               {coverPreview ? (
@@ -349,16 +362,13 @@ export function AdminFlash() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={coverValidating}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', padding: '24px 16px', borderRadius: 10, border: '2px dashed rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.04)', cursor: 'pointer', color: 'var(--text-muted)', transition: 'border-color 0.15s, background 0.15s' }}
                   onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.6)')}
                   onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.3)')}
                 >
                   <ImagePlus size={28} strokeWidth={1.5} style={{ color: 'var(--gold)', opacity: 0.7 }} />
-                  <span style={{ fontSize: '0.83rem' }}>
-                    {coverValidating ? 'Validating…' : 'Click to upload poster'}
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>JPG / PNG · 2000×2000 px required</span>
+                  <span style={{ fontSize: '0.83rem' }}>Click to upload poster</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>JPG or PNG</span>
                 </button>
               )}
 
@@ -407,7 +417,14 @@ export function AdminFlash() {
             </div>
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Resident Artists</label>
+              <div className="admin-flash__list-label-row">
+                <label className="admin-modal__label" style={{ marginBottom: 0 }}>Resident Artists</label>
+                {artists.length > 0 && (
+                  <button type="button" className="admin-flash__select-all" onClick={toggleAllArtists}>
+                    {allArtistsSelected ? 'Clear all' : 'All artists'}
+                  </button>
+                )}
+              </div>
               {artists.length === 0 ? (
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>No active artists found.</p>
               ) : (
@@ -429,7 +446,12 @@ export function AdminFlash() {
 
             {guestArtists.length > 0 && (
               <div className="admin-modal__field">
-                <label className="admin-modal__label">Guest Artists</label>
+                <div className="admin-flash__list-label-row">
+                  <label className="admin-modal__label" style={{ marginBottom: 0 }}>Guest Artists</label>
+                  <button type="button" className="admin-flash__select-all" onClick={toggleAllGuests}>
+                    {allGuestsSelected ? 'Clear all' : 'All guests'}
+                  </button>
+                </div>
                 <div className="admin-flash__artist-list">
                   {guestArtists.map(a => {
                     const checked = selectedGuestArtists.includes(a.id)
@@ -470,7 +492,7 @@ export function AdminFlash() {
 
             <div className="admin-modal__actions">
               <button className="admin-btn admin-btn--ghost" onClick={() => setModal(null)}>Cancel</button>
-              <button className="admin-btn admin-btn--primary" onClick={save} disabled={saving || coverValidating}>
+              <button className="admin-btn admin-btn--primary" onClick={save} disabled={saving}>
                 {saving ? 'Saving…' : 'Save Event'}
               </button>
             </div>

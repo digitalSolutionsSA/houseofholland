@@ -74,6 +74,7 @@ export function ChatPage() {
   const [sending, setSending] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [attachPreview, setAttachPreview] = useState<{ file: File; url: string } | null>(null)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -254,6 +255,7 @@ export function ChatPage() {
     if (!body && !attachPreview) return
 
     setSending(true)
+    setSendError(null)
     let attachment_url: string | null = null
     let attachment_type: string | null = null
 
@@ -265,13 +267,17 @@ export function ChatPage() {
       const { data: uploaded, error: uploadErr } = await supabase.storage
         .from('message-attachments')
         .upload(path, file, { cacheControl: '3600', upsert: false })
-
-      if (!uploadErr && uploaded) {
-        const { data: urlData } = supabase.storage.from('message-attachments').getPublicUrl(uploaded.path)
-        attachment_url = urlData.publicUrl
-        attachment_type = file.type.startsWith('image/') ? 'image' : 'file'
-      }
       setUploading(false)
+
+      if (uploadErr || !uploaded) {
+        setSendError('Attachment upload failed. Please try again.')
+        setSending(false)
+        return
+      }
+
+      const { data: urlData } = supabase.storage.from('message-attachments').getPublicUrl(uploaded.path)
+      attachment_url = urlData.publicUrl
+      attachment_type = file.type.startsWith('image/') ? 'image' : 'file'
     }
 
     const payload: Record<string, unknown> = {
@@ -289,6 +295,7 @@ export function ChatPage() {
       .single()
 
     if (sendErr) {
+      setSendError('Message failed to send. Please try again.')
       setSending(false)
       return
     }
@@ -403,6 +410,9 @@ export function ChatPage() {
 
       {/* Input bar */}
       <div className="chat-page__input-bar">
+        {sendError && (
+          <p style={{ fontSize: '0.78rem', color: '#ff6b6b', margin: '0 0 8px', padding: '0 4px' }}>{sendError}</p>
+        )}
         {attachPreview && (
           <div className="chat-page__attach-preview">
             {attachPreview.file.type.startsWith('image/')

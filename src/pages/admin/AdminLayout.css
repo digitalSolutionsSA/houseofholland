@@ -1125,6 +1125,7 @@
   .admin-main {
     flex: 1;
     padding: 16px;
+    padding-top: calc(16px + max(env(safe-area-inset-top, 0px), 59px));
     padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 72px);
     overflow-x: hidden;
   }
@@ -1179,7 +1180,7 @@
     border-left: 1px solid var(--border-gold);
     display: flex;
     flex-direction: column;
-    padding: 20px 16px calc(24px + var(--safe-bottom, 0px));
+    padding: calc(20px + max(env(safe-area-inset-top, 0px), 59px)) 16px calc(24px + var(--safe-bottom, 0px));
     gap: 4px;
     animation: drawer-in 0.22s ease;
     overflow-y: auto;
@@ -1232,6 +1233,167 @@
     border-left-color: var(--gold);
     border-bottom-color: transparent;
   }
+}
+
+/* ── Flash event cards (replaces cramped table on mobile) ── */
+.flash-events-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 700px) {
+  .flash-events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+.flash-event-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.flash-event-card__cover {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  display: block;
+}
+
+.flash-event-card__cover--empty {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--accent-rgb), 0.05);
+  color: var(--text-dim);
+}
+
+.flash-event-card__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flash-event-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.flash-event-card__title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.flash-event-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.flash-event-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.flash-event-card__desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.flash-event-card__artists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flash-event-card__artist-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--gold);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  border-radius: 20px;
+  padding: 3px 10px 3px 3px;
+}
+
+.flash-event-card__artist-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.flash-event-card__artist-chip--empty {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.2);
+  flex-shrink: 0;
+}
+
+.flash-event-card__no-artists {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.flash-event-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.flash-event-card__spots {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.flash-event-card__spots strong {
+  color: var(--gold);
+}
+
+/* ── Artist checklist "select all" toggle ── */
+.admin-flash__list-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-flash__select-all {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--gold);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ── Flash artist checkbox list ── */
@@ -1418,6 +1580,21 @@
   [data-tier="free"] .admin-sidebar__link--active {
     border-bottom-color: rgba(0, 0, 0, 0.80);
     border-left-color: transparent;
+  }
+
+  /* The slide-in drawer always has a dark background (unlike the white
+     desktop sidebar), so the free-tier dark-text override above would make
+     these links invisible — keep them gold here instead. */
+  [data-tier="free"] .admin-drawer__nav .admin-sidebar__link {
+    color: var(--gold);
+  }
+  [data-tier="free"] .admin-drawer__nav .admin-sidebar__link:hover {
+    background: rgba(var(--accent-rgb), 0.07);
+    color: var(--gold);
+  }
+  [data-tier="free"] .admin-drawer__nav .admin-sidebar__link--active {
+    color: var(--gold);
+    border-left-color: var(--gold);
   }
 }
 

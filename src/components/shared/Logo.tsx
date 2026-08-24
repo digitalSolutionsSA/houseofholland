@@ -12,6 +12,10 @@ type LogoProps = {
   height?: number
   className?: string
   alt?: string
+  /** Bypass the membership-tier logo lookup — for contexts like the login
+   * screen where no tier is known yet (defaulting to the free tier's black
+   * logo there would be invisible against the dark background). */
+  forceSrc?: string
 }
 
 export function Logo({
@@ -19,9 +23,10 @@ export function Logo({
   height = 140,
   className = '',
   alt = 'House of Holland Tattoo Emporium',
+  forceSrc,
 }: LogoProps) {
   const tier = useDisplayTier()
-  const src = TIER_LOGOS[tier] ?? '/logo-gold.webp'
+  const src = forceSrc ?? TIER_LOGOS[tier] ?? '/logo-gold.webp'
 
   if (variant === 'mark') {
     return (

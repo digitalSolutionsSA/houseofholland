@@ -16,7 +16,7 @@ export default function ArtistsGrid() {
               <span className="artists-grid__gallery-label">RECENT WORK</span>
               <div className="artists-grid__gallery-grid">
                 {artist.artwork.map((src, i) => (
-                  <img key={i} src={src} alt="" />
+                  <img key={i} src={src} alt="" loading="lazy" decoding="async" />
                 ))}
               </div>
             </div>

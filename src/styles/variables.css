@@ -51,30 +51,30 @@
    Free = :root defaults above (gold/dark — no override needed)
    ══════════════════════════════════════════════════════════════════ */
 
-/* ── Premium tier: deep burgundy / crimson ── */
+/* ── Premium tier: deep burgundy background / creamish accent ── */
 [data-tier="premium"] {
-  --accent-rgb:        141, 42, 62;
+  --accent-rgb:        217, 199, 163;
 
-  --bg:                #0F0F12;
-  --bg-elevated:       #1a1015;
-  --bg-card:           #231520;
-  --bg-muted:          #1d1218;
-  --bg-chip:           #2d1a22;
+  --bg:                #120A0C;
+  --bg-elevated:       #1F1013;
+  --bg-card:           #2A1418;
+  --bg-muted:          #241014;
+  --bg-chip:           #331A1F;
 
-  --gold:              #8D2A3E;
-  --gold-bright:       #a83550;
-  --gold-warm:         #6A1226;
-  --gold-deep:         #4a0d1a;
-  --gold-muted:        #7a2235;
-  --gold-gradient:     linear-gradient(90deg, #6A1226 0%, #a83550 45%, #8D2A3E 70%, #6A1226 100%);
-  --gold-gradient-btn: linear-gradient(90deg, #8D2A3E 0%, #a83550 50%, #6A1226 100%);
+  --gold:              #D9C7A3;
+  --gold-bright:       #EDE0C0;
+  --gold-warm:         #C2A876;
+  --gold-deep:         #8F7850;
+  --gold-muted:        #B8A67D;
+  --gold-gradient:     linear-gradient(90deg, #8F7850 0%, #EDE0C0 45%, #D9C7A3 70%, #8F7850 100%);
+  --gold-gradient-btn: linear-gradient(90deg, #D9C7A3 0%, #EDE0C0 50%, #8F7850 100%);
 
   --text:              #F8F1EA;
-  --text-muted:        #b09090;
-  --text-dim:          #7a6060;
-  --text-on-gold:      #F8F1EA;
+  --text-muted:        #b8a99a;
+  --text-dim:          #7a6f60;
+  --text-on-gold:      #1a1015;
 
-  --border-gold:       rgba(141, 42, 62, 0.55);
+  --border-gold:       rgba(217, 199, 163, 0.45);
   --border-subtle:     rgba(248, 241, 234, 0.14);
 }
 

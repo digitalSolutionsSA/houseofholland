@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CheckCircle, XCircle, Clock, Upload, Trophy, Bell, X, Lock, ChevronDown, ChevronUp, Image, UserX, AlertTriangle, FileText, Download, LogIn, ShieldAlert, Flag } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardSpendPoints } from '../../lib/awardPoints'
-import { STUDIO_TZ } from '../../lib/studioTime'
+import { STUDIO_TZ, studioSlotKey } from '../../lib/studioTime'
 
 type Artist = { id: string; name: string; profile_id: string | null }
 
@@ -46,6 +47,9 @@ type Booking = {
   tattoo_design: string | null
   reference_image_urls: string[] | null
   deposit_link: string | null
+  estimated_duration_hours: number | null
+  manual_client_name: string | null
+  manual_client_phone: string | null
   profiles: { full_name: string | null; email: string | null; phone: string | null } | null
 }
 
@@ -111,6 +115,7 @@ function WaiverRow({ label, value }: { label: string; value: string }) {
 
 export function AdminBookings() {
   const { profile } = useAuth()
+  const [searchParams] = useSearchParams()
   const [artists, setArtists]         = useState<Artist[]>([])
   const [artistId, setArtistId]       = useState<string>('')
   const [bookings, setBookings]       = useState<Booking[]>([])
@@ -124,6 +129,7 @@ export function AdminBookings() {
   const [depositPlatform, setDepositPlatform] = useState<'venmo' | 'cashapp'>('venmo')
   const [depositUsername, setDepositUsername] = useState('')
   const [depositAmount, setDepositAmount]     = useState<100 | 150>(100)
+  const [depositDuration, setDepositDuration] = useState<number>(2)
   const [depositSaving, setDepositSaving]     = useState(false)
   const [depositError, setDepositError]       = useState<string | null>(null)
 
@@ -167,12 +173,35 @@ export function AdminBookings() {
   const [flagSaving, setFlagSaving] = useState(false)
   const [flagDetailsFor, setFlagDetailsFor] = useState<CustomerFlag[] | null>(null)
 
+  // Manual booking modal
+  const [manualModal, setManualModal]           = useState(false)
+  const [manualDate, setManualDate]             = useState('')
+  const [manualTime, setManualTime]             = useState<string | null>(null)
+  const [manualDuration, setManualDuration]     = useState<number>(2)
+  const [manualService, setManualService]       = useState('Custom Tattoo')
+  const [manualFirstName, setManualFirstName]   = useState('')
+  const [manualLastName, setManualLastName]     = useState('')
+  const [manualPhone, setManualPhone]           = useState('')
+  const [manualNotes, setManualNotes]           = useState('')
+  const [manualSlots, setManualSlots]           = useState<string[]>([])
+  const [manualSlotsLoading, setManualSlotsLoading] = useState(false)
+  const [manualSaving, setManualSaving]         = useState(false)
+  const [manualError, setManualError]           = useState<string | null>(null)
+
   // Waiver / check-in viewer
   const [waiverModal, setWaiverModal] = useState<{ consent: ConsentFormFull; booking: Booking } | null>(null)
   const [waiverLoading, setWaiverLoading] = useState<string | null>(null)
   const [checkinAlert, setCheckinAlert] = useState<{ name: string; service: string; bookingId: string } | null>(null)
 
   const isSuper = !!profile?.is_super_admin
+
+  // Auto-open manual booking modal when navigated from dashboard
+  useEffect(() => {
+    if (searchParams.get('manual') === '1') {
+      setManualModal(true)
+      setManualError(null)
+    }
+  }, [searchParams])
 
   // New booking alert popup
   const [newAlert, setNewAlert] = useState<{ name: string; service: string; time: string; bookingId: string } | null>(null)
@@ -181,7 +210,7 @@ export function AdminBookings() {
     setLoading(true)
     let q = supabase
       .from('bookings')
-      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, checkin_signature_url, tattoo_location, tattoo_design, reference_image_urls, deposit_link')
+      .select('id, appointment_at, service, notes, status, profile_id, checked_in_at, checkin_signature_url, tattoo_location, tattoo_design, reference_image_urls, deposit_link, estimated_duration_hours, manual_client_name, manual_client_phone')
       .eq('artist_id', aid)
       .gte('appointment_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
       .order('appointment_at')
@@ -501,6 +530,9 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               tattoo_design: b.tattoo_design ?? null,
               reference_image_urls: b.reference_image_urls ?? null,
               deposit_link: b.deposit_link ?? null,
+              estimated_duration_hours: b.estimated_duration_hours ?? null,
+              manual_client_name: b.manual_client_name ?? null,
+              manual_client_phone: b.manual_client_phone ?? null,
               checkin_signature_url: b.checkin_signature_url ?? null,
               profiles: clientProfile,
             }
@@ -624,6 +656,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
             notes: null, status: x.status, profile_id: x.profile_id ?? null,
             checked_in_at: null, checkin_signature_url: null, tattoo_location: null,
             tattoo_design: null, reference_image_urls: null, deposit_link: null,
+            estimated_duration_hours: null, manual_client_name: null, manual_client_phone: null,
             profiles: x.profiles ?? null,
           }))
           if (fresh.length === 0) return prev
@@ -646,6 +679,138 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
     }, 20000)
     return () => clearInterval(interval)
   }, [artistId])
+
+  async function loadManualSlots(dateStr: string) {
+    if (!artistId || !dateStr) return
+    setManualSlotsLoading(true)
+    setManualTime(null)
+
+    const [y, m, d] = dateStr.split('-').map(Number)
+    const dow = new Date(y, m - 1, d).getDay()
+
+    const [schedRes, overRes, bookingsRes] = await Promise.all([
+      supabase.from('artist_schedules').select('*').eq('artist_id', artistId).eq('is_active', true),
+      supabase.from('schedule_date_overrides').select('*').eq('artist_id', artistId).eq('override_date', dateStr),
+      supabase.from('bookings')
+        .select('appointment_at, estimated_duration_hours')
+        .eq('artist_id', artistId)
+        .in('status', ['confirmed', 'accepted'])
+        .gte('appointment_at', new Date(y, m - 1, d, 0, 0, 0).toISOString())
+        .lte('appointment_at', new Date(y, m - 1, d, 23, 59, 59).toISOString()),
+    ])
+
+    const override = (overRes.data ?? [])[0]
+    let sched: { start_time: string; end_time: string; slot_minutes: number } | null = null
+
+    if (override) {
+      if (!override.is_available) { setManualSlots([]); setManualSlotsLoading(false); return }
+      sched = { start_time: String(override.start_time ?? '09:00').slice(0, 5), end_time: String(override.end_time ?? '18:00').slice(0, 5), slot_minutes: override.slot_minutes ?? 60 }
+    } else {
+      const weekly = (schedRes.data ?? []).find((s: any) => s.day_of_week === dow && s.is_active)
+      if (weekly) sched = { start_time: String(weekly.start_time).slice(0, 5), end_time: String(weekly.end_time).slice(0, 5), slot_minutes: weekly.slot_minutes ?? 60 }
+    }
+
+    // Even if artist has no schedule set, allow manual booking with 30-min slots 8am–8pm
+    if (!sched) sched = { start_time: '08:00', end_time: '20:00', slot_minutes: 30 }
+
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const [sh, sm] = sched.start_time.split(':').map(Number)
+    const [eh, em] = sched.end_time.split(':').map(Number)
+    const startMins = sh * 60 + sm
+    const endMins   = eh * 60 + em
+
+    const bookedRanges = (bookingsRes.data ?? []).map((b: any) => {
+      const key = studioSlotKey(b.appointment_at)
+      const [hh, mm] = key.split(':').map(Number)
+      return { startMins: hh * 60 + mm, durationMins: b.estimated_duration_hours ? Math.round(b.estimated_duration_hours * 60) : sched!.slot_minutes }
+    })
+
+    const slots: string[] = []
+    for (let mins = startMins; mins + sched.slot_minutes <= endMins; mins += sched.slot_minutes) {
+      const blocked = bookedRanges.some((r: any) => mins >= r.startMins && mins < r.startMins + r.durationMins)
+      if (!blocked) slots.push(`${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`)
+    }
+
+    setManualSlots(slots)
+    setManualSlotsLoading(false)
+  }
+
+  function studioLocalToUTC(dateStr: string, timeStr: string): string {
+    const [y, m, d] = dateStr.split('-').map(Number)
+    const [h, min] = timeStr.split(':').map(Number)
+    for (const offsetH of [4, 5]) {
+      const utcDate = new Date(Date.UTC(y, m - 1, d, h + offsetH, min, 0))
+      const check = new Intl.DateTimeFormat('en-CA', { timeZone: STUDIO_TZ }).format(utcDate)
+      if (check === dateStr) return utcDate.toISOString()
+    }
+    return new Date(Date.UTC(y, m - 1, d, h + 4, min, 0)).toISOString()
+  }
+
+  async function submitManualBooking() {
+    if (!artistId || !manualDate || !manualTime) { setManualError('Please select a date and time.'); return }
+    const firstName = manualFirstName.trim()
+    const lastName  = manualLastName.trim()
+    if (!firstName || !lastName) { setManualError('Please enter the client\'s first and last name.'); return }
+    setManualSaving(true)
+    setManualError(null)
+
+    const appointmentAt = studioLocalToUTC(manualDate, manualTime)
+
+    // Guard against double-booking: the slot picker snapshot may be stale if
+    // another booking was accepted/confirmed while this modal was open.
+    const newStart = new Date(appointmentAt).getTime()
+    const newEnd = newStart + manualDuration * 3600_000
+    const { data: existing } = await supabase
+      .from('bookings')
+      .select('id, appointment_at, estimated_duration_hours, service, profiles(full_name), manual_client_name')
+      .eq('artist_id', artistId)
+      .in('status', ['accepted', 'confirmed'])
+
+    const conflict = (existing ?? []).find((b: any) => {
+      const existStart = new Date(b.appointment_at).getTime()
+      const existEnd = existStart + (b.estimated_duration_hours ?? 1) * 3600_000
+      return newStart < existEnd && existStart < newEnd
+    })
+
+    if (conflict) {
+      const conflictLabel = new Date((conflict as any).appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      const conflictClient = (conflict as any).manual_client_name ?? (conflict as any).profiles?.full_name ?? 'another client'
+      setManualError(`This slot was just taken by ${conflictClient} at ${conflictLabel}. Please pick a different time.`)
+      setManualSaving(false)
+      return
+    }
+
+    const { error } = await supabase.from('bookings').insert({
+      artist_id: artistId,
+      profile_id: null,
+      appointment_at: appointmentAt,
+      service: manualService,
+      status: 'confirmed',
+      estimated_duration_hours: manualDuration,
+      manual_client_name: `${firstName} ${lastName}`,
+      manual_client_phone: manualPhone.trim() || null,
+      notes: manualNotes.trim() || null,
+    })
+
+    if (error) { setManualError(error.message); setManualSaving(false); return }
+
+    setManualModal(false)
+    setManualDate('')
+    setManualTime(null)
+    setManualDuration(2)
+    setManualService('Custom Tattoo')
+    setManualFirstName('')
+    setManualLastName('')
+    setManualPhone('')
+    setManualNotes('')
+    setManualSlots([])
+    setManualSaving(false)
+
+    // Refresh list if showing confirmed or all
+    if (filter === 'confirmed' || filter === 'all') loadBookings(artistId)
+  }
 
   async function rejectBooking(id: string) {
     setActing(id)
@@ -680,8 +845,36 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
 
     setDepositSaving(true)
     setDepositError(null)
+
+    // Guard against double-booking: another pending request for an overlapping
+    // slot may already have been accepted/confirmed while this one sat pending.
+    const newStart = new Date(depositModal.appointment_at).getTime()
+    const newEnd = newStart + depositDuration * 3600_000
+    const { data: existing } = await supabase
+      .from('bookings')
+      .select('id, appointment_at, estimated_duration_hours, service, profiles(full_name)')
+      .eq('artist_id', artistId)
+      .in('status', ['accepted', 'confirmed'])
+      .neq('id', depositModal.id)
+
+    const conflict = (existing ?? []).find((b: any) => {
+      const existStart = new Date(b.appointment_at).getTime()
+      const existEnd = existStart + (b.estimated_duration_hours ?? 1) * 3600_000
+      return newStart < existEnd && existStart < newEnd
+    })
+
+    if (conflict) {
+      const conflictLabel = new Date((conflict as any).appointment_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      })
+      const conflictClient = (conflict as any).profiles?.full_name ?? 'another client'
+      setDepositError(`This overlaps an already-accepted booking with ${conflictClient} at ${conflictLabel}. Decline one before accepting the other.`)
+      setDepositSaving(false)
+      return
+    }
+
     const { error } = await supabase.from('bookings')
-      .update({ status: 'accepted', deposit_link: depositUrl })
+      .update({ status: 'accepted', deposit_link: depositUrl, estimated_duration_hours: depositDuration })
       .eq('id', depositModal.id)
     if (error) { setDepositError(error.message); setDepositSaving(false); return }
     if (depositModal.profile_id) {
@@ -701,6 +894,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
     setDepositModal(null)
     setDepositUsername('')
     setDepositAmount(100)
+    setDepositDuration(2)
     setDepositSaving(false)
   }
 
@@ -885,7 +1079,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               </button>
               <button className="admin-btn admin-btn--primary" onClick={() => {
                 const b = bookings.find(x => x.id === newAlert.bookingId)
-                setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, checkin_signature_url: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
+                setDepositModal(b ?? { id: newAlert.bookingId, appointment_at: '', service: newAlert.service, notes: null, status: 'pending', profile_id: null, checked_in_at: null, checkin_signature_url: null, tattoo_location: null, tattoo_design: null, reference_image_urls: null, deposit_link: null, estimated_duration_hours: null, manual_client_name: null, manual_client_phone: null, profiles: { full_name: newAlert.name, email: null, phone: null } })
                 setDepositUsername('')
                 setDepositError(null)
                 setNewAlert(null)
@@ -921,6 +1115,13 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
             {f === 'all' ? 'All Upcoming' : f === 'past' ? 'Past' : STATUS_LABEL[f]}
           </button>
         ))}
+        <button
+          className="admin-btn admin-btn--ghost"
+          onClick={() => { setManualModal(true); setManualError(null) }}
+          style={{ marginLeft: 'auto', borderColor: 'var(--gold)', color: 'var(--gold)' }}
+        >
+          + Manual Booking
+        </button>
       </div>
 
       {actionError && (
@@ -989,8 +1190,11 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               <div key={b.id} className={`admin-booking-card admin-booking-card--${b.status}`}>
                 <div className="admin-booking-card__top">
                   <div>
-                    <div className="admin-booking-card__name">{client?.full_name ?? 'Unknown client'}</div>
-                    <div className="admin-booking-card__email">{client?.email}</div>
+                    <div className="admin-booking-card__name">
+                      {client?.full_name ?? b.manual_client_name ?? 'Unknown client'}
+                      {b.manual_client_name && <span style={{ marginLeft: 6, fontSize: '0.68rem', fontWeight: 600, color: 'var(--gold)', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 4, padding: '1px 6px' }}>Walk-in</span>}
+                    </div>
+                    <div className="admin-booking-card__email">{client?.email ?? b.manual_client_phone}</div>
                     {client?.phone && <div className="admin-booking-card__email">{client.phone}</div>}
                   </div>
                   <span className={`admin-badge admin-badge--${b.status === 'confirmed' ? 'active' : b.status === 'accepted' ? 'upcoming' : b.status === 'pending' ? 'upcoming' : 'inactive'}`}
@@ -1004,6 +1208,18 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   {fmt(b.appointment_at)}
                 </div>
                 <div className="admin-booking-card__service">{b.service}</div>
+                {b.estimated_duration_hours != null && (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--gold)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Clock size={11} strokeWidth={1.5} />
+                    {b.estimated_duration_hours < 1
+                      ? '30 min session'
+                      : b.estimated_duration_hours === 1
+                      ? '1 hr session'
+                      : Number.isInteger(b.estimated_duration_hours)
+                      ? `${b.estimated_duration_hours} hr session`
+                      : `${Math.floor(b.estimated_duration_hours)} hr 30 min session`}
+                  </div>
+                )}
                 {b.notes && <div className="admin-booking-card__notes">{b.notes}</div>}
 
                 {/* Reference images */}
@@ -1159,6 +1375,155 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* ── Manual Booking modal ── */}
+      {manualModal && (
+        <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && setManualModal(false)}>
+          <div className="admin-modal" style={{ maxWidth: 440 }}>
+            <h2 className="admin-modal__title">Manual Booking</h2>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 18 }}>
+              Book a walk-in or phone client directly onto your schedule.
+            </p>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Date *</label>
+              <input
+                type="date"
+                className="admin-modal__input"
+                value={manualDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={e => { setManualDate(e.target.value); loadManualSlots(e.target.value) }}
+                style={{ marginBottom: 12 }}
+              />
+            </div>
+
+            {manualDate && (
+              <div className="admin-modal__field">
+                <label className="admin-modal__label">Time *</label>
+                {manualSlotsLoading ? (
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Loading available slots…</p>
+                ) : manualSlots.length === 0 ? (
+                  <p style={{ fontSize: '0.82rem', color: '#f87171' }}>No available slots on this day.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                    {manualSlots.map(slot => {
+                      const [h, m] = slot.split(':').map(Number)
+                      const ampm = h < 12 ? 'AM' : 'PM'
+                      const h12 = h % 12 || 12
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => setManualTime(slot)}
+                          style={{
+                            padding: '7px 12px', borderRadius: 8, fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                            border: `1px solid ${manualTime === slot ? 'var(--gold)' : 'var(--border-subtle)'}`,
+                            background: manualTime === slot ? 'rgba(212,175,55,0.12)' : 'transparent',
+                            color: manualTime === slot ? 'var(--gold)' : 'var(--text-muted)',
+                          }}
+                        >
+                          {h12}:{String(m).padStart(2, '0')} {ampm}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Session duration *</label>
+              <select
+                className="admin-modal__select"
+                value={manualDuration}
+                onChange={e => setManualDuration(Number(e.target.value))}
+                style={{ marginBottom: 12 }}
+              >
+                {[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8].map(h => (
+                  <option key={h} value={h}>
+                    {h < 1 ? '30 minutes' : h === 1 ? '1 hour' : Number.isInteger(h) ? `${h} hours` : `${Math.floor(h)} hr 30 min`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Service</label>
+              <select
+                className="admin-modal__select"
+                value={manualService}
+                onChange={e => setManualService(e.target.value)}
+                style={{ marginBottom: 12 }}
+              >
+                {['Custom Tattoo', 'Flash Tattoo', 'Touch-up / Rework', 'Cover-up', 'Consultation'].map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+              <div className="admin-modal__field" style={{ margin: 0 }}>
+                <label className="admin-modal__label">First name *</label>
+                <input
+                  className="admin-modal__input"
+                  value={manualFirstName}
+                  onChange={e => setManualFirstName(e.target.value)}
+                  placeholder="Jane"
+                />
+              </div>
+              <div className="admin-modal__field" style={{ margin: 0 }}>
+                <label className="admin-modal__label">Last name *</label>
+                <input
+                  className="admin-modal__input"
+                  value={manualLastName}
+                  onChange={e => setManualLastName(e.target.value)}
+                  placeholder="Smith"
+                />
+              </div>
+            </div>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Phone number</label>
+              <input
+                className="admin-modal__input"
+                type="tel"
+                value={manualPhone}
+                onChange={e => setManualPhone(e.target.value)}
+                placeholder="(555) 000-0000"
+                style={{ marginBottom: 12 }}
+              />
+            </div>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Notes</label>
+              <textarea
+                className="admin-modal__input"
+                value={manualNotes}
+                onChange={e => setManualNotes(e.target.value)}
+                placeholder="Tattoo idea, placement, anything to remember…"
+                rows={3}
+                style={{ resize: 'vertical', marginBottom: 16 }}
+              />
+            </div>
+
+            {manualError && (
+              <p style={{ color: '#f87171', fontSize: '0.82rem', marginBottom: 12 }}>{manualError}</p>
+            )}
+
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" onClick={() => setManualModal(false)}>Cancel</button>
+              <button
+                className="admin-btn admin-btn--primary"
+                onClick={submitManualBooking}
+                disabled={manualSaving}
+              >
+                <Lock size={13} style={{ display: 'inline', marginRight: 5 }} />
+                {manualSaving ? 'Booking…' : 'Lock in Appointment'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1381,6 +1746,22 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">Estimated session duration *</label>
+              <select
+                className="admin-modal__select"
+                value={depositDuration}
+                onChange={e => setDepositDuration(Number(e.target.value))}
+                style={{ marginBottom: 16 }}
+              >
+                {[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 7, 8].map(h => (
+                  <option key={h} value={h}>
+                    {h < 1 ? '30 minutes' : h === 1 ? '1 hour' : Number.isInteger(h) ? `${h} hours` : `${Math.floor(h)} hr 30 min`}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="admin-modal__field">

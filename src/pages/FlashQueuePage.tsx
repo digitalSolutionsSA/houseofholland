@@ -21,10 +21,13 @@ type FlashEvent = {
 
 type ArtistChip = { id: string; name: string; avatar_url: string | null }
 
+type ReservationStatus = 'waiting' | 'claimed' | 'completed'
+
 type Reservation = {
   id: string
   position: number | null
   reserved_at: string
+  status: ReservationStatus
 }
 
 function daysUntilDate(dateStr: string): number {
@@ -43,6 +46,7 @@ export function FlashQueuePage() {
   const [artists, setArtists] = useState<ArtistChip[]>([])
   const [reservation, setReservation] = useState<Reservation | null>(null)
   const [queueSize, setQueueSize] = useState(0)
+  const [aheadCount, setAheadCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [acting, setActing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,21 +77,30 @@ export function FlashQueuePage() {
 
     setArtists([...residentArtists, ...guestArtistList])
 
-    const { count } = await supabase
+    // Every reservation ever made for this event counts toward "spots taken"
+    // (waiting + being served + already done), but "people ahead of me" only
+    // counts those still actually waiting.
+    const { data: all } = await supabase
       .from('flash_reservations')
-      .select('id', { count: 'exact', head: true })
+      .select('id, position, status')
       .eq('flash_event_id', eventId)
 
-    setQueueSize(count ?? 0)
+    const allRows = all ?? []
+    setQueueSize(allRows.length)
 
     if (profile?.id) {
       const { data: res } = await supabase
         .from('flash_reservations')
-        .select('id, position, reserved_at')
+        .select('id, position, reserved_at, status')
         .eq('flash_event_id', eventId)
         .eq('profile_id', profile.id)
-        .single()
+        .maybeSingle()
       setReservation(res ?? null)
+
+      if (res && res.position !== null) {
+        const ahead = allRows.filter(r => r.status === 'waiting' && (r.position ?? 0) < res.position!).length
+        setAheadCount(ahead)
+      }
     }
 
     setLoading(false)
@@ -95,13 +108,27 @@ export function FlashQueuePage() {
 
   useEffect(() => { load() }, [eventId, profile?.id])
 
+  // Keep the queue position live: when someone ahead leaves (or the DB
+  // renumbers everyone after a departure), or someone new joins, reload so
+  // this user's displayed position and the total count stay accurate.
+  useEffect(() => {
+    if (!eventId) return
+    const channel = supabase
+      .channel(`flash-queue-${eventId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'flash_reservations', filter: `flash_event_id=eq.${eventId}` }, () => load())
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [eventId, profile?.id])
+
   async function joinQueue() {
     if (!event || !profile) return
     setActing(true); setError(null)
+    // position is assigned atomically by a DB trigger (assign_flash_queue_position) —
+    // never computed client-side, so concurrent joins can't collide on the same spot.
     const { data, error: err } = await supabase
       .from('flash_reservations')
-      .insert({ flash_event_id: event.id, profile_id: profile.id, position: queueSize + 1 })
-      .select('id, position, reserved_at')
+      .insert({ flash_event_id: event.id, profile_id: profile.id })
+      .select('id, position, reserved_at, status')
       .single()
     if (err) {
       setError(err.message)
@@ -312,16 +339,36 @@ export function FlashQueuePage() {
             </p>
           )}
 
-          {event.status === 'open' && reservation && (
+          {event.status === 'open' && reservation && reservation.status === 'claimed' && (
+            <div className="flash-queue-page__number-block">
+              <p className="flash-queue-page__number">You're up!</p>
+              <p className="flash-queue-page__number-label">An artist is ready for you now</p>
+            </div>
+          )}
+
+          {event.status === 'open' && reservation && reservation.status === 'completed' && (
+            <div className="flash-queue-page__number-block">
+              <p className="flash-queue-page__number">All done!</p>
+              <p className="flash-queue-page__number-label">Hope you love the piece</p>
+            </div>
+          )}
+
+          {event.status === 'open' && reservation && reservation.status === 'waiting' && (
             <>
               <div className="flash-queue-page__number-block">
-                <p className="flash-queue-page__number">#{reservation.position ?? queueSize}</p>
-                <p className="flash-queue-page__number-label">Your Queue Position</p>
+                <p className="flash-queue-page__number">{aheadCount}</p>
+                <p className="flash-queue-page__number-label">
+                  {aheadCount === 0 ? "You're next!" : `${aheadCount === 1 ? 'person' : 'people'} ahead of you`}
+                </p>
               </div>
 
               <div className="flash-queue-page__notice">
                 <Bell size={14} strokeWidth={1.5} />
-                <span>You'll be notified an hour before it's your turn. Show up on time — spots pass to the next person if you're late.</span>
+                <span>
+                  {aheadCount <= 5
+                    ? "You're close! We'll notify you every time your spot moves up — get to the shop soon."
+                    : "We'll notify you as your turn gets close. Show up on time — spots pass to the next person if you're late."}
+                </span>
               </div>
 
               {error && <p className="flash-queue-page__error">{error}</p>}

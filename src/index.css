@@ -16,6 +16,11 @@ body,
   height: 100%;
 }
 
+html {
+  overflow-x: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-sans);
   background: #000000;
@@ -23,8 +28,33 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.45;
-  /* NOTE: overflow-x:hidden on body breaks position:fixed on Android WebView.
-     Horizontal overflow is handled by .app-main instead. */
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-y;
+}
+
+/* Tier marble + dark tint painted directly on body's own background instead
+   of a position:fixed child div — WKWebView can clip fixed descendants
+   against an overflow-hidden ancestor (like body's own overflow-x:hidden),
+   leaving a gap under the notch/status bar. body's background paints the
+   full root box and can't be clipped that way. */
+html[data-tier="free"] body {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.52)),
+    url('/free_tier.png') center / cover no-repeat,
+    #000000 !important;
+}
+html[data-tier="premium"] body {
+  background:
+    linear-gradient(rgba(10, 4, 8, 0.58), rgba(10, 4, 8, 0.58)),
+    url('/premium_tier.png') center / cover no-repeat,
+    #000000 !important;
+}
+html[data-tier="black-card"] body {
+  background:
+    linear-gradient(rgba(3, 10, 8, 0.55), rgba(3, 10, 8, 0.55)),
+    url('/NAVBAR BANNERS/black_card.png') center / cover no-repeat,
+    #000000 !important;
 }
 
 button,
@@ -61,24 +91,6 @@ ol {
   40%, 60% { transform: translateX(110%); }
 }
 
-/* ── Tier banner backgrounds on the fixed marble layer ── */
-/* background-attachment:fixed is broken on Android WebView, so we put the
-   image on .app-shell__marble which is already position:fixed; inset:0 */
-html[data-tier="free"]        .app-shell__marble { background-image: url('/free_tier.png');                  background-size: cover; background-position: center; }
-html[data-tier="premium"]    .app-shell__marble { background-image: url('/premium_tier.png');              background-size: cover; background-position: center; }
-html[data-tier="black-card"] .app-shell__marble { background-image: url('/NAVBAR BANNERS/black_card.png'); background-size: cover; background-position: center; }
-
-/* Dark overlay on the marble layer so UI elements stay readable */
-.app-shell__marble::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.52);
-  pointer-events: none;
-}
-html[data-tier="premium"]    .app-shell__marble::after { background: rgba(10, 4, 8,  0.58); }
-html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10, 8, 0.55); }
-
 /* ── App shell ── */
 .app-shell {
   min-height: 100%;
@@ -95,7 +107,11 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
   opacity: 1;
 }
 
-/* ── App frame: mobile first ── */
+/* ── App frame: mobile first ──
+   padding-top (not the parent .app-shell's) so this element's own dark
+   tint background extends into its padding-box and covers the safe-area/
+   notch strip too — putting the padding on the transparent parent left a
+   visible seam where only the flatter body tint showed through. */
 .app-frame {
   width: 100%;
   min-height: 100dvh;
@@ -104,6 +120,13 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
   z-index: 1;
   display: flex;
   flex-direction: column;
+  /* max() with a hardcoded floor, not just env() alone: native safe-area
+     reporting has proven unreliable across native-side WKWebView tweaks
+     (it can silently report 0 depending on how the webview/scroll view is
+     configured), which would let content sit directly under the notch/
+     Dynamic Island again. 59px covers every current iPhone's status-bar
+     height (Dynamic Island included) even if env() misreports. */
+  padding-top: max(env(safe-area-inset-top, 0px), 59px);
 }
 
 .app-main {
@@ -219,20 +242,20 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
 /* ── Premium tier ── */
 
 [data-tier="premium"] .bottom-nav            { background: #0F0F12; }
-[data-tier="premium"] .bottom-nav__item        { color: rgba(141, 42, 62, 0.55); }
-[data-tier="premium"] .bottom-nav__item--active { color: #8D2A3E; }
-[data-tier="premium"] .bottom-nav__indicator    { background: #8D2A3E; }
+[data-tier="premium"] .bottom-nav__item        { color: rgba(217, 199, 163, 0.55); }
+[data-tier="premium"] .bottom-nav__item--active { color: #D9C7A3; }
+[data-tier="premium"] .bottom-nav__indicator    { background: #D9C7A3; }
 
 [data-tier="premium"] .desktop-nav {
   background: #0F0F12;
-  border-right-color: rgba(141, 42, 62, 0.20);
+  border-right-color: rgba(217, 199, 163, 0.20);
 }
-[data-tier="premium"] .desktop-nav__section-label { color: rgba(141, 42, 62, 0.55); }
+[data-tier="premium"] .desktop-nav__section-label { color: rgba(217, 199, 163, 0.55); }
 [data-tier="premium"] .desktop-nav__link          { color: rgba(248, 241, 234, 0.55); }
-[data-tier="premium"] .desktop-nav__link:hover    { background: rgba(141,42,62,0.12); color: #F8F1EA; }
-[data-tier="premium"] .desktop-nav__link--active  { background: rgba(141,42,62,0.20); color: #F8F1EA; }
+[data-tier="premium"] .desktop-nav__link:hover    { background: rgba(217,199,163,0.12); color: #F8F1EA; }
+[data-tier="premium"] .desktop-nav__link--active  { background: rgba(217,199,163,0.20); color: #F8F1EA; }
 [data-tier="premium"] .desktop-nav__brand,
-[data-tier="premium"] .desktop-nav__section       { border-color: rgba(141, 42, 62, 0.20); }
+[data-tier="premium"] .desktop-nav__section       { border-color: rgba(217, 199, 163, 0.20); }
 
 [data-tier="premium"] .app-frame { background: rgba(8, 2, 5, 0.28); }
 @media (min-width: 768px) {
@@ -240,8 +263,8 @@ html[data-tier="black-card"] .app-shell__marble::after { background: rgba(3,  10
 }
 
 [data-tier="premium"] .profile-page__save-btn {
-  background: linear-gradient(135deg, #6A1226 0%, #a83550 50%, #8D2A3E 100%);
-  color: #F8F1EA;
+  background: linear-gradient(135deg, #8F7850 0%, #EDE0C0 50%, #D9C7A3 100%);
+  color: #1a1015;
 }
 
 /* ── Black Card tier ── */

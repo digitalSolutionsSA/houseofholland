@@ -35,7 +35,7 @@ export function OverviewPage() {
       <BrandBackground />
       <div className="overview-page__content">
         <header className="overview-page__brand">
-          <Logo variant="full" height={168} />
+          <Logo variant="full" height={168} forceSrc="/logo-gold.webp" />
         </header>
 
         <section className="overview-page__intro">

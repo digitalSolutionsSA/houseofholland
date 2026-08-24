@@ -1,14 +1,32 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseMessaging
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        FirebaseApp.configure()
+
+        UNUserNotificationCenter.current().delegate = self
+
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in }
+        application.registerForRemoteNotifications()
+
         return true
+    }
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // Forward APNs token to Firebase so it can exchange it for an FCM token.
+        // The @capacitor-community/fcm plugin owns MessagingDelegate and will
+        // surface the resulting FCM token to JavaScript via FCM.getToken().
+        Messaging.messaging().apnsToken = deviceToken
+        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
+        print("✅ APNs token forwarded to Firebase")
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

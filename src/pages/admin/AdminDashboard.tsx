@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { MessageCircle, Mail, LifeBuoy } from 'lucide-react'
+import { MessageCircle, Mail, LifeBuoy, CalendarPlus, CalendarCheck, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -12,6 +12,7 @@ export function AdminDashboard() {
   const [stats, setStats] = useState({ artists: 0, merch: 0, flash: 0, bookings: 0 })
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState('')
+  const [flashEvent, setFlashEvent] = useState<{ id: string; title: string } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -27,6 +28,30 @@ export function AdminDashboard() {
         flash: f.count ?? 0,
         bookings: b.count ?? 0,
       })
+
+      // Most relevant flash day for the Quick Actions shortcut — a currently
+      // open queue takes priority, otherwise the next upcoming one.
+      const { data: openEvent } = await supabase
+        .from('flash_events')
+        .select('id, title')
+        .eq('status', 'open')
+        .order('date')
+        .limit(1)
+        .maybeSingle()
+
+      if (openEvent) {
+        setFlashEvent(openEvent)
+      } else {
+        const { data: upcomingEvent } = await supabase
+          .from('flash_events')
+          .select('id, title')
+          .eq('status', 'upcoming')
+          .gte('date', new Date().toISOString().split('T')[0])
+          .order('date')
+          .limit(1)
+          .maybeSingle()
+        setFlashEvent(upcomingEvent ?? null)
+      }
     }
     load()
   }, [])
@@ -69,9 +94,35 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: 32 }}>
-        Use the sidebar to manage artists, merch, and flash events.
-      </p>
+      {/* Quick Actions */}
+      <div style={{ marginBottom: 32 }}>
+        <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Quick Actions</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 10 }}>
+          <button
+            onClick={() => navigate('/admin/bookings?manual=1')}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 12px', borderRadius: 12, border: '1px solid var(--border-gold)', background: 'rgba(212,175,55,0.06)', color: 'var(--gold)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}
+          >
+            <CalendarPlus size={22} strokeWidth={1.5} />
+            Manual Booking
+          </button>
+          <button
+            onClick={() => navigate('/admin/bookings')}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 12px', borderRadius: 12, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}
+          >
+            <CalendarCheck size={22} strokeWidth={1.5} />
+            View Appointments
+          </button>
+          {flashEvent && (
+            <button
+              onClick={() => navigate(`/admin/flash/${flashEvent.id}/queue`)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 12px', borderRadius: 12, border: '1px solid var(--border-subtle)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', textAlign: 'center' }}
+            >
+              <Zap size={22} strokeWidth={1.5} />
+              Flash Queue
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Contact Support card */}
       <div className="dash-support">

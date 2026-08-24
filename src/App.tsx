@@ -37,6 +37,7 @@ const AdminPortfolio      = lazy(() => import('./pages/admin/AdminPortfolio').th
 const AdminArtists        = lazy(() => import('./pages/admin/AdminArtists').then(m        => ({ default: m.AdminArtists })))
 const AdminMerch          = lazy(() => import('./pages/admin/AdminMerch').then(m          => ({ default: m.AdminMerch })))
 const AdminFlash          = lazy(() => import('./pages/admin/AdminFlash').then(m          => ({ default: m.AdminFlash })))
+const AdminFlashQueue     = lazy(() => import('./pages/admin/AdminFlashQueue').then(m     => ({ default: m.AdminFlashQueue })))
 const AdminGuestArtists   = lazy(() => import('./pages/admin/AdminGuestArtists').then(m   => ({ default: m.AdminGuestArtists })))
 const AdminNotifications  = lazy(() => import('./pages/admin/AdminNotifications').then(m  => ({ default: m.AdminNotifications })))
 const AdminRent           = lazy(() => import('./pages/admin/AdminRent').then(m           => ({ default: m.AdminRent })))
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="artists"         element={<AdminArtists />} />
             <Route path="merch"           element={<AdminMerch />} />
             <Route path="flash"           element={<AdminFlash />} />
+            <Route path="flash/:eventId/queue" element={<AdminFlashQueue />} />
             <Route path="guest-artists"   element={<AdminGuestArtists />} />
             <Route path="notifications"   element={<AdminNotifications />} />
             <Route path="rent"            element={<AdminRent />} />

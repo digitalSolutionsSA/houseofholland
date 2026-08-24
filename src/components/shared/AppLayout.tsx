@@ -23,8 +23,14 @@ export function AppLayout() {
 
   // Apply colour theme to <html> so all CSS [data-tier] selectors work.
   // Staff can override via the demo picker (stored in localStorage).
+  // Logged-out visitors (Overview/Login) have no profile yet, but still
+  // need a tier set — otherwise every [data-tier="..."] rule (including the
+  // marble body background) never matches and the page stays plain black.
   useEffect(() => {
-    if (!profile) return
+    if (!profile) {
+      document.documentElement.dataset.tier = 'free'
+      return
+    }
     const isStaff = profile.role === 'artist' || profile.role === 'manager'
     if (isStaff) {
       const saved = (localStorage.getItem('hoh_demo_tier') ?? 'black-card')
@@ -41,7 +47,7 @@ export function AppLayout() {
   return (
     <div className="app-shell">
       <CustomerViewBanner />
-      <BrandBackground className="app-shell__marble" vignette />
+      <BrandBackground className="app-shell__marble" />
       <div className={`app-frame ${isAuth ? 'app-frame--auth' : ''}`}>
         {showDesktopNav && <DesktopNav />}
         <div className="app-main">

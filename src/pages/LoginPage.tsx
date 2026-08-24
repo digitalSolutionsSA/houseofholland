@@ -70,7 +70,7 @@ export function LoginPage() {
       <BrandBackground />
       <div className="login-page__content">
         <header className="login-page__brand">
-          <Logo variant="full" height={130} />
+          <Logo variant="full" height={130} forceSrc="/logo-gold.webp" />
         </header>
 
         <div className="login-page__ornament" aria-hidden="true">

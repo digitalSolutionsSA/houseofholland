@@ -28,7 +28,9 @@ function getDaysInMonth(year: number, month: number) {
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-function generateSlots(schedule: Schedule, bookedTimes: string[]): string[] {
+type BookedRange = { startMins: number; durationMins: number }
+
+function generateSlots(schedule: Schedule, bookedRanges: BookedRange[]): string[] {
   const [sh, sm] = schedule.start_time.split(':').map(Number)
   const [eh, em] = schedule.end_time.split(':').map(Number)
   const startMins = sh * 60 + sm
@@ -38,7 +40,8 @@ function generateSlots(schedule: Schedule, bookedTimes: string[]): string[] {
     const hh = Math.floor(m / 60)
     const mm = m % 60
     const label = `${pad(hh)}:${pad(mm)}`
-    if (!bookedTimes.includes(label)) slots.push(label)
+    const blocked = bookedRanges.some(r => m >= r.startMins && m < r.startMins + r.durationMins)
+    if (!blocked) slots.push(label)
   }
   return slots
 }
@@ -196,17 +199,25 @@ export function SelectDateTimePage() {
     const dayEnd   = new Date(year, month, selectedDay, 23, 59, 59).toISOString()
 
     let query = supabase.from('bookings')
-      .select('appointment_at')
+      .select('appointment_at, estimated_duration_hours')
       .eq('artist_id', selectedArtist.id)
-      .eq('status', 'confirmed')
+      .in('status', ['confirmed', 'accepted'])
       .gte('appointment_at', dayStart)
       .lte('appointment_at', dayEnd)
 
     if (rescheduleId) query = query.neq('id', rescheduleId)
 
     query.then(({ data }) => {
-      const booked = (data ?? []).map((b: any) => studioSlotKey(b.appointment_at))
-      setSlotsForDay(generateSlots(sched, booked))
+      const bookedRanges: BookedRange[] = (data ?? []).map((b: any) => {
+        const key = studioSlotKey(b.appointment_at)
+        const [hh, mm] = key.split(':').map(Number)
+        const startMins = hh * 60 + mm
+        const durationMins = b.estimated_duration_hours
+          ? Math.round(b.estimated_duration_hours * 60)
+          : sched.slot_minutes
+        return { startMins, durationMins }
+      })
+      setSlotsForDay(generateSlots(sched, bookedRanges))
       setSlotsLoading(false)
     })
   }, [selectedDay, schedules, overrides])

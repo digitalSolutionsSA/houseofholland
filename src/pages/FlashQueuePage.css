@@ -3,7 +3,11 @@
    ───────────────────────────────────────── */
 
 .flash-queue-page {
-  padding-bottom: 60px !important;
+  /* Was a flat 60px !important — didn't account for the bottom nav bar's
+     actual height or the home-indicator safe area, so the CTA button at
+     the end of the page could sit hidden behind the nav on real devices.
+     Match .page's own formula instead of overriding it. */
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px) !important;
   overflow-x: hidden;
 }
 

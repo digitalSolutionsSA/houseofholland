@@ -15,6 +15,13 @@ dist-ssr
 # Firebase / Android secrets — keep locally, never in repo
 android/app/google-services.json
 ios/App/App/GoogleService-Info.plist
+ios/App/GoogleService-Info.plist
+
+# Local Supabase CLI session cache
+supabase/.temp/
+
+# Stray/junk files
+ios/App/App/config 2.xml
 
 # Editor directories and files
 .vscode/*
