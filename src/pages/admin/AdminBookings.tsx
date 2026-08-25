@@ -1471,6 +1471,8 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   value={manualFirstName}
                   onChange={e => setManualFirstName(e.target.value)}
                   placeholder="Jane"
+                  autoComplete="given-name"
+                  autoCapitalize="words"
                 />
               </div>
               <div className="admin-modal__field" style={{ margin: 0 }}>
@@ -1480,6 +1482,8 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                   value={manualLastName}
                   onChange={e => setManualLastName(e.target.value)}
                   placeholder="Smith"
+                  autoComplete="family-name"
+                  autoCapitalize="words"
                 />
               </div>
             </div>
@@ -2004,6 +2008,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                     <input
                       className="admin-modal__input"
                       type="number"
+                      inputMode="decimal"
                       min="0"
                       step="0.01"
                       value={cmpPrice}
@@ -2016,6 +2021,7 @@ ${consent.id_document_url ? `<div class="section"><h3>ID Document</h3>
                     <input
                       className="admin-modal__input"
                       type="number"
+                      inputMode="decimal"
                       min="0"
                       step="0.5"
                       value={cmpHours}

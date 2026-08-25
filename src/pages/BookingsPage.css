@@ -386,7 +386,7 @@
   border-radius: 20px 20px 0 0;
   z-index: 210;
   animation: sheet-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-  max-height: 88vh;
+  max-height: 88dvh;
   display: flex;
   flex-direction: column;
 }

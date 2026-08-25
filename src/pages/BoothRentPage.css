@@ -1,4 +1,4 @@
-.booth-rent-page { padding-bottom: 48px; }
+.booth-rent-page { padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 48px); }
 
 .booth-rent__content {
   padding: 0 var(--page-pad);
@@ -177,7 +177,7 @@
   border-radius: 20px 20px 0 0;
   width: 100%;
   max-width: 460px;
-  max-height: 92vh;
+  max-height: 92dvh;
   overflow-y: auto;
 }
 

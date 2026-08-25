@@ -202,7 +202,7 @@ export function AdminRent() {
 
             <div className="admin-modal__field">
               <label className="admin-modal__label">Weekly Rate (USD)</label>
-              <input className="admin-modal__input" type="number" min="0" step="50" value={rate}
+              <input className="admin-modal__input" type="number" inputMode="numeric" min="0" step="50" value={rate}
                 placeholder="e.g. 1500"
                 onChange={e => setRate(e.target.value)} />
             </div>

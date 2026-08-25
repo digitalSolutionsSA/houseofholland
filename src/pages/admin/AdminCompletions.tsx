@@ -271,13 +271,13 @@ export function AdminCompletions() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Total Price Charged (R)</label>
-                <input className="admin-modal__input" type="number" min="0" step="0.01"
+                <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.01"
                   value={price} placeholder="e.g. 350"
                   onChange={e => setPrice(e.target.value)} />
               </div>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Hours in Chair</label>
-                <input className="admin-modal__input" type="number" min="0" step="0.5"
+                <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.5"
                   value={hours} placeholder="e.g. 3.5"
                   onChange={e => setHours(e.target.value)} />
               </div>

@@ -16,6 +16,10 @@ const config: CapacitorConfig = {
       backgroundColor: '#000000',
       showSpinner: false,
     },
+    Keyboard: {
+      resize: 'native',
+      resizeOnFullScreen: true,
+    },
   },
 }
 

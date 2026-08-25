@@ -1,5 +1,5 @@
 .bp-page {
-  padding-bottom: 32px;
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 32px);
 }
 
 /* ── Locked state ── */

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   CheckSquare, Square, Pen, RotateCcw, Save, Loader2, FileCheck,
   ShieldCheck, ChevronRight, FilePlus, ChevronLeft, CalendarDays,
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
+import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
+import { joinFlashQueue } from '../lib/flashQueue'
 import './ConsentFormsPage.css'
 
 type FormData = {
@@ -89,6 +91,10 @@ type View = 'list' | 'form' | 'detail'
 
 export function ConsentFormsPage() {
   const { profile } = useAuth()
+  const { isPremium } = useMembership()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const joinFlashEventId = searchParams.get('joinFlashEvent')
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawing = useRef(false)
@@ -107,9 +113,10 @@ export function ConsentFormsPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Navigation
-  const [view, setView] = useState<View>('list')
+  const [view, setView] = useState<View>(joinFlashEventId ? 'form' : 'list')
   const [selectedCheckin, setSelectedCheckin] = useState<CheckinRecord | null>(null)
   const [loading, setLoading] = useState(true)
+  const [joiningQueue, setJoiningQueue] = useState(false)
 
   const isStaff = profile?.role === 'artist' || profile?.role === 'manager'
 
@@ -158,6 +165,12 @@ export function ConsentFormsPage() {
           setSignatureEmpty(false)
         }
         setFormSaved(true)
+
+        // Already has a signed waiver on file — no need to sign again,
+        // just join the flash queue immediately.
+        if (joinFlashEventId && cf.signed_at) {
+          completeJoinFlashEvent(joinFlashEventId)
+        }
       } else {
         setForm(f => ({
           ...f,
@@ -291,8 +304,36 @@ export function ConsentFormsPage() {
     setFormSaved(true)
     setSaving(false)
 
+    if (joinFlashEventId) {
+      completeJoinFlashEvent(joinFlashEventId)
+      return
+    }
+
     // Return to list so customer doesn't have to scroll up
     setView('list')
+  }
+
+  // Signing to join a flash queue — fetch the event's title/status (needed
+  // for the attendance-points award) then join and land on the queue page.
+  async function completeJoinFlashEvent(eventId: string) {
+    if (!profile) return
+    setJoiningQueue(true)
+    const { data: ev } = await supabase
+      .from('flash_events')
+      .select('title, status')
+      .eq('id', eventId)
+      .single()
+
+    if (ev) {
+      await joinFlashQueue({
+        eventId,
+        eventTitle: ev.title,
+        eventStatus: ev.status,
+        profileId: profile.id,
+        isPremium,
+      })
+    }
+    navigate(`/flash-queue/${eventId}`)
   }
 
   const inp = (key: keyof FormData, placeholder: string, opts?: { type?: string }) => (
@@ -307,11 +348,14 @@ export function ConsentFormsPage() {
 
   if (profile && isStaff) return <Navigate to="/home" replace />
 
-  if (loading) {
+  if (loading || joiningQueue) {
     return (
       <div className="page consent-page">
         <PageHeader title="Consent Forms" backTo="/profile" />
-        <div className="consent-form__loading"><Loader2 size={24} className="consent-form__spin" /></div>
+        <div className="consent-form__loading">
+          <Loader2 size={24} className="consent-form__spin" />
+          {joiningQueue && <p style={{ marginTop: 12, color: 'var(--text-muted)' }}>Joining the flash queue…</p>}
+        </div>
       </div>
     )
   }
@@ -405,9 +449,20 @@ export function ConsentFormsPage() {
         <PageHeader title="Consent Form" backTo="/profile" />
 
         <div className="consent-form__body">
-          <button type="button" className="consent-form__back-btn" onClick={() => setView('list')}>
-            <ChevronLeft size={16} strokeWidth={2} /> Back to Forms
+          <button
+            type="button"
+            className="consent-form__back-btn"
+            onClick={() => joinFlashEventId ? navigate(`/flash-queue/${joinFlashEventId}`) : setView('list')}
+          >
+            <ChevronLeft size={16} strokeWidth={2} /> {joinFlashEventId ? 'Back to Flash Day' : 'Back to Forms'}
           </button>
+
+          {joinFlashEventId && (
+            <div className="consent-form__signed-banner">
+              <ShieldCheck size={18} strokeWidth={1.5} />
+              <span>Sign this waiver to join the flash queue.</span>
+            </div>
+          )}
 
           {formSaved && initialForm?.signed_at && (
             <div className="consent-form__signed-banner">

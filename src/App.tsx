@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { AppLayout } from './components/shared/AppLayout'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { useAuth } from './context/AuthContext'
@@ -48,7 +48,8 @@ const AdminPoints         = lazy(() => import('./pages/admin/AdminPoints').then(
 
 function PushInit() {
   const { user } = useAuth()
-  usePushNotifications(user?.id ?? null)
+  const navigate = useNavigate()
+  usePushNotifications(user?.id ?? null, navigate)
   return null
 }
 

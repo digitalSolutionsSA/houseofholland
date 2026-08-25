@@ -7,11 +7,12 @@
   padding: 20px 12px;
   border-right: 1px solid rgba(212, 175, 55, 0.15);
   background: #000000;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   height: 100dvh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   z-index: 30;
 }
 
@@ -69,9 +70,10 @@
   color: #d4af37;
 }
 
-/* Show on tablet and above */
+/* Show on tablet and above — web/desktop-browser only. Native iOS/Android
+   builds (incl. iPad) use the bottom nav instead, at every width. */
 @media (min-width: 768px) {
-  .desktop-nav {
+  html:not([data-native="true"]) .desktop-nav {
     display: flex;
   }
 }

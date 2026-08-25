@@ -207,6 +207,7 @@ export function ProfilePage() {
       />
 
       <div className="profile-page__layout">
+      <div className="profile-page__col-main">
 
         {/* ── Avatar ── */}
         <div className="profile-page__hero">
@@ -409,28 +410,32 @@ export function ProfilePage() {
           </nav>
         )}
 
-        {/* ── Theme demo (staff only) ── */}
+      </div>
+
+        {/* ── Theme demo (staff only) — right column on tablet+ ── */}
         {isStaff && !editing && (
-          <div className="profile-page__theme-demo">
-            <div className="profile-page__theme-demo-head">
-              <Palette size={15} strokeWidth={1.5} />
-              <span>Preview Customer Themes</span>
-            </div>
-            <p className="profile-page__theme-demo-sub">
-              Switch the app's look to show customers what each membership tier feels like.
-            </p>
-            <div className="profile-page__theme-pills">
-              {DEMO_TIERS.map(({ id, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`profile-page__theme-pill${demoTier === id ? ' is-active' : ''}`}
-                  onClick={() => applyDemoTier(id)}
-                >
-                  <span className={`profile-page__theme-swatch profile-page__theme-swatch--${id}`} />
-                  {label}
-                </button>
-              ))}
+          <div className="profile-page__col-side">
+            <div className="profile-page__theme-demo">
+              <div className="profile-page__theme-demo-head">
+                <Palette size={15} strokeWidth={1.5} />
+                <span>Preview Customer Themes</span>
+              </div>
+              <p className="profile-page__theme-demo-sub">
+                Switch the app's look to show customers what each membership tier feels like.
+              </p>
+              <div className="profile-page__theme-pills">
+                {DEMO_TIERS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`profile-page__theme-pill${demoTier === id ? ' is-active' : ''}`}
+                    onClick={() => applyDemoTier(id)}
+                  >
+                    <span className={`profile-page__theme-swatch profile-page__theme-swatch--${id}`} />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

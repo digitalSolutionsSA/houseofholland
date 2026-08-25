@@ -68,9 +68,10 @@
   max-width: 100%;
 }
 
-/* Tablet and above: sidebar handles nav */
+/* Tablet and above: sidebar handles nav — web/desktop-browser only.
+   Native iOS/Android builds (incl. iPad) always keep the bottom nav. */
 @media (min-width: 768px) {
-  .bottom-nav {
+  html:not([data-native="true"]) .bottom-nav {
     display: none !important;
   }
 }

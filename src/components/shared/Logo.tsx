@@ -1,3 +1,4 @@
+import type { SyntheticEvent } from 'react'
 import './Logo.css'
 import { useDisplayTier } from '../../hooks/useDisplayTier'
 
@@ -5,6 +6,15 @@ const TIER_LOGOS: Record<string, string> = {
   'black-card': '/logo-gold.webp',
   'premium':    '/logo-red.webp',
   'free':       '/logo-black.webp',
+}
+
+// If a .webp fails to decode (seen intermittently in WKWebView), fall back
+// to the equivalent .png that already ships alongside each logo.
+function fallbackToPng(e: SyntheticEvent<HTMLImageElement>) {
+  const img = e.currentTarget
+  if (img.src.endsWith('.webp')) {
+    img.src = img.src.replace(/\.webp$/, '.png')
+  }
 }
 
 type LogoProps = {
@@ -35,7 +45,7 @@ export function Logo({
         style={{ width: height, height }}
         aria-hidden={alt ? undefined : true}
       >
-        <img src={src} alt={alt} loading="eager" decoding="async" fetchPriority="high" />
+        <img src={src} alt={alt} loading="eager" decoding="async" fetchPriority="high" onError={fallbackToPng} />
       </span>
     )
   }
@@ -49,6 +59,7 @@ export function Logo({
       loading="eager"
       decoding="async"
       fetchPriority="high"
+      onError={fallbackToPng}
     />
   )
 }

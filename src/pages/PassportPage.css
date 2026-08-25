@@ -1,5 +1,5 @@
 .passport-page {
-  padding-bottom: 48px;
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 48px);
 }
 
 /* ════════════════════════════════════════

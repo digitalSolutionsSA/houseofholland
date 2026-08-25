@@ -264,7 +264,7 @@ export function AdminPoints() {
                   {bonusReason === 'manual' && (
                     <div className="admin-modal__field">
                       <label className="admin-modal__label">Custom Points</label>
-                      <input className="admin-modal__input" type="number" min="1"
+                      <input className="admin-modal__input" type="number" inputMode="numeric" min="1"
                         value={customPts} placeholder="Enter amount"
                         onChange={e => setCustomPts(e.target.value)}
                         style={{ maxWidth: 180 }} />

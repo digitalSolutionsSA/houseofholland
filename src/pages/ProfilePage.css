@@ -11,6 +11,16 @@
   gap: 18px;
 }
 
+/* Wrapper divs: on mobile these just stack (col-side after col-main);
+   at 768px+ .profile-page__layout switches to a two-column grid and
+   these become the left/right regions (see responsive.css). */
+.profile-page__col-main,
+.profile-page__col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 /* ── Hero ── */
 .profile-page__hero {
   display: flex;
@@ -476,12 +486,26 @@
   border-color: rgba(180, 143, 60, 0.55);
 }
 
-/* ── Tablet+ sidebar layout ── */
+/* ── Tablet+: left column = settings, right column = theme preview
+   (see responsive.css) — kept compact here so everything fits one
+   iPad screen without scrolling. ── */
 @media (min-width: 768px) {
+  .profile-page__theme-demo {
+    border-top: none;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: rgba(28,28,30,0.35);
+    padding: 16px 18px;
+  }
+
+  [data-tier="free"] .profile-page__theme-demo {
+    background: var(--bg-card);
+  }
+
   .profile-page__hero {
     flex-direction: column;
     text-align: center;
-    padding: 24px 20px;
+    padding: 16px 18px;
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     background: rgba(28,28,30,0.55);
@@ -495,8 +519,8 @@
     align-items: center;
   }
 
-  .profile-page__avatar { width: 96px; height: 96px; }
-  .profile-page__avatar--empty { width: 96px; height: 96px; }
+  .profile-page__avatar { width: 76px; height: 76px; }
+  .profile-page__avatar--empty { width: 76px; height: 76px; }
 
   .profile-page__nav,
   .profile-page__form,
@@ -504,7 +528,7 @@
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     background: rgba(28,28,30,0.35);
-    padding: 8px 20px;
+    padding: 4px 18px;
   }
 
   [data-tier="free"] .profile-page__nav,
@@ -517,9 +541,17 @@
   .profile-page__error {
     margin: 0;
   }
+
+  .profile-page__link {
+    padding: 10px 4px;
+  }
+
+  .profile-page__link--danger {
+    margin-top: 2px;
+  }
 }
 
 @media (min-width: 1024px) {
-  .profile-page__avatar { width: 108px; height: 108px; }
-  .profile-page__avatar--empty { width: 108px; height: 108px; }
+  .profile-page__avatar { width: 84px; height: 84px; }
+  .profile-page__avatar--empty { width: 84px; height: 84px; }
 }

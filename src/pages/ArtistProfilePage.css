@@ -114,6 +114,13 @@
   line-height: 1.5;
 }
 
+.artist-profile-page__chat-error {
+  margin-top: 10px;
+  color: #ff6b6b;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
 .artist-profile-page__actions {
   margin-top: 20px;
   display: grid;

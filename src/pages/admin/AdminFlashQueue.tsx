@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Users, Trash2, Phone, Mail, CheckCircle2, UserCheck, Upload, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Users, Trash2, Phone, Mail, CheckCircle2, UserCheck, Upload, ChevronRight, FileCheck, FileX } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { awardSpendPoints } from '../../lib/awardPoints'
 import { StyleSelect } from '../../components/shared/StyleSelect'
+import { downloadConsentForm, type ConsentFormFields } from '../../lib/downloadConsentForm'
 
 type FlashEvent = {
   id: string
@@ -33,6 +34,7 @@ type QueueRow = {
     phone: string | null
     membership_plan: MembershipPlan
   } | null
+  consent: ConsentFormFields | null
 }
 
 const PLAN_LABELS: Record<MembershipPlan, string> = {
@@ -97,7 +99,18 @@ export function AdminFlashQueue() {
       .eq('flash_event_id', eventId)
       .order('position', { ascending: true })
 
-    setRows(((data ?? []) as any[]).map(r => ({ ...r, profile: r.profile ?? null })))
+    const queueRows = (data ?? []) as any[]
+    const profileIds = queueRows.map(r => r.profile_id).filter(Boolean)
+    const consentMap: Record<string, ConsentFormFields> = {}
+    if (profileIds.length > 0) {
+      const { data: forms } = await supabase
+        .from('consent_forms')
+        .select('*')
+        .in('profile_id', profileIds)
+      for (const f of forms ?? []) consentMap[(f as any).profile_id] = f as ConsentFormFields
+    }
+
+    setRows(queueRows.map(r => ({ ...r, profile: r.profile ?? null, consent: consentMap[r.profile_id] ?? null })))
     setLoading(false)
   }
 
@@ -390,6 +403,28 @@ export function AdminFlashQueue() {
                       </div>
                     </div>
 
+                    {(r.status === 'claimed' || r.status === 'completed') && (
+                      r.consent?.signed_at ? (
+                        <button
+                          className="admin-btn admin-btn--ghost"
+                          onClick={() => downloadConsentForm(r.consent!, `Flash Day: ${event.title} — ${dateLabel}`)}
+                          aria-label="Download signed waiver"
+                          title="Download signed waiver"
+                        >
+                          <FileCheck size={13} style={{ color: '#6bffb8' }} />
+                        </button>
+                      ) : (
+                        <span
+                          className="admin-btn admin-btn--ghost"
+                          style={{ opacity: 0.5, cursor: 'default' }}
+                          aria-label="No waiver on file"
+                          title="No waiver on file"
+                        >
+                          <FileX size={13} style={{ color: '#f87171' }} />
+                        </span>
+                      )
+                    )}
+
                     {isManager && r.status === 'waiting' && (
                       <button
                         className="admin-btn admin-btn--danger"
@@ -433,13 +468,13 @@ export function AdminFlashQueue() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Total Price Charged (R)</label>
-                <input className="admin-modal__input" type="number" min="0" step="0.01"
+                <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.01"
                   value={price} placeholder="e.g. 350"
                   onChange={e => setPrice(e.target.value)} />
               </div>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Hours in Chair</label>
-                <input className="admin-modal__input" type="number" min="0" step="0.5"
+                <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.5"
                   value={hours} placeholder="e.g. 1.5"
                   onChange={e => setHours(e.target.value)} />
               </div>

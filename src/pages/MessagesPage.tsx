@@ -324,50 +324,53 @@ export function MessagesPage() {
 
     const allRows: ConversationRow[] = []
 
-    if (isArtist) {
-      const { data: artistRecord } = await supabase
-        .from('artists').select('id').eq('profile_id', user.id).maybeSingle()
+    // Independent queries — run in parallel instead of one-after-another,
+    // since none of them depend on each other's results (adminId is
+    // cached after the first call anyway, so this also collapses what
+    // used to be two sequential lookups of it into one).
+    const [adminId, artistRecord, customerConvos] = await Promise.all([
+      getAdminProfileId(),
+      isArtist
+        ? supabase.from('artists').select('id').eq('profile_id', user.id).maybeSingle().then(r => r.data)
+        : Promise.resolve(null),
+      supabase
+        .from('conversations')
+        .select('id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, artists(name, avatar_url, profile_id)')
+        .eq('customer_id', user.id)
+        .order('last_message_at', { ascending: false })
+        .then(r => r.data),
+    ])
 
-      if (artistRecord) {
-        setArtistId(artistRecord.id)
-        const { data } = await supabase
-          .from('conversations')
-          .select('id, customer_id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, profiles!conversations_customer_id_fkey(full_name, avatar_url, role)')
-          .eq('artist_id', artistRecord.id)
-          .order('last_message_at', { ascending: false })
+    setAdminProfileId(adminId)
 
-        const adminId = await getAdminProfileId()
+    if (isArtist && artistRecord) {
+      setArtistId(artistRecord.id)
+      const { data } = await supabase
+        .from('conversations')
+        .select('id, customer_id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, profiles!conversations_customer_id_fkey(full_name, avatar_url, role)')
+        .eq('artist_id', artistRecord.id)
+        .order('last_message_at', { ascending: false })
 
-        for (const c of data ?? []) {
-          const customerRole = (c as any).profiles?.role as string | null
-          const customerId   = (c as any).customer_id as string | null
-          const isAdminCustomer = !!adminId && customerId === adminId
-          allRows.push({
-            id: (c as any).id,
-            last_message_at: (c as any).last_message_at,
-            last_message_preview: (c as any).last_message_preview,
-            last_sender_id: (c as any).last_sender_id,
-            other_name: isAdminCustomer ? SUPPORT_DISPLAY_NAME : ((c as any).profiles?.full_name ?? 'Customer'),
-            other_avatar: isAdminCustomer ? SUPPORT_AVATAR : ((c as any).profiles?.avatar_url ?? null),
-            unread: (c as any).last_sender_id !== null && (c as any).last_sender_id !== user.id,
-            other_role: isAdminCustomer ? 'support' : (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer',
-            artist_archived_at: (c as any).artist_archived_at ?? null,
-            artist_deleted_at: (c as any).artist_deleted_at ?? null,
-          })
-        }
+      for (const c of data ?? []) {
+        const customerRole = (c as any).profiles?.role as string | null
+        const customerId   = (c as any).customer_id as string | null
+        const isAdminCustomer = !!adminId && customerId === adminId
+        allRows.push({
+          id: (c as any).id,
+          last_message_at: (c as any).last_message_at,
+          last_message_preview: (c as any).last_message_preview,
+          last_sender_id: (c as any).last_sender_id,
+          other_name: isAdminCustomer ? SUPPORT_DISPLAY_NAME : ((c as any).profiles?.full_name ?? 'Customer'),
+          other_avatar: isAdminCustomer ? SUPPORT_AVATAR : ((c as any).profiles?.avatar_url ?? null),
+          unread: (c as any).last_sender_id !== null && (c as any).last_sender_id !== user.id,
+          other_role: isAdminCustomer ? 'support' : (customerRole === 'artist' || customerRole === 'manager') ? 'artist' : 'customer',
+          artist_archived_at: (c as any).artist_archived_at ?? null,
+          artist_deleted_at: (c as any).artist_deleted_at ?? null,
+        })
       }
     }
 
-    const adminId = await getAdminProfileId()
-    setAdminProfileId(adminId)
-
-    const { data: customerData } = await supabase
-      .from('conversations')
-      .select('id, last_message_at, last_message_preview, last_sender_id, artist_archived_at, artist_deleted_at, artists(name, avatar_url, profile_id)')
-      .eq('customer_id', user.id)
-      .order('last_message_at', { ascending: false })
-
-    for (const c of customerData ?? []) {
+    for (const c of customerConvos ?? []) {
       if (allRows.some(r => r.id === (c as any).id)) continue
       const artistProfileId = (c as any).artists?.profile_id ?? null
       const isSupport = !!adminId && artistProfileId === adminId

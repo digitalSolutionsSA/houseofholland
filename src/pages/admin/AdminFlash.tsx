@@ -474,7 +474,7 @@ export function AdminFlash() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Max Spots</label>
-                <input className="admin-modal__input" type="number" min="1" value={form.max_spots}
+                <input className="admin-modal__input" type="number" inputMode="numeric" min="1" value={form.max_spots}
                   onChange={e => setForm(f => ({ ...f, max_spots: parseInt(e.target.value) || 1 }))} />
               </div>
               <div className="admin-modal__field">

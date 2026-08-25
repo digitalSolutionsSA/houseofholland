@@ -1,5 +1,5 @@
 ﻿.membership-page {
-  padding: 20px var(--page-pad) 40px;
+  padding: 20px var(--page-pad) calc(var(--nav-height) + var(--safe-bottom) + 40px);
 }
 
 .membership-page__header {

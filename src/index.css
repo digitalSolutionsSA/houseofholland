@@ -176,10 +176,16 @@ ol {
   }
 
   .app-frame {
-    display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
     background: rgba(0, 0, 0, 0.28);
     min-height: 100dvh;
+  }
+
+  /* Sidebar is position:fixed (pinned, non-scrolling) — reserve its
+     width with a margin instead of a grid column so it stays fixed to
+     the viewport regardless of how tall the page content grows.
+     Native builds have no sidebar (bottom nav instead), so no margin. */
+  html:not([data-native="true"]) .app-frame:not(.app-frame--auth) .app-main {
+    margin-left: var(--sidebar-width);
   }
 
   /* Auth pages: centered card, no sidebar column */
@@ -202,7 +208,11 @@ ol {
     min-height: calc(100dvh - 80px);
   }
 
-  .page {
+  /* No sidebar to clear + no bottom nav (hidden at this width) on web, so
+     pages just need normal breathing room at the bottom. Native builds
+     keep the bottom nav, so they keep the phone-style nav-height padding
+     from the base .page rule instead of this override. */
+  html:not([data-native="true"]) .page {
     padding-bottom: 40px;
   }
 
@@ -213,10 +223,6 @@ ol {
 
 /* ── Desktop (1024px+): wider sidebar, more breathing room ── */
 @media (min-width: 1024px) {
-  .app-frame {
-    grid-template-columns: var(--sidebar-width) 1fr;
-  }
-
   .app-frame--auth .app-main {
     max-width: 520px;
     margin: 32px auto;

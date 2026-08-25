@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
+import type { NavigateFunction } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
 import { PushNotifications } from '@capacitor/push-notifications'
 import { supabase } from '../lib/supabase'
 
-export function usePushNotifications(userId: string | null) {
+export function usePushNotifications(userId: string | null, navigate: NavigateFunction) {
   useEffect(() => {
     if (!userId || !Capacitor.isNativePlatform()) return
 
@@ -50,10 +51,14 @@ export function usePushNotifications(userId: string | null) {
       console.error('[Push] Registration error:', err)
     })
 
-    // Tap on a notification while app is in background/closed
+    // Tap on a notification — while backgrounded, or a cold launch (Capacitor
+    // queues the launch notification and delivers it once this listener is
+    // registered, so one handler covers both cases). Navigate with the
+    // router, not window.location.hash — this app uses BrowserRouter, which
+    // only reacts to pathname changes, not hash changes.
     const actionListener = PushNotifications.addListener('pushNotificationActionPerformed', action => {
       const path = action.notification.data?.path as string | undefined
-      if (path) window.location.hash = path
+      if (path) navigate(path)
     })
 
     register()
@@ -65,5 +70,5 @@ export function usePushNotifications(userId: string | null) {
         actionListener.then(l => l.remove())
       }
     }
-  }, [userId])
+  }, [userId, navigate])
 }

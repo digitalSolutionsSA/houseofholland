@@ -104,8 +104,9 @@
    Sidebar replaces bottom nav
    ══════════════════════════════════════════════ */
 @media (min-width: 768px) {
-  /* Bottom nav hidden — sidebar takes over */
-  .bottom-nav {
+  /* Bottom nav hidden — sidebar takes over. Web/desktop-browser only;
+     native iOS/Android (incl. iPad) always keeps the bottom nav. */
+  html:not([data-native="true"]) .bottom-nav {
     display: none !important;
   }
 
@@ -163,12 +164,32 @@
   .select-time-page__calendar { margin: 0; }
   .select-time-page__times    { padding: 0; }
 
-  /* Profile: sidebar + main */
+  /* Profile: settings (avatar/info/nav) on the left, theme preview
+     (staff only) on the right — an explicit two-region layout rather
+     than an auto-flowing one, since these are two distinct groups. */
+  /* !important: ProfilePage.css is a lazy-loaded route chunk that gets
+     injected into <head> after this global stylesheet, so at equal
+     specificity it would otherwise win the cascade regardless of
+     whether this media query matches — same reason the other page
+     overrides above (.quick-actions, .merch-page__grid, etc.) use it. */
   .profile-page__layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 32px;
+    display: grid !important;
+    grid-template-columns: 1fr 300px !important;
+    gap: 20px !important;
     align-items: start;
+    max-width: 860px;
+    margin-inline: auto;
+  }
+  .profile-page__col-main {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .profile-page__col-side {
+    display: flex !important;
+    flex-direction: column;
+    gap: 12px;
   }
 
   /* Constrain centred pages */
@@ -199,6 +220,23 @@
   /* Vault constrain */
   .vault-page__list {
     max-width: 900px;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   IPAD PORTRAIT  (768px – 1023px)
+   Sidebar (200px) already eats into the usable
+   width here, so ease off the 4-col grids that
+   the tablet tier turns on — they get their
+   full column count back at 1024px+ (landscape).
+   ══════════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .quick-actions {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .artist-profile-page__grid {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
@@ -234,10 +272,11 @@
     margin-inline: auto;
   }
 
-  /* Profile layout: wider sidebar */
+  /* Profile: a bit more breathing room in the two-region layout */
   .profile-page__layout {
-    grid-template-columns: 300px 1fr;
-    gap: 40px;
+    max-width: 960px;
+    grid-template-columns: 1fr 340px !important;
+    gap: 28px !important;
   }
 
   /* Passport + Membership centred */

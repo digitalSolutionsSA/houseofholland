@@ -18,7 +18,7 @@
 /* ── Popup sheet ── */
 .support-popup {
   width: 100%;
-  max-height: 76vh;
+  max-height: 76dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);

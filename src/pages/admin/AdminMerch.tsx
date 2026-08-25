@@ -151,12 +151,12 @@ export function AdminMerch() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Price ($) *</label>
-                <input className="admin-modal__input" type="number" min="0" step="0.01" value={form.price}
+                <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.01" value={form.price}
                   onChange={(e) => setForm(f => ({ ...f, price: parseFloat(e.target.value) || 0 }))} />
               </div>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Stock</label>
-                <input className="admin-modal__input" type="number" min="0" value={form.stock}
+                <input className="admin-modal__input" type="number" inputMode="numeric" min="0" value={form.stock}
                   onChange={(e) => setForm(f => ({ ...f, stock: parseInt(e.target.value) || 0 }))} />
               </div>
             </div>

@@ -47,7 +47,7 @@ export function DesktopNav() {
   return (
     <aside className="desktop-nav" aria-label="Main">
       <div className="desktop-nav__brand">
-        <Logo variant="full" height={110} />
+        <Logo variant="full" height={110} forceSrc="/logo-white.webp" />
       </div>
 
       <nav className="desktop-nav__links">

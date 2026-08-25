@@ -48,8 +48,16 @@
 /* ══════════════════════════════════════════════════════════════════
    TIER THEMES  —  override CSS variables per membership plan.
    Applied via data-tier attribute on <html> from AppLayout.
-   Free = :root defaults above (gold/dark — no override needed)
    ══════════════════════════════════════════════════════════════════ */
+
+/* ── Free tier: surfaces are transparent black (not flat grey) so the
+   marble/tier background photo shows through every card/chip ── */
+[data-tier="free"] {
+  --bg-elevated: rgba(0, 0, 0, 0.35);
+  --bg-card:     rgba(0, 0, 0, 0.45);
+  --bg-muted:    rgba(0, 0, 0, 0.30);
+  --bg-chip:     rgba(0, 0, 0, 0.50);
+}
 
 /* ── Premium tier: deep burgundy background / creamish accent ── */
 [data-tier="premium"] {
@@ -105,10 +113,14 @@
   --border-subtle:     rgba(255, 255, 255, 0.14);
 }
 
-/* Tablet: sidebar appears, bottom nav hidden */
+/* Tablet: sidebar appears, bottom nav hidden — web/desktop-browser only.
+   Native iOS/Android builds (incl. iPad) keep the phone-style bottom nav
+   at every width, so --nav-height must stay non-zero for them. */
 @media (min-width: 768px) {
-  :root {
+  html:not([data-native="true"]) {
     --nav-height: 0px;
+  }
+  :root {
     --page-pad: 28px;
     --sidebar-width: 200px;
   }

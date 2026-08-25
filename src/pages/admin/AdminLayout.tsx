@@ -95,7 +95,7 @@ export function AdminLayout() {
       {/* ── Desktop sidebar ── */}
       <aside className="admin-sidebar">
         <div className="admin-sidebar__brand">
-          <Logo variant="full" height={72} />
+          <Logo variant="full" height={72} forceSrc="/logo-white.webp" />
           <span className="admin-sidebar__badge">{isManager ? 'Admin' : 'Artist'}</span>
         </div>
         <nav className="admin-sidebar__nav">{navLinks}</nav>

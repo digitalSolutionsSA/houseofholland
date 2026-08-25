@@ -106,6 +106,8 @@ export function ArtistProfilePage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewError, setReviewError] = useState('')
   const [reviewSuccess, setReviewSuccess] = useState(false)
+  const [chatError, setChatError] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
 
   useEffect(() => {
     if (!artistId) return
@@ -243,26 +245,38 @@ export function ArtistProfilePage() {
     // Don't let the artist message themselves
     if (artist.profile_id === user.id) return
 
-    // Find or create conversation
-    const { data: existing } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('customer_id', user.id)
-      .eq('artist_id', artist.id)
-      .maybeSingle()
+    setChatError('')
+    setChatLoading(true)
+    try {
+      // Find or create conversation
+      const { data: existing, error: findErr } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('customer_id', user.id)
+        .eq('artist_id', artist.id)
+        .maybeSingle()
 
-    if (existing) {
-      navigate(`/messages/${existing.id}`)
-      return
+      if (findErr) throw findErr
+
+      if (existing) {
+        navigate(`/messages/${existing.id}`)
+        return
+      }
+
+      const { data: created, error: createErr } = await supabase
+        .from('conversations')
+        .insert({ customer_id: user.id, artist_id: artist.id })
+        .select('id')
+        .single()
+
+      if (createErr) throw createErr
+      if (created) navigate(`/messages/${created.id}`)
+    } catch (err) {
+      console.error('openChat failed:', err)
+      setChatError('Could not open the chat. Please try again.')
+    } finally {
+      setChatLoading(false)
     }
-
-    const { data: created } = await supabase
-      .from('conversations')
-      .insert({ customer_id: user.id, artist_id: artist.id })
-      .select('id')
-      .single()
-
-    if (created) navigate(`/messages/${created.id}`)
   }
 
   function openReviewModal() {
@@ -329,9 +343,9 @@ export function ArtistProfilePage() {
             </button>
           )}
           {artist.profile_id !== user?.id ? (
-            <button type="button" onClick={openChat}>
+            <button type="button" onClick={openChat} disabled={chatLoading}>
               <MessageCircle size={18} strokeWidth={1.5} />
-              Message
+              {chatLoading ? 'Opening…' : 'Message'}
             </button>
           ) : (
             <button type="button" disabled className="artist-profile-page__action--disabled">
@@ -348,6 +362,7 @@ export function ArtistProfilePage() {
             Book Now
           </Link>
         </div>
+        {chatError && <p className="artist-profile-page__chat-error">{chatError}</p>}
 
         {/* ── Reviews section ── */}
         {reviews.length > 0 && (

@@ -17,9 +17,13 @@
   flex-direction: column;
   padding: 24px 16px;
   gap: 8px;
-  position: sticky;
+  position: fixed;
   top: 0;
-  height: 100vh;
+  left: 0;
+  bottom: 0;
+  height: 100dvh;
+  overflow: hidden;
+  z-index: 30;
 }
 
 .admin-sidebar__brand {
@@ -85,9 +89,11 @@
 
 .admin-sidebar__back:hover { color: var(--text-muted); }
 
-/* Main content area */
+/* Main content area — sidebar is position:fixed, so reserve its width
+   with a margin instead of relying on flex sibling sizing. */
 .admin-main {
   flex: 1;
+  margin-left: 220px;
   padding: 32px;
   overflow-y: auto;
   max-width: 960px;
@@ -245,7 +251,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
 }
 
@@ -276,7 +282,7 @@
   border: 1px solid rgba(var(--accent-rgb),0.25);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 16px;
   padding: 10px 12px;
   width: 100%;
   outline: none;
@@ -1124,6 +1130,7 @@
 
   .admin-main {
     flex: 1;
+    margin-left: 0;
     padding: 16px;
     padding-top: calc(16px + max(env(safe-area-inset-top, 0px), 59px));
     padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 72px);
@@ -1233,6 +1240,127 @@
     border-left-color: var(--gold);
     border-bottom-color: transparent;
   }
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(100%); opacity: 0.6; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ── Native iOS/Android (incl. iPad): always use the mobile drawer + bottom
+   nav, never the desktop sidebar — same nav experience as iPhone/Android
+   at every screen width. These selectors carry higher specificity than
+   the plain-class rules above/below (tablet/desktop width tiers), so they
+   win regardless of source order or viewport width. ── */
+html[data-native="true"] .admin-shell {
+  flex-direction: column;
+}
+
+html[data-native="true"] .admin-sidebar {
+  display: none;
+}
+
+html[data-native="true"] .admin-main {
+  margin-left: 0;
+  padding: 16px;
+  padding-top: calc(16px + max(env(safe-area-inset-top, 0px), 59px));
+  padding-bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 72px);
+  overflow-x: hidden;
+}
+
+html[data-native="true"] .admin-table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-native="true"] .admin-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--nav-height, 56px) + var(--safe-bottom, 0px) + 12px);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--text-on-gold);
+  border: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(var(--accent-rgb), 0.3);
+  cursor: pointer;
+  z-index: 80;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+html[data-native="true"] .admin-fab:active {
+  transform: scale(0.93);
+}
+
+html[data-native="true"] .admin-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+}
+
+html[data-native="true"] .admin-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(280px, 85vw);
+  background: #0a0a0a;
+  border-left: 1px solid var(--border-gold);
+  display: flex;
+  flex-direction: column;
+  padding: calc(20px + max(env(safe-area-inset-top, 0px), 59px)) 16px calc(24px + var(--safe-bottom, 0px));
+  gap: 4px;
+  animation: drawer-in 0.22s ease;
+  overflow-y: auto;
+}
+
+html[data-native="true"] .admin-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+html[data-native="true"] .admin-drawer__close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+html[data-native="true"] .admin-drawer__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+html[data-native="true"] .admin-drawer__nav .admin-sidebar__link {
+  border-left: 2px solid transparent;
+  border-bottom: none;
+  border-radius: var(--radius-sm);
+  white-space: normal;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+}
+
+html[data-native="true"] .admin-drawer__nav .admin-sidebar__link--active {
+  border-left-color: var(--gold);
+  border-bottom-color: transparent;
 }
 
 /* ── Flash event cards (replaces cramped table on mobile) ── */
@@ -1596,6 +1724,33 @@
     color: var(--gold);
     border-left-color: var(--gold);
   }
+  [data-tier="free"] .admin-drawer .admin-sidebar__back {
+    color: var(--gold);
+  }
+  [data-tier="free"] .admin-drawer .admin-sidebar__back:hover {
+    color: var(--gold-bright);
+  }
+}
+
+/* Same drawer-on-dark-background fix as above, but for native iOS/Android
+   (incl. iPad) — the drawer shows at every width there, not just under
+   767px, so the max-width-scoped rule above doesn't reach it. */
+html[data-native="true"][data-tier="free"] .admin-drawer__nav .admin-sidebar__link {
+  color: var(--gold);
+}
+html[data-native="true"][data-tier="free"] .admin-drawer__nav .admin-sidebar__link:hover {
+  background: rgba(var(--accent-rgb), 0.07);
+  color: var(--gold);
+}
+html[data-native="true"][data-tier="free"] .admin-drawer__nav .admin-sidebar__link--active {
+  color: var(--gold);
+  border-left-color: var(--gold);
+}
+html[data-native="true"][data-tier="free"] .admin-drawer .admin-sidebar__back {
+  color: var(--gold);
+}
+html[data-native="true"][data-tier="free"] .admin-drawer .admin-sidebar__back:hover {
+  color: var(--gold-bright);
 }
 
 /* ── Tablet admin: narrower sidebar ── */
@@ -1612,6 +1767,13 @@
   }
 
   .admin-main {
+    margin-left: 180px;
     padding: 20px;
+  }
+
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
