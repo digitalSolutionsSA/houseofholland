@@ -133,7 +133,11 @@
 .chat-page__messages {
   position: fixed;
   top: 64px;    /* header height (~60px) + small buffer */
-  bottom: calc(var(--nav-height) + var(--safe-bottom) + 62px); /* nav + input bar */
+  /* Input bar's own height also grows by --safe-bottom (its bottom padding),
+     on top of already sitting --safe-bottom above the nav — so this needs
+     safe-bottom counted twice or the last message's bottom edge ends up
+     hidden behind the input bar on notch devices. */
+  bottom: calc(var(--nav-height) + (var(--safe-bottom) * 2) + 56px); /* nav + input bar */
   left: 0;
   right: 0;
   overflow-y: scroll;
