@@ -38,16 +38,18 @@
   z-index: 1;
 }
 
-/* dark gradient over the poster so text is always readable */
+/* Dark wash over the poster so text is always readable — design-sheet
+   images (bright white line art) need much heavier darkening than a
+   typical dark photo poster does, or text disappears against them. */
 .flash-day-card__poster-scrim {
   position: absolute;
   inset: 0;
   z-index: 1;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.35) 0%,
-    rgba(0,0,0,0.15) 40%,
-    rgba(0,0,0,0.65) 100%
+    rgba(0,0,0,0.58) 0%,
+    rgba(0,0,0,0.42) 40%,
+    rgba(0,0,0,0.8) 100%
   );
 }
 
@@ -88,20 +90,25 @@
   padding: 4px 10px;
   border: 1px solid rgba(var(--accent-rgb),0.4);
   border-radius: 999px;
-  background: rgba(var(--accent-rgb),0.08);
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
 }
 
 .flash-day-card__tag--live {
   color: #4ade80;
   border-color: rgba(74,222,128,0.4);
-  background: rgba(74,222,128,0.08);
+  background: rgba(0,0,0,0.6);
 }
 
 .flash-day-card__date-pill {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: var(--text-muted);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
 }
 
 /* body */
@@ -126,13 +133,12 @@
   letter-spacing: 0.04em;
   color: var(--text);
   line-height: 1.1;
-  text-shadow: 0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.6);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.95), 0 1px 6px rgba(0,0,0,0.9), 0 0 3px rgba(0,0,0,0.9);
 }
 
-.flash-day-card--has-poster .flash-day-card__date-pill,
 .flash-day-card--has-poster .flash-day-card__eyebrow,
-.flash-day-card--has-poster .flash-day-card__spots {
-  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+.flash-day-card--has-poster .flash-day-card__event-name {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.9);
 }
 
 .flash-day-card__event-name {
@@ -169,18 +175,23 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  background: rgba(var(--accent-rgb),0.06);
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
   transition: background 0.2s, box-shadow 0.2s;
 }
 
 .flash-day-card__cta:hover {
-  background: rgba(var(--accent-rgb),0.14);
+  background: rgba(0,0,0,0.8);
   box-shadow: 0 0 16px rgba(var(--accent-rgb),0.2);
 }
 
 .flash-day-card__spots {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
 }
 
 .flash-day-card__spots span {
