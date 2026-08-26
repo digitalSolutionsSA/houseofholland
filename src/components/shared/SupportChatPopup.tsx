@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Send } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { SUPPORT_DISPLAY_NAME, SUPPORT_AVATAR, getAdminProfileId } from '../../lib/support'
@@ -134,7 +135,7 @@ export function SupportChatPopup({ conversationId, userId, onClose, onConversati
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  return (
+  return createPortal(
     <div className="support-popup__overlay" onClick={onClose}>
       <div className="support-popup" onClick={e => e.stopPropagation()}>
         {/* Header */}
@@ -192,6 +193,7 @@ export function SupportChatPopup({ conversationId, userId, onClose, onConversati
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { MessageCircle, Trash2, Archive, ArchiveRestore, ChevronDown, ChevronUp, Radio, Zap, AlertCircle, RefreshCw, Tag, Info } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -189,6 +190,7 @@ function BroadcastCircle({ latest, unread, onClick }: { latest?: BroadcastNotif;
 function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => void }) {
   const [notifs, setNotifs] = useState<BroadcastNotif[]>([])
   const [loading, setLoading] = useState(true)
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     supabase
@@ -210,7 +212,12 @@ function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => vo
       .then(() => {})
   }, [userId])
 
-  return (
+  // Land on the most recent broadcast, not scrolled to the oldest at top.
+  useEffect(() => {
+    if (!loading && bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight
+  }, [loading])
+
+  return createPortal(
     <div className="broadcast-chat__overlay">
       <div className="broadcast-chat">
         <div className="broadcast-chat__header">
@@ -228,7 +235,7 @@ function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => vo
           </div>
         </div>
 
-        <div className="broadcast-chat__body">
+        <div className="broadcast-chat__body" ref={bodyRef}>
           {loading && <p className="broadcast-chat__empty">Loading…</p>}
           {!loading && notifs.length === 0 && (
             <div className="broadcast-chat__empty">
@@ -251,7 +258,8 @@ function BroadcastModal({ userId, onClose }: { userId: string; onClose: () => vo
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
