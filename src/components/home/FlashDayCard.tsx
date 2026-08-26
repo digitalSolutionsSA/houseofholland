@@ -15,8 +15,12 @@ type FlashEvent = {
   artist_name: string | null
 }
 
+const CYCLE_MS = 1000
+
 export function FlashDayCard() {
   const [event, setEvent] = useState<FlashEvent | null>(null)
+  const [images, setImages] = useState<string[]>([])
+  const [imageIndex, setImageIndex] = useState(0)
   const [spotsLeft, setSpotsLeft] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -43,6 +47,15 @@ export function FlashDayCard() {
       const artistName = (junc as any)?.artists?.name ?? null
       setEvent({ ...ev, artist_name: artistName })
 
+      const { data: designImages } = await supabase
+        .from('flash_event_images')
+        .select('image_url')
+        .eq('flash_event_id', ev.id)
+        .order('position', { ascending: true })
+
+      const designUrls = (designImages ?? []).map(d => d.image_url)
+      setImages(designUrls.length > 0 ? designUrls : ev.cover_image_url ? [ev.cover_image_url] : [])
+
       const { count } = await supabase
         .from('flash_reservations')
         .select('id', { count: 'exact', head: true })
@@ -54,6 +67,16 @@ export function FlashDayCard() {
     load()
   }, [])
 
+  // Cycle through the flash day's design images every second so the card
+  // doesn't just sit on the poster the whole time.
+  useEffect(() => {
+    if (images.length <= 1) return
+    const timer = setInterval(() => {
+      setImageIndex(i => (i + 1) % images.length)
+    }, CYCLE_MS)
+    return () => clearInterval(timer)
+  }, [images.length])
+
   if (loading || !event) return null
 
   const dateLabel = new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', {
@@ -61,21 +84,24 @@ export function FlashDayCard() {
   }).toUpperCase()
 
   const isLive = event.status === 'open'
-  const hasCover = !!event.cover_image_url
+  const hasCover = images.length > 0
 
   return (
-    <article className={`flash-day-card${hasCover ? ' flash-day-card--has-poster' : ''}`}>
+    <Link to={`/flash-queue/${event.id}`} className={`flash-day-card${hasCover ? ' flash-day-card--has-poster' : ''}`}>
       <div className="flash-day-card__accent" aria-hidden />
 
       {hasCover && (
         <>
-          <img
-            src={event.cover_image_url!}
-            alt={event.title}
-            className="flash-day-card__bg"
-            loading="lazy"
-            decoding="async"
-          />
+          {images.map((url, i) => (
+            <img
+              key={url}
+              src={url}
+              alt={i === imageIndex ? event.title : ''}
+              className={`flash-day-card__bg${i === imageIndex ? ' flash-day-card__bg--active' : ''}`}
+              loading="lazy"
+              decoding="async"
+            />
+          ))}
           {/* dark gradient so text stays readable */}
           <div className="flash-day-card__poster-scrim" aria-hidden />
         </>
@@ -102,10 +128,10 @@ export function FlashDayCard() {
         </div>
 
         <div className="flash-day-card__footer">
-          <Link to={`/flash-queue/${event.id}`} className="flash-day-card__cta">
+          <span className="flash-day-card__cta">
             <Zap size={12} strokeWidth={2.5} />
             {isLive ? 'JOIN QUEUE' : 'VIEW EVENT'}
-          </Link>
+          </span>
           {spotsLeft !== null && (
             <p className="flash-day-card__spots">
               <span>{spotsLeft}</span> of {event.max_spots} spots left
@@ -114,6 +140,6 @@ export function FlashDayCard() {
         </div>
 
       </div>
-    </article>
+    </Link>
   )
 }
