@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Bell, ChevronLeft, ChevronRight, Clock, CalendarDays, User, Zap, Lock, X } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -48,6 +48,7 @@ export function FlashQueuePage() {
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [artists, setArtists] = useState<ArtistChip[]>([])
   const [designImages, setDesignImages] = useState<DesignImage[]>([])
+  const [coverIndex, setCoverIndex] = useState(0)
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [tattooChoice1, setTattooChoice1] = useState('')
   const [tattooChoice2, setTattooChoice2] = useState('')
@@ -208,6 +209,35 @@ export function FlashQueuePage() {
     setTattooChoice1(''); setTattooChoice2('')
   }
 
+  // Swipe left/right on the cover to cycle designs without opening the
+  // lightbox — only a tap (no meaningful horizontal movement) opens it.
+  const touchStartX = useRef<number | null>(null)
+  const touchSwiped = useRef(false)
+
+  function handleCoverTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX
+    touchSwiped.current = false
+  }
+  function handleCoverTouchMove(e: React.TouchEvent) {
+    if (touchStartX.current === null) return
+    if (Math.abs(e.touches[0].clientX - touchStartX.current) > 10) touchSwiped.current = true
+  }
+  function handleCoverTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null || designImages.length <= 1) { touchStartX.current = null; return }
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(deltaX) < 40) return
+    touchSwiped.current = true
+    setCoverIndex(i => {
+      const next = deltaX < 0 ? i + 1 : i - 1
+      return (next + designImages.length) % designImages.length
+    })
+  }
+  function handleCoverClick() {
+    if (touchSwiped.current) { touchSwiped.current = false; return }
+    setLightboxIndex(coverIndex)
+  }
+
   const dateLabel = event
     ? new Date(event.date + 'T12:00:00').toLocaleDateString('en-US', {
         weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
@@ -283,26 +313,50 @@ export function FlashQueuePage() {
 
       {/* ── Design gallery ── */}
       {designImages.length > 0 && (
-        <div className="flash-queue-page__cover-wrap" onClick={() => setLightboxIndex(0)}>
+        <div
+          className="flash-queue-page__cover-wrap"
+          onClick={handleCoverClick}
+          onTouchStart={handleCoverTouchStart}
+          onTouchMove={handleCoverTouchMove}
+          onTouchEnd={handleCoverTouchEnd}
+        >
           <img
-            src={designImages[0].image_url}
-            alt="Flash day design 1"
+            src={designImages[coverIndex].image_url}
+            alt={`Flash day design ${designImages[coverIndex].position}`}
             className="flash-queue-page__cover"
             loading="lazy"
             decoding="async"
           />
           {designImages.length > 1 && (
-            <span className="flash-queue-page__cover-count">1 / {designImages.length}</span>
+            <>
+              <button
+                type="button"
+                className="flash-queue-page__cover-nav flash-queue-page__cover-nav--prev"
+                onClick={(e) => { e.stopPropagation(); setCoverIndex(i => (i - 1 + designImages.length) % designImages.length) }}
+                aria-label="Previous design"
+              >
+                <ChevronLeft size={20} strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                className="flash-queue-page__cover-nav flash-queue-page__cover-nav--next"
+                onClick={(e) => { e.stopPropagation(); setCoverIndex(i => (i + 1) % designImages.length) }}
+                aria-label="Next design"
+              >
+                <ChevronRight size={20} strokeWidth={2} />
+              </button>
+              <span className="flash-queue-page__cover-count">{coverIndex + 1} / {designImages.length}</span>
+            </>
           )}
         </div>
       )}
 
       {lightboxIndex !== null && designImages.length > 0 && (
-        <div className="flash-queue-page__lightbox" onClick={() => setLightboxIndex(null)}>
+        <div className="flash-queue-page__lightbox" onClick={() => { setCoverIndex(lightboxIndex); setLightboxIndex(null) }}>
           <button
             type="button"
             className="flash-queue-page__lightbox-close"
-            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null) }}
+            onClick={(e) => { e.stopPropagation(); setCoverIndex(lightboxIndex); setLightboxIndex(null) }}
             aria-label="Close"
           >
             <X size={22} strokeWidth={1.5} />
