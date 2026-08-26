@@ -33,6 +33,9 @@ const EMPTY_FORM: FormState = {
 }
 
 const ACCEPTED = 'image/jpeg,image/png'
+const MAX_DESIGN_IMAGES = 10
+
+type DesignImageItem = { id?: string; url: string; file?: File }
 
 export function AdminFlash() {
   const navigate = useNavigate()
@@ -57,6 +60,11 @@ export function AdminFlash() {
   const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null)
   const [coverError, setCoverError]     = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Flash design images (up to 10, shown to customers to choose from)
+  const [designImages, setDesignImages] = useState<DesignImageItem[]>([])
+  const [designError, setDesignError]   = useState<string | null>(null)
+  const designInputRef = useRef<HTMLInputElement>(null)
 
   async function load() {
     setLoading(true)
@@ -94,10 +102,12 @@ export function AdminFlash() {
     setSelectedArtists([]); setSelectedGuestArtists([])
     setError(null); setEditId(null)
     resetCover()
+    setDesignImages([]); setDesignError(null)
+    if (designInputRef.current) designInputRef.current.value = ''
     setModal('add')
   }
 
-  function openEdit(ev: FlashEvent) {
+  async function openEdit(ev: FlashEvent) {
     setForm({
       title: ev.title, description: ev.description ?? '',
       date: ev.date, start_time: ev.start_time, end_time: ev.end_time,
@@ -111,7 +121,46 @@ export function AdminFlash() {
     setExistingCoverUrl(ev.cover_image_url)
     setCoverPreview(ev.cover_image_url)
     if (fileInputRef.current) fileInputRef.current.value = ''
+    setDesignError(null)
+    if (designInputRef.current) designInputRef.current.value = ''
     setModal('edit')
+
+    const { data: images } = await supabase
+      .from('flash_event_images')
+      .select('id, image_url, position')
+      .eq('flash_event_id', ev.id)
+      .order('position', { ascending: true })
+    setDesignImages((images ?? []).map(img => ({ id: img.id, url: img.image_url })))
+  }
+
+  function handleDesignFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (files.length === 0) return
+
+    const invalid = files.some(f => !['image/jpeg', 'image/png'].includes(f.type))
+    if (invalid) {
+      setDesignError('Only JPG and PNG files are accepted.')
+      e.target.value = ''
+      return
+    }
+
+    setDesignImages(prev => {
+      const room = MAX_DESIGN_IMAGES - prev.length
+      if (room <= 0) {
+        setDesignError(`You can only upload up to ${MAX_DESIGN_IMAGES} designs.`)
+        return prev
+      }
+      const accepted = files.slice(0, room)
+      if (files.length > room) setDesignError(`You can only upload up to ${MAX_DESIGN_IMAGES} designs.`)
+      else setDesignError(null)
+      return [...prev, ...accepted.map(file => ({ url: URL.createObjectURL(file), file }))]
+    })
+    e.target.value = ''
+  }
+
+  function removeDesignImage(index: number) {
+    setDesignImages(prev => prev.filter((_, i) => i !== index))
+    setDesignError(null)
   }
 
   function handleCoverFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -212,6 +261,32 @@ export function AdminFlash() {
     if (selectedGuestArtists.length > 0) {
       await supabase.from('flash_event_guest_artists').insert(
         selectedGuestArtists.map(gid => ({ flash_event_id: eventId!, guest_artist_id: gid }))
+      )
+    }
+
+    // Upload any newly-added design images, then replace the event's full
+    // design list so ordering/removals stay in sync with what's on screen.
+    const resolvedDesignUrls: string[] = []
+    for (const img of designImages) {
+      if (!img.file) { resolvedDesignUrls.push(img.url); continue }
+      const ext = img.file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      const path = `designs/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { data: uploaded, error: uploadErr } = await supabase.storage
+        .from('flash-event-covers')
+        .upload(path, img.file, { cacheControl: '3600', upsert: false })
+
+      if (uploadErr || !uploaded) {
+        setError('Failed to upload a design image: ' + (uploadErr?.message ?? 'unknown error'))
+        setSaving(false); return
+      }
+      const { data: urlData } = supabase.storage.from('flash-event-covers').getPublicUrl(uploaded.path)
+      resolvedDesignUrls.push(urlData.publicUrl)
+    }
+
+    await supabase.from('flash_event_images').delete().eq('flash_event_id', eventId!)
+    if (resolvedDesignUrls.length > 0) {
+      await supabase.from('flash_event_images').insert(
+        resolvedDesignUrls.map((url, i) => ({ flash_event_id: eventId!, image_url: url, position: i + 1 }))
       )
     }
 
@@ -382,6 +457,59 @@ export function AdminFlash() {
 
               {coverError && (
                 <p style={{ marginTop: 6, fontSize: '0.78rem', color: '#f87171' }}>{coverError}</p>
+              )}
+            </div>
+
+            {/* ── Flash designs (up to 10) ── */}
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">
+                Flash Designs
+                <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>
+                  up to {MAX_DESIGN_IMAGES} — customers pick from these when they queue
+                </span>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
+                {designImages.map((img, i) => (
+                  <div key={img.id ?? img.url} style={{ position: 'relative', aspectRatio: '1', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border-gold)' }}>
+                    <img src={img.url} alt={`Design ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <span style={{ position: 'absolute', bottom: 3, left: 3, fontSize: '0.65rem', padding: '1px 5px', borderRadius: 10, background: 'rgba(0,0,0,0.7)', color: 'var(--gold)' }}>
+                      {i + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeDesignImage(i)}
+                      title="Remove design"
+                      style={{ position: 'absolute', top: 3, right: 3, width: 20, height: 20, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ))}
+
+                {designImages.length < MAX_DESIGN_IMAGES && (
+                  <button
+                    type="button"
+                    onClick={() => designInputRef.current?.click()}
+                    style={{ aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 8, border: '2px dashed rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.04)', cursor: 'pointer', color: 'var(--text-muted)' }}
+                  >
+                    <ImagePlus size={18} strokeWidth={1.5} style={{ color: 'var(--gold)', opacity: 0.7 }} />
+                    <span style={{ fontSize: '0.68rem' }}>Add</span>
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={designInputRef}
+                type="file"
+                accept={ACCEPTED}
+                multiple
+                style={{ display: 'none' }}
+                onChange={handleDesignFiles}
+              />
+
+              {designError && (
+                <p style={{ marginTop: 6, fontSize: '0.78rem', color: '#f87171' }}>{designError}</p>
               )}
             </div>
 

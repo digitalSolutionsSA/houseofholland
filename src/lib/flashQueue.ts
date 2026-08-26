@@ -23,8 +23,9 @@ export async function joinFlashQueue(opts: {
   eventStatus: 'upcoming' | 'open' | 'closed'
   profileId: string
   isPremium: boolean
+  selectedTattoos?: number[]
 }): Promise<{ data?: FlashReservation; error?: string }> {
-  const { eventId, eventTitle, eventStatus, profileId, isPremium } = opts
+  const { eventId, eventTitle, eventStatus, profileId, isPremium, selectedTattoos } = opts
 
   const { data, error } = await supabase
     .from('flash_reservations')
@@ -32,6 +33,7 @@ export async function joinFlashQueue(opts: {
       flash_event_id: eventId,
       profile_id: profileId,
       waiver_signed_at: new Date().toISOString(),
+      selected_tattoo_numbers: selectedTattoos && selectedTattoos.length > 0 ? selectedTattoos.slice(0, 2) : null,
     })
     .select('id, position, reserved_at, status')
     .single()

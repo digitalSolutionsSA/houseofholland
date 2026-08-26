@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Bell, ChevronLeft, Clock, CalendarDays, User, Zap, Lock } from 'lucide-react'
+import { Bell, ChevronLeft, ChevronRight, Clock, CalendarDays, User, Zap, Lock, X } from 'lucide-react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { storageImg } from '../lib/storageImg'
@@ -20,6 +20,7 @@ type FlashEvent = {
 }
 
 type ArtistChip = { id: string; name: string; avatar_url: string | null }
+type DesignImage = { id: string; image_url: string; position: number }
 
 type ReservationStatus = 'waiting' | 'claimed' | 'completed'
 
@@ -45,6 +46,9 @@ export function FlashQueuePage() {
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [artists, setArtists] = useState<ArtistChip[]>([])
+  const [designImages, setDesignImages] = useState<DesignImage[]>([])
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+  const [selectedTattoos, setSelectedTattoos] = useState<number[]>([])
   const [reservation, setReservation] = useState<Reservation | null>(null)
   const [queueSize, setQueueSize] = useState(0)
   const [aheadCount, setAheadCount] = useState(0)
@@ -82,6 +86,13 @@ export function FlashQueuePage() {
         .map((a: any) => ({ id: `g-${a.id}`, name: a.name, avatar_url: a.avatar_url ?? null }))
 
       setArtists([...residentArtists, ...guestArtistList])
+
+      const { data: images } = await supabase
+        .from('flash_event_images')
+        .select('id, image_url, position')
+        .eq('flash_event_id', eventId)
+        .order('position', { ascending: true })
+      setDesignImages(images ?? [])
 
       // Every reservation ever made for this event counts toward "spots taken"
       // (waiting + being served + already done), but "people ahead of me" only
@@ -142,10 +153,19 @@ export function FlashQueuePage() {
     return () => { supabase.removeChannel(channel) }
   }, [eventId, profile?.id])
 
+  function toggleTattooChoice(position: number) {
+    setSelectedTattoos(prev => {
+      if (prev.includes(position)) return prev.filter(n => n !== position)
+      if (prev.length >= 2) return prev
+      return [...prev, position]
+    })
+  }
+
   async function joinQueue() {
     if (!event || !profile) return
     if (!hasSignedWaiver) {
-      navigate(`/consent?joinFlashEvent=${event.id}`)
+      const tattooParam = selectedTattoos.length > 0 ? `&tattoos=${selectedTattoos.join(',')}` : ''
+      navigate(`/consent?joinFlashEvent=${event.id}${tattooParam}`)
       return
     }
     setActing(true); setError(null)
@@ -157,6 +177,7 @@ export function FlashQueuePage() {
       eventStatus: event.status,
       profileId: profile.id,
       isPremium,
+      selectedTattoos,
     })
     if (err) {
       setError(err)
@@ -248,6 +269,68 @@ export function FlashQueuePage() {
           <div className="flash-queue-page__tier-badge">{tierNoticeLabel}</div>
         )}
       </div>
+
+      {/* ── Design gallery ── */}
+      {designImages.length > 0 && (
+        <div className="flash-queue-page__cover-wrap" onClick={() => setLightboxIndex(0)}>
+          <img
+            src={designImages[0].image_url}
+            alt="Flash day design 1"
+            className="flash-queue-page__cover"
+            loading="lazy"
+            decoding="async"
+          />
+          {designImages.length > 1 && (
+            <span className="flash-queue-page__cover-count">1 / {designImages.length}</span>
+          )}
+        </div>
+      )}
+
+      {lightboxIndex !== null && designImages.length > 0 && (
+        <div className="flash-queue-page__lightbox" onClick={() => setLightboxIndex(null)}>
+          <button
+            type="button"
+            className="flash-queue-page__lightbox-close"
+            onClick={(e) => { e.stopPropagation(); setLightboxIndex(null) }}
+            aria-label="Close"
+          >
+            <X size={22} strokeWidth={1.5} />
+          </button>
+
+          {designImages.length > 1 && (
+            <button
+              type="button"
+              className="flash-queue-page__lightbox-nav flash-queue-page__lightbox-nav--prev"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i! - 1 + designImages.length) % designImages.length) }}
+              aria-label="Previous design"
+            >
+              <ChevronLeft size={26} strokeWidth={1.5} />
+            </button>
+          )}
+
+          <div className="flash-queue-page__lightbox-body" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={designImages[lightboxIndex].image_url}
+              alt={`Flash day design ${designImages[lightboxIndex].position}`}
+              className="flash-queue-page__lightbox-img"
+            />
+            <p className="flash-queue-page__lightbox-label">
+              Tattoo {designImages[lightboxIndex].position} of {designImages.length}
+            </p>
+          </div>
+
+          {designImages.length > 1 && (
+            <button
+              type="button"
+              className="flash-queue-page__lightbox-nav flash-queue-page__lightbox-nav--next"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => (i! + 1) % designImages.length) }}
+              aria-label="Next design"
+            >
+              <ChevronRight size={26} strokeWidth={1.5} />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ── Meta ── */}
       <div className="flash-queue-page__meta">
@@ -403,6 +486,30 @@ export function FlashQueuePage() {
                   {spotsLeft > 0 ? 'You would be position' : 'Waitlist position'}
                 </p>
               </div>
+
+              {designImages.length > 0 && (
+                <div className="flash-queue-page__tattoo-picker">
+                  <p className="flash-queue-page__tattoo-picker-copy">
+                    You can choose up to two — please select the numbers below.
+                  </p>
+                  <div className="flash-queue-page__tattoo-grid">
+                    {designImages.map(img => {
+                      const chosen = selectedTattoos.includes(img.position)
+                      return (
+                        <button
+                          type="button"
+                          key={img.id}
+                          className={`flash-queue-page__tattoo-choice${chosen ? ' flash-queue-page__tattoo-choice--selected' : ''}`}
+                          onClick={() => toggleTattooChoice(img.position)}
+                        >
+                          <img src={img.image_url} alt={`Tattoo ${img.position}`} loading="lazy" decoding="async" />
+                          <span className="flash-queue-page__tattoo-choice-num">{img.position}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {error && <p className="flash-queue-page__error">{error}</p>}
 

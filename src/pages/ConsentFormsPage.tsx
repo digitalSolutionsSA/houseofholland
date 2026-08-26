@@ -95,6 +95,11 @@ export function ConsentFormsPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const joinFlashEventId = searchParams.get('joinFlashEvent')
+  const joinFlashTattoos = (searchParams.get('tattoos') ?? '')
+    .split(',')
+    .map(n => parseInt(n, 10))
+    .filter(n => Number.isFinite(n))
+    .slice(0, 2)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawing = useRef(false)
@@ -331,6 +336,7 @@ export function ConsentFormsPage() {
         eventStatus: ev.status,
         profileId: profile.id,
         isPremium,
+        selectedTattoos: joinFlashTattoos,
       })
     }
     navigate(`/flash-queue/${eventId}`)
