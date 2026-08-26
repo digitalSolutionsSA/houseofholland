@@ -35,7 +35,10 @@ type QueueRow = {
     membership_plan: MembershipPlan
   } | null
   consent: ConsentFormFields | null
+  selected_tattoo_numbers: number[] | null
 }
+
+type DesignImage = { position: number; image_url: string }
 
 const PLAN_LABELS: Record<MembershipPlan, string> = {
   free: 'Free',
@@ -54,6 +57,27 @@ function initials(name: string | null): string {
   return name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 }
 
+function TattooChoices({ numbers, images }: { numbers: number[] | null; images: DesignImage[] }) {
+  if (!numbers || numbers.length === 0) return null
+  return (
+    <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+      {numbers.map(n => {
+        const img = images.find(i => i.position === n)
+        return (
+          <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px 2px 2px', borderRadius: 20, background: 'rgba(212,175,55,0.1)', border: '1px solid var(--border-gold)' }}>
+            {img ? (
+              <img src={img.image_url} alt={`Tattoo ${n}`} style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(212,175,55,0.2)' }} />
+            )}
+            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--gold)' }}>#{n}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function AdminFlashQueue() {
   const { eventId } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
@@ -62,6 +86,7 @@ export function AdminFlashQueue() {
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [rows, setRows] = useState<QueueRow[]>([])
+  const [designImages, setDesignImages] = useState<DesignImage[]>([])
   const [loading, setLoading] = useState(true)
   const [removing, setRemoving] = useState<string | null>(null)
 
@@ -93,9 +118,16 @@ export function AdminFlashQueue() {
       .single()
     if (ev) setEvent(ev)
 
+    const { data: images } = await supabase
+      .from('flash_event_images')
+      .select('position, image_url')
+      .eq('flash_event_id', eventId)
+      .order('position', { ascending: true })
+    setDesignImages(images ?? [])
+
     const { data } = await supabase
       .from('flash_reservations')
-      .select('id, position, reserved_at, status, claimed_by_artist_id, profile_id, profile:profiles(full_name, avatar_url, email, phone, membership_plan)')
+      .select('id, position, reserved_at, status, claimed_by_artist_id, profile_id, selected_tattoo_numbers, profile:profiles(full_name, avatar_url, email, phone, membership_plan)')
       .eq('flash_event_id', eventId)
       .order('position', { ascending: true })
 
@@ -299,6 +331,7 @@ export function AdminFlashQueue() {
                       {myCurrentCustomer.profile?.phone && (
                         <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>{myCurrentCustomer.profile.phone}</p>
                       )}
+                      <TattooChoices numbers={myCurrentCustomer.selected_tattoo_numbers} images={designImages} />
                     </div>
                     <button className="admin-btn admin-btn--complete" style={{ width: 'auto' }} onClick={() => openComplete(myCurrentCustomer)}>
                       <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 6 }} />
@@ -401,6 +434,7 @@ export function AdminFlashQueue() {
                           Joined {new Date(r.reserved_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                         </span>
                       </div>
+                      <TattooChoices numbers={r.selected_tattoo_numbers} images={designImages} />
                     </div>
 
                     {(r.status === 'claimed' || r.status === 'completed') && (
@@ -452,6 +486,7 @@ export function AdminFlashQueue() {
         <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && !saving && setCompleteTarget(null)}>
           <div className="admin-modal">
             <h2 className="admin-modal__title">Finish — {completeTarget.profile?.full_name ?? 'Customer'}</h2>
+            <TattooChoices numbers={completeTarget.selected_tattoo_numbers} images={designImages} />
 
             <div className="admin-modal__field">
               <label className="admin-modal__label">Style / Category</label>
