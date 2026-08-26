@@ -21,6 +21,7 @@ const MembershipPage      = lazy(() => import('./pages/MembershipPage').then(m  
 const SelectDateTimePage  = lazy(() => import('./pages/SelectDateTimePage').then(m  => ({ default: m.SelectDateTimePage })))
 const CheckInPage         = lazy(() => import('./pages/CheckInPage').then(m         => ({ default: m.CheckInPage })))
 const FlashQueuePage      = lazy(() => import('./pages/FlashQueuePage').then(m      => ({ default: m.FlashQueuePage })))
+const FlashDaysListPage   = lazy(() => import('./pages/FlashDaysListPage').then(m   => ({ default: m.FlashDaysListPage })))
 const BookingsPage        = lazy(() => import('./pages/BookingsPage').then(m        => ({ default: m.BookingsPage })))
 const ProfilePage         = lazy(() => import('./pages/ProfilePage').then(m         => ({ default: m.ProfilePage })))
 const BattlePassPage      = lazy(() => import('./pages/BattlePassPage').then(m      => ({ default: m.BattlePassPage })))
@@ -124,7 +125,7 @@ export default function App() {
             <Route path="/bookings/select-time"            element={<RequireAuth><SelectDateTimePage /></RequireAuth>} />
             <Route path="/bookings/checkin/:bookingId"     element={<RequireAuth><CheckInPage /></RequireAuth>} />
             <Route path="/flash-queue/:eventId"            element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
-            <Route path="/flash-queue"                     element={<RequireAuth><FlashQueuePage /></RequireAuth>} />
+            <Route path="/flash-queue"                     element={<RequireAuth><FlashDaysListPage /></RequireAuth>} />
             <Route path="/profile"                         element={<RequireAuth><ProfilePage /></RequireAuth>} />
             <Route path="/booth-rent"                      element={<RequireAuth><BoothRentPage /></RequireAuth>} />
             <Route path="/messages"                        element={<RequireAuth><MessagesPage /></RequireAuth>} />

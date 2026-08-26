@@ -1,0 +1,107 @@
+.flash-days-list-page {
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom) + 20px) !important;
+}
+
+.flash-days-list-page__loading {
+  padding: 60px var(--page-pad);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.flash-days-list-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 80px var(--page-pad);
+  text-align: center;
+  color: var(--text-muted);
+}
+.flash-days-list-page__empty svg {
+  color: rgba(201,168,76,0.5);
+  margin-bottom: 4px;
+}
+.flash-days-list-page__empty p {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--text);
+}
+.flash-days-list-page__empty span {
+  font-size: 0.85rem;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.flash-days-list-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px var(--page-pad) 0;
+}
+
+.flash-days-list-page__card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(201,168,76,0.2);
+  background: var(--bg-card);
+  transition: border-color 0.2s;
+}
+.flash-days-list-page__card:hover {
+  border-color: rgba(201,168,76,0.5);
+}
+
+.flash-days-list-page__cover {
+  width: 68px;
+  height: 68px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.flash-days-list-page__cover--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(212,175,55,0.06);
+  color: var(--gold);
+}
+
+.flash-days-list-page__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.flash-days-list-page__tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+.flash-days-list-page__tag--live {
+  color: #4ade80;
+}
+
+.flash-days-list-page__title {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.flash-days-list-page__date {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.flash-days-list-page__spots {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.flash-days-list-page__spots span {
+  color: var(--gold);
+  font-weight: 600;
+}
