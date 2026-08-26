@@ -17,6 +17,7 @@ type FlashEvent = {
   description: string | null
   status: 'upcoming' | 'open' | 'closed'
   max_spots: number
+  total_designs: number | null
 }
 
 type ArtistChip = { id: string; name: string; avatar_url: string | null }
@@ -48,7 +49,8 @@ export function FlashQueuePage() {
   const [artists, setArtists] = useState<ArtistChip[]>([])
   const [designImages, setDesignImages] = useState<DesignImage[]>([])
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const [selectedTattoos, setSelectedTattoos] = useState<number[]>([])
+  const [tattooChoice1, setTattooChoice1] = useState('')
+  const [tattooChoice2, setTattooChoice2] = useState('')
   const [reservation, setReservation] = useState<Reservation | null>(null)
   const [queueSize, setQueueSize] = useState(0)
   const [aheadCount, setAheadCount] = useState(0)
@@ -113,6 +115,11 @@ export function FlashQueuePage() {
             .select('id, position, reserved_at, status')
             .eq('flash_event_id', eventId)
             .eq('profile_id', profile.id)
+            // A customer can have past completed reservations from
+            // re-enrolling — only the most recent one (active or not) is
+            // "their" current reservation for display purposes.
+            .order('reserved_at', { ascending: false })
+            .limit(1)
             .maybeSingle(),
           supabase
             .from('consent_forms')
@@ -153,13 +160,9 @@ export function FlashQueuePage() {
     return () => { supabase.removeChannel(channel) }
   }, [eventId, profile?.id])
 
-  function toggleTattooChoice(position: number) {
-    setSelectedTattoos(prev => {
-      if (prev.includes(position)) return prev.filter(n => n !== position)
-      if (prev.length >= 2) return prev
-      return [...prev, position]
-    })
-  }
+  const selectedTattoos = [tattooChoice1, tattooChoice2]
+    .map(n => parseInt(n, 10))
+    .filter(n => Number.isFinite(n))
 
   async function joinQueue() {
     if (!event || !profile) return
@@ -184,6 +187,7 @@ export function FlashQueuePage() {
     } else if (data) {
       setReservation(data)
       setQueueSize(q => q + 1)
+      setTattooChoice1(''); setTattooChoice2('')
     }
     setActing(false)
   }
@@ -195,6 +199,13 @@ export function FlashQueuePage() {
     setReservation(null)
     setQueueSize(q => Math.max(0, q - 1))
     setActing(false)
+  }
+
+  // A previous visit finished (status === 'completed') — let the customer
+  // start a fresh reservation for another tattoo instead of being stuck.
+  function enrollAgain() {
+    setReservation(null)
+    setTattooChoice1(''); setTattooChoice2('')
   }
 
   const dateLabel = event
@@ -446,10 +457,15 @@ export function FlashQueuePage() {
           )}
 
           {event.status === 'open' && reservation && reservation.status === 'completed' && (
-            <div className="flash-queue-page__number-block">
-              <p className="flash-queue-page__number">All done!</p>
-              <p className="flash-queue-page__number-label">Hope you love the piece</p>
-            </div>
+            <>
+              <div className="flash-queue-page__number-block">
+                <p className="flash-queue-page__number">All done!</p>
+                <p className="flash-queue-page__number-label">Hope you love the piece</p>
+              </div>
+              <button className="flash-queue-page__cta" onClick={enrollAgain}>
+                Enroll Again for Another Tattoo
+              </button>
+            </>
           )}
 
           {event.status === 'open' && reservation && reservation.status === 'waiting' && (
@@ -487,26 +503,30 @@ export function FlashQueuePage() {
                 </p>
               </div>
 
-              {designImages.length > 0 && (
+              {!!event.total_designs && (
                 <div className="flash-queue-page__tattoo-picker">
                   <p className="flash-queue-page__tattoo-picker-copy">
                     You can choose up to two — please select the numbers below.
                   </p>
-                  <div className="flash-queue-page__tattoo-grid">
-                    {designImages.map(img => {
-                      const chosen = selectedTattoos.includes(img.position)
-                      return (
-                        <button
-                          type="button"
-                          key={img.id}
-                          className={`flash-queue-page__tattoo-choice${chosen ? ' flash-queue-page__tattoo-choice--selected' : ''}`}
-                          onClick={() => toggleTattooChoice(img.position)}
-                        >
-                          <img src={img.image_url} alt={`Tattoo ${img.position}`} loading="lazy" decoding="async" />
-                          <span className="flash-queue-page__tattoo-choice-num">{img.position}</span>
-                        </button>
-                      )
-                    })}
+                  <div className="flash-queue-page__tattoo-dropdowns">
+                    <label className="flash-queue-page__tattoo-dropdown">
+                      <span>Tattoo Choice 1</span>
+                      <select value={tattooChoice1} onChange={e => setTattooChoice1(e.target.value)}>
+                        <option value="">Select a number…</option>
+                        {Array.from({ length: event.total_designs }, (_, i) => i + 1)
+                          .filter(n => String(n) !== tattooChoice2)
+                          .map(n => <option key={n} value={n}>Tattoo {n}</option>)}
+                      </select>
+                    </label>
+                    <label className="flash-queue-page__tattoo-dropdown">
+                      <span>Tattoo Choice 2 <em>(optional)</em></span>
+                      <select value={tattooChoice2} onChange={e => setTattooChoice2(e.target.value)}>
+                        <option value="">Select a number…</option>
+                        {Array.from({ length: event.total_designs }, (_, i) => i + 1)
+                          .filter(n => String(n) !== tattooChoice1)
+                          .map(n => <option key={n} value={n}>Tattoo {n}</option>)}
+                      </select>
+                    </label>
                   </div>
                 </div>
               )}

@@ -14,6 +14,7 @@ type FlashEvent = {
   status: 'upcoming' | 'open' | 'closed'
   max_spots: number
   cover_image_url: string | null
+  total_designs: number | null
   artistIds: string[]
   guestArtistIds: string[]
 }
@@ -65,6 +66,7 @@ export function AdminFlash() {
   const [designImages, setDesignImages] = useState<DesignImageItem[]>([])
   const [designError, setDesignError]   = useState<string | null>(null)
   const designInputRef = useRef<HTMLInputElement>(null)
+  const [totalDesigns, setTotalDesigns] = useState('')
 
   async function load() {
     setLoading(true)
@@ -103,6 +105,7 @@ export function AdminFlash() {
     setError(null); setEditId(null)
     resetCover()
     setDesignImages([]); setDesignError(null)
+    setTotalDesigns('')
     if (designInputRef.current) designInputRef.current.value = ''
     setModal('add')
   }
@@ -122,6 +125,7 @@ export function AdminFlash() {
     setCoverPreview(ev.cover_image_url)
     if (fileInputRef.current) fileInputRef.current.value = ''
     setDesignError(null)
+    setTotalDesigns(ev.total_designs != null ? String(ev.total_designs) : '')
     if (designInputRef.current) designInputRef.current.value = ''
     setModal('edit')
 
@@ -237,6 +241,7 @@ export function AdminFlash() {
       max_spots: Number(form.max_spots),
       artist_id: selectedArtists[0] ?? null,
       cover_image_url: coverUrl,
+      total_designs: totalDesigns.trim() ? Number(totalDesigns) : null,
     }
 
     let eventId = editId
@@ -460,12 +465,12 @@ export function AdminFlash() {
               )}
             </div>
 
-            {/* ── Flash designs (up to 10) ── */}
+            {/* ── Flash designs (up to 10 sheet images) ── */}
             <div className="admin-modal__field">
               <label className="admin-modal__label">
-                Flash Designs
+                Flash Design Sheets
                 <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>
-                  up to {MAX_DESIGN_IMAGES} — customers pick from these when they queue
+                  up to {MAX_DESIGN_IMAGES} images — a sheet can show multiple numbered tattoos
                 </span>
               </label>
 
@@ -511,6 +516,25 @@ export function AdminFlash() {
               {designError && (
                 <p style={{ marginTop: 6, fontSize: '0.78rem', color: '#f87171' }}>{designError}</p>
               )}
+            </div>
+
+            <div className="admin-modal__field">
+              <label className="admin-modal__label">
+                Number of Tattoos to Choose From
+                <span style={{ fontWeight: 400, color: 'var(--text-dim)', marginLeft: 6 }}>
+                  e.g. 10 — how many numbered designs across the sheets above
+                </span>
+              </label>
+              <input
+                className="admin-modal__input"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={100}
+                value={totalDesigns}
+                placeholder="e.g. 10"
+                onChange={e => setTotalDesigns(e.target.value)}
+              />
             </div>
 
             <div className="admin-modal__field">

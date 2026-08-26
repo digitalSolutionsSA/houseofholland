@@ -38,8 +38,6 @@ type QueueRow = {
   selected_tattoo_numbers: number[] | null
 }
 
-type DesignImage = { position: number; image_url: string }
-
 const PLAN_LABELS: Record<MembershipPlan, string> = {
   free: 'Free',
   premium: 'Premium',
@@ -57,23 +55,15 @@ function initials(name: string | null): string {
   return name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
 }
 
-function TattooChoices({ numbers, images }: { numbers: number[] | null; images: DesignImage[] }) {
+function TattooChoices({ numbers }: { numbers: number[] | null }) {
   if (!numbers || numbers.length === 0) return null
   return (
     <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-      {numbers.map(n => {
-        const img = images.find(i => i.position === n)
-        return (
-          <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '2px 6px 2px 2px', borderRadius: 20, background: 'rgba(212,175,55,0.1)', border: '1px solid var(--border-gold)' }}>
-            {img ? (
-              <img src={img.image_url} alt={`Tattoo ${n}`} style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(212,175,55,0.2)' }} />
-            )}
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--gold)' }}>#{n}</span>
-          </div>
-        )
-      })}
+      {numbers.map(n => (
+        <span key={n} style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--gold)', padding: '2px 8px', borderRadius: 20, background: 'rgba(212,175,55,0.1)', border: '1px solid var(--border-gold)' }}>
+          Tattoo #{n}
+        </span>
+      ))}
     </div>
   )
 }
@@ -86,7 +76,6 @@ export function AdminFlashQueue() {
 
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [rows, setRows] = useState<QueueRow[]>([])
-  const [designImages, setDesignImages] = useState<DesignImage[]>([])
   const [loading, setLoading] = useState(true)
   const [removing, setRemoving] = useState<string | null>(null)
 
@@ -98,13 +87,15 @@ export function AdminFlashQueue() {
   const [claiming, setClaiming] = useState(false)
   const [claimError, setClaimError] = useState<string | null>(null)
 
-  // Completion modal
+  // Completion modal — up to 2 tattoos recorded separately (own photo/style/
+  // notes each) but charged as a single total price for the whole visit.
   const [completeTarget, setCompleteTarget] = useState<QueueRow | null>(null)
-  const [style, setStyle] = useState('')
-  const [notes, setNotes] = useState('')
+  const [tattooCount, setTattooCount] = useState<1 | 2>(1)
+  const [styles, setStyles] = useState<[string, string]>(['', ''])
+  const [notesArr, setNotesArr] = useState<[string, string]>(['', ''])
+  const [photoFiles, setPhotoFiles] = useState<[File | null, File | null]>([null, null])
   const [price, setPrice] = useState('')
   const [hours, setHours] = useState('')
-  const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
   const [completeError, setCompleteError] = useState<string | null>(null)
 
@@ -117,13 +108,6 @@ export function AdminFlashQueue() {
       .eq('id', eventId)
       .single()
     if (ev) setEvent(ev)
-
-    const { data: images } = await supabase
-      .from('flash_event_images')
-      .select('position, image_url')
-      .eq('flash_event_id', eventId)
-      .order('position', { ascending: true })
-    setDesignImages(images ?? [])
 
     const { data } = await supabase
       .from('flash_reservations')
@@ -209,46 +193,74 @@ export function AdminFlashQueue() {
 
   function openComplete(row: QueueRow) {
     setCompleteTarget(row)
-    setStyle(''); setNotes(''); setPrice(''); setHours(''); setPhotoFile(null)
+    setTattooCount(row.selected_tattoo_numbers && row.selected_tattoo_numbers.length === 2 ? 2 : 1)
+    setStyles(['', '']); setNotesArr(['', '']); setPhotoFiles([null, null])
+    setPrice(''); setHours('')
     setCompleteError(null)
+  }
+
+  function setPhotoFileAt(index: 0 | 1, file: File | null) {
+    setPhotoFiles(prev => { const next: [File | null, File | null] = [...prev]; next[index] = file; return next })
+  }
+  function setStyleAt(index: 0 | 1, value: string) {
+    setStyles(prev => { const next: [string, string] = [...prev]; next[index] = value; return next })
+  }
+  function setNotesAt(index: 0 | 1, value: string) {
+    setNotesArr(prev => { const next: [string, string] = [...prev]; next[index] = value; return next })
   }
 
   async function saveCompletion() {
     if (!completeTarget || !myArtistId) return
-    if (!photoFile) { setCompleteError('Upload a photo of the finished piece.'); return }
+    const activeIndexes = tattooCount === 2 ? [0, 1] : [0]
+    if (activeIndexes.some(i => !photoFiles[i])) {
+      setCompleteError(tattooCount === 2 ? 'Upload a photo for each tattoo.' : 'Upload a photo of the finished piece.')
+      return
+    }
     setSaving(true)
     setCompleteError(null)
 
-    const ext = photoFile.name.split('.').pop()
-    const path = `completions/${completeTarget.profile_id}/${Date.now()}.${ext}`
-    const { error: upErr } = await supabase.storage.from('portfolio').upload(path, photoFile, { upsert: true })
-    if (upErr) { setCompleteError(upErr.message); setSaving(false); return }
+    const completedAt = new Date().toISOString().split('T')[0]
+    let firstCompletionId: string | null = null
 
-    const { data: urlData } = supabase.storage.from('portfolio').getPublicUrl(path)
+    for (const i of activeIndexes) {
+      const file = photoFiles[i]!
+      const ext = file.name.split('.').pop()
+      const path = `completions/${completeTarget.profile_id}/${Date.now()}-${i}.${ext}`
+      const { error: upErr } = await supabase.storage.from('portfolio').upload(path, file, { upsert: true })
+      if (upErr) { setCompleteError(upErr.message); setSaving(false); return }
 
-    const { data: newComp, error: dbErr } = await supabase
-      .from('tattoo_completions')
-      .insert({
-        profile_id: completeTarget.profile_id,
-        artist_id: myArtistId,
-        photo_url: urlData.publicUrl,
-        style: style.trim() || null,
-        notes: notes.trim() || null,
-        completed_at: new Date().toISOString().split('T')[0],
-        price: price.trim() ? parseFloat(price) : null,
-        duration_hours: hours.trim() ? parseFloat(hours) : null,
-      })
-      .select('id')
-      .single()
+      const { data: urlData } = supabase.storage.from('portfolio').getPublicUrl(path)
 
-    if (dbErr) { setCompleteError(dbErr.message); setSaving(false); return }
+      // Total price/hours for the whole visit are recorded once, on the
+      // first tattoo's row, so revenue/analytics don't double-count a
+      // single charge across two completion rows.
+      const isFirst = i === activeIndexes[0]
+
+      const { data: newComp, error: dbErr } = await supabase
+        .from('tattoo_completions')
+        .insert({
+          profile_id: completeTarget.profile_id,
+          artist_id: myArtistId,
+          photo_url: urlData.publicUrl,
+          style: styles[i].trim() || null,
+          notes: notesArr[i].trim() || null,
+          completed_at: completedAt,
+          price: isFirst && price.trim() ? parseFloat(price) : null,
+          duration_hours: isFirst && hours.trim() ? parseFloat(hours) : null,
+        })
+        .select('id')
+        .single()
+
+      if (dbErr) { setCompleteError(dbErr.message); setSaving(false); return }
+      if (isFirst) firstCompletionId = newComp?.id ?? null
+    }
 
     if (price.trim() && profile?.id) {
       await awardSpendPoints({
         profileId: completeTarget.profile_id,
         price: parseFloat(price),
         awardedBy: profile.id,
-        referenceId: newComp?.id,
+        referenceId: firstCompletionId ?? undefined,
       })
     }
 
@@ -331,7 +343,7 @@ export function AdminFlashQueue() {
                       {myCurrentCustomer.profile?.phone && (
                         <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>{myCurrentCustomer.profile.phone}</p>
                       )}
-                      <TattooChoices numbers={myCurrentCustomer.selected_tattoo_numbers} images={designImages} />
+                      <TattooChoices numbers={myCurrentCustomer.selected_tattoo_numbers} />
                     </div>
                     <button className="admin-btn admin-btn--complete" style={{ width: 'auto' }} onClick={() => openComplete(myCurrentCustomer)}>
                       <CheckCircle2 size={13} style={{ display: 'inline', marginRight: 6 }} />
@@ -434,7 +446,7 @@ export function AdminFlashQueue() {
                           Joined {new Date(r.reserved_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                         </span>
                       </div>
-                      <TattooChoices numbers={r.selected_tattoo_numbers} images={designImages} />
+                      <TattooChoices numbers={r.selected_tattoo_numbers} />
                     </div>
 
                     {(r.status === 'claimed' || r.status === 'completed') && (
@@ -486,19 +498,63 @@ export function AdminFlashQueue() {
         <div className="admin-modal-overlay" onClick={e => e.target === e.currentTarget && !saving && setCompleteTarget(null)}>
           <div className="admin-modal">
             <h2 className="admin-modal__title">Finish — {completeTarget.profile?.full_name ?? 'Customer'}</h2>
-            <TattooChoices numbers={completeTarget.selected_tattoo_numbers} images={designImages} />
+            <TattooChoices numbers={completeTarget.selected_tattoo_numbers} />
 
             <div className="admin-modal__field">
-              <label className="admin-modal__label">Style / Category</label>
-              <StyleSelect value={style} onChange={setStyle} />
+              <label className="admin-modal__label">How many tattoos did you do?</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {([1, 2] as const).map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`admin-btn ${tattooCount === n ? 'admin-btn--primary' : 'admin-btn--ghost'}`}
+                    style={{ flex: 1 }}
+                    onClick={() => setTattooCount(n)}
+                  >
+                    {n} Tattoo{n === 2 ? 's' : ''}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="admin-modal__field">
-              <label className="admin-modal__label">Notes</label>
-              <textarea className="admin-modal__textarea" value={notes}
-                placeholder="Any notes about the piece…"
-                onChange={e => setNotes(e.target.value)} />
-            </div>
+            {(tattooCount === 2 ? [0, 1] as const : [0] as const).map(i => (
+              <div key={i} style={{ border: '1px solid var(--border-gold)', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+                {tattooCount === 2 && (
+                  <p style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 10 }}>
+                    Tattoo {i + 1}
+                  </p>
+                )}
+
+                <div className="admin-modal__field">
+                  <label className="admin-modal__label">Style / Category</label>
+                  <StyleSelect value={styles[i]} onChange={v => setStyleAt(i, v)} />
+                </div>
+
+                <div className="admin-modal__field">
+                  <label className="admin-modal__label">Notes</label>
+                  <textarea className="admin-modal__textarea" value={notesArr[i]}
+                    placeholder="Any notes about the piece…"
+                    onChange={e => setNotesAt(i, e.target.value)} />
+                </div>
+
+                <div className="admin-modal__field">
+                  <label className="admin-modal__label">Photo of Completed Work *</label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: 'var(--gold)', fontSize: '0.85rem' }}>
+                    <Upload size={15} />
+                    {photoFiles[i] ? photoFiles[i]!.name : 'Choose photo…'}
+                    <input type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => setPhotoFileAt(i, e.target.files?.[0] ?? null)} />
+                  </label>
+                  {photoFiles[i] && (
+                    <img
+                      src={URL.createObjectURL(photoFiles[i]!)}
+                      alt=""
+                      style={{ marginTop: 8, width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gold)' }}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="admin-modal__field">
@@ -506,6 +562,9 @@ export function AdminFlashQueue() {
                 <input className="admin-modal__input" type="number" inputMode="decimal" min="0" step="0.01"
                   value={price} placeholder="e.g. 350"
                   onChange={e => setPrice(e.target.value)} />
+                {tattooCount === 2 && (
+                  <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: 4 }}>Combined total for both tattoos</p>
+                )}
               </div>
               <div className="admin-modal__field">
                 <label className="admin-modal__label">Hours in Chair</label>
@@ -513,23 +572,6 @@ export function AdminFlashQueue() {
                   value={hours} placeholder="e.g. 1.5"
                   onChange={e => setHours(e.target.value)} />
               </div>
-            </div>
-
-            <div className="admin-modal__field">
-              <label className="admin-modal__label">Photo of Completed Work *</label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', color: 'var(--gold)', fontSize: '0.85rem' }}>
-                <Upload size={15} />
-                {photoFile ? photoFile.name : 'Choose photo…'}
-                <input type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => setPhotoFile(e.target.files?.[0] ?? null)} />
-              </label>
-              {photoFile && (
-                <img
-                  src={URL.createObjectURL(photoFile)}
-                  alt=""
-                  style={{ marginTop: 8, width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-gold)' }}
-                />
-              )}
             </div>
 
             {completeError && <p className="admin-modal__error">{completeError}</p>}
