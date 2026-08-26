@@ -41,7 +41,7 @@ type DesignImageItem = { id?: string; url: string; file?: File }
 export function AdminFlash() {
   const navigate = useNavigate()
   const { profile } = useAuth()
-  const isManager = profile?.role === 'manager'
+  const canManageFlash = profile?.role === 'manager' || profile?.role === 'artist'
 
   const [events, setEvents]             = useState<FlashEvent[]>([])
   const [artists, setArtists]           = useState<Artist[]>([])
@@ -314,7 +314,7 @@ export function AdminFlash() {
     <div>
       <div className="admin-page__header">
         <h1 className="admin-page__title">Flash Events</h1>
-        {isManager && (
+        {canManageFlash && (
           <button className="admin-btn admin-btn--primary" onClick={openAdd}>
             <Plus size={14} style={{ display: 'inline', marginRight: 6 }} />
             Add Event
@@ -325,7 +325,7 @@ export function AdminFlash() {
       {loading ? (
         <p className="admin-empty">Loading…</p>
       ) : events.length === 0 ? (
-        <p className="admin-empty">{isManager ? 'No flash events yet. Add one above.' : 'No flash events yet.'}</p>
+        <p className="admin-empty">{canManageFlash ? 'No flash events yet. Add one above.' : 'No flash events yet.'}</p>
       ) : (
         <div className="flash-events-grid">
           {events.map((ev) => {
@@ -386,7 +386,7 @@ export function AdminFlash() {
                       <button className="admin-btn admin-btn--ghost" onClick={() => navigate(`/admin/flash/${ev.id}/queue`)}>
                         <ListOrdered size={13} style={{ display: 'inline', marginRight: 5 }} />Queue
                       </button>
-                      {isManager && (
+                      {canManageFlash && (
                         <>
                           <button className="admin-btn admin-btn--ghost" onClick={() => openEdit(ev)}>
                             <Pencil size={13} style={{ display: 'inline', marginRight: 5 }} />Edit
