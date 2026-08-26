@@ -15,11 +15,13 @@ type FlashEvent = {
   artist_name: string | null
 }
 
-const CYCLE_MS = 1000
+const POSTER_MS = 3000
+const DESIGN_MS = 2000
 
 export function FlashDayCard() {
   const [event, setEvent] = useState<FlashEvent | null>(null)
   const [images, setImages] = useState<string[]>([])
+  const [hasPoster, setHasPoster] = useState(false)
   const [imageIndex, setImageIndex] = useState(0)
   const [spotsLeft, setSpotsLeft] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,8 +55,13 @@ export function FlashDayCard() {
         .eq('flash_event_id', ev.id)
         .order('position', { ascending: true })
 
+      // Poster leads the cycle (held longer), followed by the individual
+      // design sheets — the poster was previously dropped entirely
+      // whenever design images existed.
       const designUrls = (designImages ?? []).map(d => d.image_url)
-      setImages(designUrls.length > 0 ? designUrls : ev.cover_image_url ? [ev.cover_image_url] : [])
+      const posterUrl = ev.cover_image_url
+      setHasPoster(!!posterUrl)
+      setImages(posterUrl ? [posterUrl, ...designUrls] : designUrls)
 
       const { count } = await supabase
         .from('flash_reservations')
@@ -67,15 +74,16 @@ export function FlashDayCard() {
     load()
   }, [])
 
-  // Cycle through the flash day's design images every second so the card
-  // doesn't just sit on the poster the whole time.
+  // Cycle through the flash day's images — the poster (slide 0, when
+  // present) holds longer than the individual design sheets that follow.
   useEffect(() => {
     if (images.length <= 1) return
-    const timer = setInterval(() => {
+    const duration = hasPoster && imageIndex === 0 ? POSTER_MS : DESIGN_MS
+    const timer = setTimeout(() => {
       setImageIndex(i => (i + 1) % images.length)
-    }, CYCLE_MS)
-    return () => clearInterval(timer)
-  }, [images.length])
+    }, duration)
+    return () => clearTimeout(timer)
+  }, [images.length, hasPoster, imageIndex])
 
   if (loading || !event) return null
 
