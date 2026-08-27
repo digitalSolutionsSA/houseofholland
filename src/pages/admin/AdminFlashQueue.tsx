@@ -356,6 +356,24 @@ export function AdminFlashQueue() {
                   <p style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 10 }}>
                     You're checked in
                   </p>
+                  {anyoneWaiting && waiting[0] && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'rgba(var(--accent-rgb), 0.05)', border: '1px solid rgba(var(--accent-rgb), 0.15)' }}>
+                      {waiting[0].profile?.avatar_url ? (
+                        <img src={waiting[0].profile.avatar_url} alt="" className="admin-table__avatar" />
+                      ) : (
+                        <div className="admin-table__avatar--empty" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: 'var(--gold)' }}>
+                          {initials(waiting[0].profile?.full_name ?? null)}
+                        </div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: 2 }}>Up next</p>
+                        <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>
+                          {waiting[0].profile?.full_name ?? 'Unknown customer'}
+                        </p>
+                        <TattooChoices numbers={waiting[0].selected_tattoo_numbers} />
+                      </div>
+                    </div>
+                  )}
                   <button className="admin-btn admin-btn--primary" onClick={acceptNext} disabled={claiming || !anyoneWaiting}>
                     <ChevronRight size={13} style={{ display: 'inline', marginRight: 6 }} />
                     {claiming ? 'Accepting…' : anyoneWaiting ? 'Accept Next Customer' : 'No one waiting'}

@@ -19,8 +19,10 @@
 .vault-card__thumb {
   width: 64px;
   height: 64px;
+  aspect-ratio: 1 / 1;
   border-radius: 12px;
   object-fit: cover;
+  object-position: center;
   flex-shrink: 0;
 }
 
