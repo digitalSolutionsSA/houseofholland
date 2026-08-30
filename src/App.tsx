@@ -9,6 +9,7 @@ import { usePushNotifications } from './hooks/usePushNotifications'
 const OverviewPage        = lazy(() => import('./pages/OverviewPage').then(m        => ({ default: m.OverviewPage })))
 const LoginPage           = lazy(() => import('./pages/LoginPage').then(m           => ({ default: m.LoginPage })))
 const SupportPage         = lazy(() => import('./pages/SupportPage').then(m         => ({ default: m.SupportPage })))
+const PrivacyPage         = lazy(() => import('./pages/PrivacyPage').then(m         => ({ default: m.PrivacyPage })))
 const HomePage            = lazy(() => import('./pages/HomePage').then(m            => ({ default: m.HomePage })))
 
 // Customer pages — lazy loaded
@@ -114,6 +115,8 @@ export default function App() {
             <Route path="/login" element={<RedirectIfAuthed><LoginPage /></RedirectIfAuthed>} />
             {/* Public, unauthenticated — this is the App Store Support URL destination */}
             <Route path="/support" element={<SupportPage />} />
+            {/* Public, unauthenticated — this is the App Store Privacy Policy URL destination */}
+            <Route path="/privacy" element={<PrivacyPage />} />
 
             <Route path="/home"                            element={<RequireAuth><HomePage /></RequireAuth>} />
             <Route path="/artists"                         element={<RequireAuth><ArtistsPage /></RequireAuth>} />
