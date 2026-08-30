@@ -7,11 +7,12 @@ import { CustomerViewBanner } from './CustomerViewBanner'
 import { useAuth } from '../../context/AuthContext'
 import { useMembership } from '../../hooks/useMembership'
 
-const AUTH_ROUTES = ['/', '/login']
+const AUTH_ROUTES = ['/', '/login', '/support']
 
 const HIDE_MOBILE_NAV = [
   '/',
   '/login',
+  '/support',
   '/consent',
   '/bookings/select-time',
 ]
