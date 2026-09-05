@@ -275,6 +275,63 @@
   cursor: not-allowed;
 }
 
+.profile-page__save-btn--danger {
+  background: linear-gradient(135deg, #e5484d, #f28b8e, #e5484d);
+  color: #fff;
+}
+
+/* ── Delete account modal ── */
+.profile-page__delete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.profile-page__delete-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 380px;
+  width: 100%;
+  background: var(--surface, #1a1a1a);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+}
+
+.profile-page__delete-modal h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.profile-page__delete-modal p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.profile-page__delete-label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.profile-page__delete-modal .profile-page__input {
+  width: 100%;
+}
+
+.profile-page__delete-modal .profile-page__form-actions {
+  width: 100%;
+  margin-top: 4px;
+}
+
 /* ── ID Document ── */
 .profile-page__id-section {
   display: flex;

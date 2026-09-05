@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   ChevronRight, CreditCard, Award, Shirt, FilePen,
   LogOut, Camera, User, Mail, Phone, Save, X, Loader2,
-  IdCard, Upload, CheckCircle2, Palette,
+  IdCard, Upload, CheckCircle2, Palette, Trash2, AlertTriangle,
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
@@ -138,6 +138,29 @@ export function ProfilePage() {
   async function handleSignOut() {
     await signOut()
     navigate('/login')
+  }
+
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  async function handleDeleteAccount() {
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const { data, error: fnErr } = await supabase.functions.invoke('delete-account', {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+      })
+      if (fnErr) throw new Error(fnErr.message)
+      if (data?.error) throw new Error(data.error)
+      await supabase.auth.signOut()
+      navigate('/login')
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Something went wrong. Please try again.')
+      setDeleting(false)
+    }
   }
 
   async function onIdPick(e: React.ChangeEvent<HTMLInputElement>) {
@@ -407,10 +430,63 @@ export function ProfilePage() {
               <span>Sign Out</span>
               <ChevronRight size={18} strokeWidth={1.5} />
             </button>
+            <button
+              type="button"
+              className="profile-page__link profile-page__link--danger"
+              onClick={() => { setDeleteOpen(true); setDeleteConfirmText(''); setDeleteError(null) }}
+            >
+              <Trash2 size={20} strokeWidth={1.5} />
+              <span>Delete Account</span>
+              <ChevronRight size={18} strokeWidth={1.5} />
+            </button>
           </nav>
         )}
 
       </div>
+
+      {deleteOpen && (
+        <div className="profile-page__delete-overlay" role="dialog" aria-modal="true">
+          <div className="profile-page__delete-modal">
+            <AlertTriangle size={28} strokeWidth={1.5} color="#e5484d" />
+            <h3>Delete your account?</h3>
+            <p>
+              This permanently deletes your account, profile, bookings, vault, and all
+              associated data. This action cannot be undone.
+            </p>
+            <label className="profile-page__delete-label">
+              Type <strong>DELETE</strong> to confirm
+            </label>
+            <input
+              className="profile-page__input"
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              autoCapitalize="characters"
+              disabled={deleting}
+            />
+            {deleteError && <p className="profile-page__error">{deleteError}</p>}
+            <div className="profile-page__form-actions">
+              <button
+                type="button"
+                className="profile-page__cancel-btn"
+                onClick={() => setDeleteOpen(false)}
+                disabled={deleting}
+              >
+                <X size={14} /> Cancel
+              </button>
+              <button
+                type="button"
+                className="profile-page__save-btn profile-page__save-btn--danger"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmText.trim().toUpperCase() !== 'DELETE'}
+              >
+                {deleting ? <Loader2 size={14} className="profile-page__avatar-spinner" /> : <Trash2 size={14} />}
+                {deleting ? 'Deleting…' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* ── Theme demo (staff only) — right column on tablet+ ── */}
         {isStaff && !editing && (

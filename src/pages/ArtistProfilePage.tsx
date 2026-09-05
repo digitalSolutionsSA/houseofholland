@@ -241,7 +241,8 @@ export function ArtistProfilePage() {
   }
 
   async function openChat() {
-    if (!user || !artist) return
+    if (!artist) return
+    if (!user) { navigate('/login'); return }
     // Don't let the artist message themselves
     if (artist.profile_id === user.id) return
 
@@ -280,6 +281,7 @@ export function ArtistProfilePage() {
   }
 
   function openReviewModal() {
+    if (!user) { navigate('/login'); return }
     setReviewError('')
     setReviewSuccess(false)
     setShowReviewModal(true)

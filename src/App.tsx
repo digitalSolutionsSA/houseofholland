@@ -119,10 +119,13 @@ export default function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
 
             <Route path="/home"                            element={<RequireAuth><HomePage /></RequireAuth>} />
-            <Route path="/artists"                         element={<RequireAuth><ArtistsPage /></RequireAuth>} />
-            <Route path="/artists/:artistId"               element={<RequireAuth><ArtistProfilePage /></RequireAuth>} />
+            {/* Browsing artists and the merch shop doesn't require an account —
+                only account-based actions (booking, messaging, checkout) are gated,
+                on their own routes. */}
+            <Route path="/artists"                         element={<ArtistsPage />} />
+            <Route path="/artists/:artistId"               element={<ArtistProfilePage />} />
             <Route path="/vault"                           element={<RequireAuth><VaultPage /></RequireAuth>} />
-            <Route path="/merch"                           element={<RequireAuth><MerchPage /></RequireAuth>} />
+            <Route path="/merch"                           element={<MerchPage />} />
             <Route path="/consent"                         element={<RequireAuth><ConsentFormsPage /></RequireAuth>} />
             <Route path="/passport"                        element={<RequireAuth><PassportPage /></RequireAuth>} />
             <Route path="/battle-pass"                     element={<RequireAuth><BattlePassPage /></RequireAuth>} />

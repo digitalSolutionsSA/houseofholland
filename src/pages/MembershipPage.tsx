@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Capacitor } from '@capacitor/core'
 import { Check, Star, Zap, Crown, Smartphone, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
 import './MembershipPage.css'
+
+// Paid tiers are sold via PayFast (a payment method other than In-App Purchase).
+// Apple's guidelines require digital subscriptions to be purchasable via IAP on iOS,
+// so upgrade purchasing is disabled in the iOS app until StoreKit IAP is wired up.
+const IAP_REQUIRED = Capacitor.getPlatform() === 'ios'
 
 const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.houseofhollandtattoos'
 const IOS_URL     = 'https://apps.apple.com/app/house-of-holland-tattoos/id000000000'
@@ -279,7 +285,7 @@ export function MembershipPage() {
                 <div className="membership-tier__cta membership-tier__cta--disabled">Active Plan</div>
               )}
 
-              {isUpgrade && (
+              {isUpgrade && !IAP_REQUIRED && (
                 <button
                   className={[
                     'membership-tier__cta',
@@ -292,6 +298,10 @@ export function MembershipPage() {
                     ? <><Loader2 size={14} className="membership-page__spinner" /> Redirecting…</>
                     : `Upgrade to ${name}`}
                 </button>
+              )}
+
+              {isUpgrade && IAP_REQUIRED && (
+                <div className="membership-tier__cta membership-tier__cta--disabled">Coming Soon</div>
               )}
             </div>
           )
