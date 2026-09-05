@@ -30,7 +30,8 @@ body {
   line-height: 1.45;
   overflow-x: hidden;
   overscroll-behavior: none;
-  touch-action: pan-y;
+  /* manipulation = allow scroll/pan but kill double-tap-to-zoom */
+  touch-action: manipulation;
 }
 
 /* Tier marble + dark tint painted directly on body's own background instead

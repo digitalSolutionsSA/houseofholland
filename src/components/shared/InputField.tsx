@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode } from 'react'
+import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react'
 import './InputField.css'
 
 type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
@@ -7,17 +7,17 @@ type InputFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   onRightIconClick?: () => void
 }
 
-export function InputField({
+export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(function InputField({
   leftIcon,
   rightIcon,
   onRightIconClick,
   className = '',
   ...props
-}: InputFieldProps) {
+}, ref) {
   return (
     <div className={`input-field ${className}`}>
       {leftIcon && <span className="input-field__icon input-field__icon--left">{leftIcon}</span>}
-      <input className="input-field__input" {...props} />
+      <input ref={ref} className="input-field__input" {...props} />
       {rightIcon && (
         <button
           type="button"
@@ -31,4 +31,4 @@ export function InputField({
       )}
     </div>
   )
-}
+})

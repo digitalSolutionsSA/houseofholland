@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, User, Tag } from 'lucide-react'
 import { Logo } from '../components/shared/Logo'
@@ -12,6 +12,7 @@ import './LoginPage.css'
 export function LoginPage() {
   const navigate = useNavigate()
   const { signIn, signUp, resetPassword } = useAuth()
+  const emailRef = useRef<HTMLInputElement>(null)
 
   const [tab, setTab] = useState<'login' | 'register'>('login')
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +26,15 @@ export function LoginPage() {
   const [fullName, setFullName] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [referralCode, setReferralCode] = useState('')
+
+  // WKWebView often ignores a focus() called the instant the page mounts —
+  // the layout/animation hasn't settled yet, so the keyboard-raise gets
+  // dropped. A short delay after mount makes it reliably pop the keyboard.
+  useEffect(() => {
+    if (forgotMode) return
+    const t = setTimeout(() => emailRef.current?.focus(), 250)
+    return () => clearTimeout(t)
+  }, [tab, forgotMode])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -119,6 +129,7 @@ export function LoginPage() {
             )}
 
             <InputField
+              ref={emailRef}
               type="email"
               placeholder="Email address"
               leftIcon={<Mail size={18} strokeWidth={1.5} />}
