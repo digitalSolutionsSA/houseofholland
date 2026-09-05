@@ -19,6 +19,7 @@
     "@capacitor/push-notifications": "^8.1.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
+    "@revenuecat/purchases-capacitor": "^13.5.0",
     "@supabase/supabase-js": "^2.110.7",
     "@types/three": "^0.185.1",
     "html-to-image": "^1.11.13",

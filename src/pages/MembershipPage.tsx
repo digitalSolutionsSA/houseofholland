@@ -5,12 +5,15 @@ import { Check, Star, Zap, Crown, Smartphone, Loader2, CheckCircle2, XCircle } f
 import { useAuth } from '../context/AuthContext'
 import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
+import { iapAvailable, purchaseTier } from '../lib/purchases'
 import './MembershipPage.css'
 
 // Paid tiers are sold via PayFast (a payment method other than In-App Purchase).
-// Apple's guidelines require digital subscriptions to be purchasable via IAP on iOS,
-// so upgrade purchasing is disabled in the iOS app until StoreKit IAP is wired up.
+// Apple's guidelines require digital subscriptions to be purchasable via IAP on iOS.
+// On iOS we require a working RevenueCat/StoreKit purchase path — if it isn't
+// configured yet (no API key), upgrades stay hidden rather than falling back to PayFast.
 const IAP_REQUIRED = Capacitor.getPlatform() === 'ios'
+const IAP_READY = IAP_REQUIRED && iapAvailable()
 
 const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.houseofhollandtattoos'
 const IOS_URL     = 'https://apps.apple.com/app/house-of-holland-tattoos/id000000000'
@@ -86,7 +89,7 @@ const TIERS = [
 const TIER_IDS = ['free', 'premium', 'black-card'] as const
 
 export function MembershipPage() {
-  const { profile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
   const { tier } = useMembership()
   const [searchParams] = useSearchParams()
   const paymentStatus = searchParams.get('status')
@@ -99,6 +102,28 @@ export function MembershipPage() {
   async function handleUpgrade(targetId: 'premium' | 'black-card') {
     setUpgrading(targetId)
     setUpgradeError(null)
+
+    if (IAP_REQUIRED) {
+      try {
+        const unlockedTier = await purchaseTier(targetId)
+        if (unlockedTier) {
+          // The RevenueCat webhook updates profiles.membership_plan server-side;
+          // refresh so the UI reflects it as soon as that lands.
+          await refreshProfile()
+        }
+      } catch (err: any) {
+        if (err?.userCancelled) {
+          // User backed out of the native purchase sheet — not an error.
+        } else {
+          setUpgradeError(err?.message || 'Purchase failed. Please try again.')
+          console.error(err)
+        }
+      } finally {
+        setUpgrading(null)
+      }
+      return
+    }
+
     try {
       const { data, error } = await supabase.functions.invoke('create-payfast-payment', {
         body: {
@@ -285,7 +310,7 @@ export function MembershipPage() {
                 <div className="membership-tier__cta membership-tier__cta--disabled">Active Plan</div>
               )}
 
-              {isUpgrade && !IAP_REQUIRED && (
+              {isUpgrade && (!IAP_REQUIRED || IAP_READY) && (
                 <button
                   className={[
                     'membership-tier__cta',
@@ -295,12 +320,12 @@ export function MembershipPage() {
                   disabled={!!upgrading}
                 >
                   {isLoading
-                    ? <><Loader2 size={14} className="membership-page__spinner" /> Redirecting…</>
+                    ? <><Loader2 size={14} className="membership-page__spinner" /> {IAP_REQUIRED ? 'Purchasing…' : 'Redirecting…'}</>
                     : `Upgrade to ${name}`}
                 </button>
               )}
 
-              {isUpgrade && IAP_REQUIRED && (
+              {isUpgrade && IAP_REQUIRED && !IAP_READY && (
                 <div className="membership-tier__cta membership-tier__cta--disabled">Coming Soon</div>
               )}
             </div>

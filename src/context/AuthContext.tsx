@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase, type Profile } from '../lib/supabase'
+import { configurePurchases, logOutPurchases } from '../lib/purchases'
 
 type AuthContextValue = {
   session: Session | null
@@ -60,15 +61,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id).finally(() => setLoading(false))
-      else setLoading(false)
+      if (session?.user) {
+        configurePurchases(session.user.id)
+        fetchProfile(session.user.id).finally(() => setLoading(false))
+      } else {
+        setLoading(false)
+      }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      else setRealProfile(null)
+      if (session?.user) {
+        configurePurchases(session.user.id)
+        fetchProfile(session.user.id)
+      } else {
+        setRealProfile(null)
+        logOutPurchases()
+      }
     })
 
     return () => subscription.unsubscribe()
