@@ -122,6 +122,22 @@
   margin-top: 2px;
 }
 
+.login-page__skip {
+  display: block;
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.login-page__skip:hover {
+  opacity: 1;
+}
+
 /* ── Social ── */
 .login-page__social {
   width: 100%;

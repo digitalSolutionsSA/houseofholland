@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, User, Tag } from 'lucide-react'
 import { Logo } from '../components/shared/Logo'
 import { DiamondDivider } from '../components/shared/DiamondDivider'
@@ -203,6 +203,11 @@ export function LoginPage() {
             )}
           </form>
 
+          {!forgotMode && (
+            <Link to="/artists" className="login-page__skip">
+              Skip — Browse without an account
+            </Link>
+          )}
         </div>
 
         <DiamondDivider />
