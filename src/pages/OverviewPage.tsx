@@ -69,6 +69,12 @@ export function OverviewPage() {
           <p className="overview-page__signin">
             Already have an account? <Link to="/login">Sign In</Link>
           </p>
+          <p className="overview-page__browse">
+            <Link to="/artists">Browse Artists</Link>
+            {' · '}
+            <Link to="/merch">Shop Merch</Link>
+            {' — no account needed'}
+          </p>
         </footer>
       </div>
     </div>

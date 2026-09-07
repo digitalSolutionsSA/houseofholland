@@ -18,7 +18,9 @@
   background: transparent;
   outline: none;
   color: var(--text);
-  font-size: 0.95rem;
+  /* iOS auto-zooms the page on focus for any input under 16px — this
+     keeps the layout from jumping/zooming when the keyboard opens. */
+  font-size: 16px;
 }
 
 .input-field__input::placeholder {

@@ -116,6 +116,17 @@
   font-weight: 600;
 }
 
+.overview-page__browse {
+  margin-top: clamp(4px, 1dvh, 10px);
+  font-size: clamp(0.72rem, 1.8dvh, 0.82rem);
+  color: var(--text-muted);
+}
+
+.overview-page__browse a {
+  color: var(--gold);
+  font-weight: 600;
+}
+
 @media (min-width: 1024px) {
   .overview-page__brand {
     width: min(100%, 280px);

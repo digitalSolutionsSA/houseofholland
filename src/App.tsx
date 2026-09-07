@@ -4,10 +4,13 @@ import { AppLayout } from './components/shared/AppLayout'
 import { AdminLayout } from './pages/admin/AdminLayout'
 import { useAuth } from './context/AuthContext'
 import { usePushNotifications } from './hooks/usePushNotifications'
+// Loaded statically (not lazy) — navigating here needs to be synchronous
+// with the tap that got us here, or iOS won't treat the auto-focus that
+// follows as coming from a real user gesture and won't raise the keyboard.
+import { LoginPage } from './pages/LoginPage'
 
 // Eagerly loaded — structural, always needed
 const OverviewPage        = lazy(() => import('./pages/OverviewPage').then(m        => ({ default: m.OverviewPage })))
-const LoginPage           = lazy(() => import('./pages/LoginPage').then(m           => ({ default: m.LoginPage })))
 const SupportPage         = lazy(() => import('./pages/SupportPage').then(m         => ({ default: m.SupportPage })))
 const PrivacyPage         = lazy(() => import('./pages/PrivacyPage').then(m         => ({ default: m.PrivacyPage })))
 const HomePage            = lazy(() => import('./pages/HomePage').then(m            => ({ default: m.HomePage })))
