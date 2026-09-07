@@ -5,7 +5,7 @@ import type { MembershipPlan } from './supabase'
 // RevenueCat public SDK keys — safe to ship in the client (same trust level as
 // a Stripe publishable key). Get these from RevenueCat → Project settings → API keys.
 // Leave blank until RevenueCat is set up; purchasing stays disabled until then.
-const REVENUECAT_IOS_KEY = ''
+const REVENUECAT_IOS_KEY = 'appl_ayAUlrlMydpDnTkNgsYgdSBIxYH'
 const REVENUECAT_ANDROID_KEY = ''
 
 // RevenueCat entitlement identifiers — must match what's configured in the
