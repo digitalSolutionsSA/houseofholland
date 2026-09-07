@@ -55,8 +55,10 @@ Deno.serve(async (req) => {
 
     const userId = event.app_user_id
 
-    // Events that mean "no longer entitled" — downgrade to free.
-    const DOWNGRADE_EVENTS = ['EXPIRATION', 'CANCELLATION']
+    // Only EXPIRATION means access has actually ended. CANCELLATION just means
+    // auto-renew was turned off — the customer already paid for the current
+    // period and keeps their tier until it expires, so it's excluded here.
+    const DOWNGRADE_EVENTS = ['EXPIRATION']
     // Events that mean "entitlement is (still) active" — resolve the highest tier.
     const UPGRADE_EVENTS = [
       'INITIAL_PURCHASE', 'RENEWAL', 'PRODUCT_CHANGE',
