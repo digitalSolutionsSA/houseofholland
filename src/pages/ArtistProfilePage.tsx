@@ -109,6 +109,18 @@ export function ArtistProfilePage() {
   const [chatError, setChatError] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
 
+  // Lock the page's own scroll container while a modal is open so a scroll
+  // gesture over the backdrop moves the modal's content, not the page behind it.
+  useEffect(() => {
+    if (!showReviewModal && !showReviewsModal && !lightbox) return
+    const pageEl = document.querySelector('.page')
+    const prevOverflow = pageEl instanceof HTMLElement ? pageEl.style.overflow : ''
+    if (pageEl instanceof HTMLElement) pageEl.style.overflow = 'hidden'
+    return () => {
+      if (pageEl instanceof HTMLElement) pageEl.style.overflow = prevOverflow
+    }
+  }, [showReviewModal, showReviewsModal, lightbox])
+
   useEffect(() => {
     if (!artistId) return
     const CACHE_KEY = `hoh_artist_${artistId}_v1`

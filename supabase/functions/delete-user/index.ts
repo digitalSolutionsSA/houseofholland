@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const ADMIN_EMAIL = 'info@digitalsolutionssa.co.za'
+const ADMIN_EMAILS = ['info@digitalsolutionssa.co.za', 'armand@hohtattoos.com']
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,8 +34,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Check caller is the admin
-    if (caller.email?.toLowerCase() !== ADMIN_EMAIL) {
+    // Check caller is an admin
+    if (!ADMIN_EMAILS.includes(caller.email?.toLowerCase() ?? '')) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

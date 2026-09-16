@@ -16,7 +16,7 @@ const IAP_REQUIRED = Capacitor.getPlatform() === 'ios'
 const IAP_READY = IAP_REQUIRED && iapAvailable()
 
 const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.houseofhollandtattoos'
-const IOS_URL     = 'https://apps.apple.com/app/house-of-holland-tattoos/id000000000'
+const IOS_URL     = 'https://apps.apple.com/us/app/hoh-tattoo/id6804735149'
 
 function qr(url: string) {
   return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=8`

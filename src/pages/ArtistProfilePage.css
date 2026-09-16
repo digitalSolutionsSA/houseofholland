@@ -193,16 +193,22 @@
   justify-content: center;
   padding: 16px;
   backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 .artist-profile-lightbox__inner {
   position: relative;
   max-width: min(560px, 100%);
   width: 100%;
+  max-height: 100%;
   border-radius: 16px;
-  overflow: hidden;
+  overflow-y: auto;
   background: #111;
   border: 1px solid rgba(var(--accent-rgb), 0.25);
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 .artist-profile-lightbox__close {
@@ -381,6 +387,8 @@
   justify-content: center;
   padding: 0;
   backdrop-filter: blur(4px);
+  overscroll-behavior: contain;
+  touch-action: none;
 }
 
 @media (min-width: 640px) {
@@ -401,8 +409,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: 90dvh;
+  max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 
 @media (min-width: 640px) {
@@ -547,5 +559,9 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 16px;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }

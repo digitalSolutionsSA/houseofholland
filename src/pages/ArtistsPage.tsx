@@ -119,6 +119,18 @@ export function ArtistsPage() {
   const [showFaq, setShowFaq] = useState(false)
   const [chatLoading, setChatLoading] = useState(false)
 
+  // Lock the page's own scroll container while the FAQ sheet is open so a
+  // scroll gesture over the backdrop moves the sheet's content, not the page behind it.
+  useEffect(() => {
+    if (!showFaq) return
+    const pageEl = document.querySelector('.page')
+    const prevOverflow = pageEl instanceof HTMLElement ? pageEl.style.overflow : ''
+    if (pageEl instanceof HTMLElement) pageEl.style.overflow = 'hidden'
+    return () => {
+      if (pageEl instanceof HTMLElement) pageEl.style.overflow = prevOverflow
+    }
+  }, [showFaq])
+
   useEffect(() => {
     const CACHE_KEY = 'hoh_artists_v1'
     const cached = sessionStorage.getItem(CACHE_KEY)
