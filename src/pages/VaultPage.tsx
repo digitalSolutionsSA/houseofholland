@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, Lock } from 'lucide-react'
+import { X, Lock, Trash2 } from 'lucide-react'
 import { Link, Navigate } from 'react-router-dom'
 import { PageHeader } from '../components/shared/PageHeader'
 import { VaultCard, type VaultEntry } from '../components/vault/VaultCard'
@@ -15,6 +15,7 @@ export function VaultPage() {
   const [entries, setEntries] = useState<VaultEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<VaultEntry | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!profile?.id || !isPremium) { setLoading(false); return }
@@ -44,6 +45,29 @@ export function VaultPage() {
         setLoading(false)
       })
   }, [profile?.id, isPremium])
+
+  async function handleDelete(entry: VaultEntry) {
+    if (!profile?.id) return
+    if (!confirm(`Remove "${entry.title}" from your vault? This cannot be undone.`)) return
+
+    setDeleting(true)
+    const { error } = await supabase
+      .from('tattoo_completions')
+      .delete()
+      .eq('id', entry.id)
+      .eq('profile_id', profile.id)
+    setDeleting(false)
+
+    if (error) {
+      alert(error.message)
+      return
+    }
+
+    const next = entries.filter(e => e.id !== entry.id)
+    setEntries(next)
+    sessionStorage.setItem(`hoh_vault_${profile.id}_v1`, JSON.stringify(next))
+    setSelected(null)
+  }
 
   // ── Conditional returns after all hooks ──
   if (profile?.role === 'artist' || profile?.role === 'manager') return <Navigate to="/home" replace />
@@ -138,6 +162,15 @@ export function VaultPage() {
               {selected.price != null && (
                 <p className="vault-lightbox__price">${selected.price.toFixed(2)}</p>
               )}
+              <button
+                type="button"
+                className="vault-lightbox__delete"
+                onClick={() => handleDelete(selected)}
+                disabled={deleting}
+              >
+                <Trash2 size={15} strokeWidth={1.75} />
+                {deleting ? 'Removing…' : 'Remove from vault'}
+              </button>
             </div>
           </div>
         </div>

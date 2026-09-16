@@ -425,6 +425,25 @@
 
 .review-modal--list {
   gap: 0;
+  /* The header (title/close) stays put; only .review-modal__list scrolls.
+     Nesting two auto-overflow scroll containers (this + the list) made
+     touch scrolls get swallowed by the inner one without moving anything,
+     since it had no bounded height of its own to scroll within. */
+  height: 85vh;
+  height: 85dvh;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .review-modal--list {
+    height: auto;
+    max-height: 80vh;
+    max-height: 80dvh;
+  }
+}
+
+.review-modal--list .review-modal__title {
+  flex-shrink: 0;
 }
 
 .review-modal__close {
@@ -559,8 +578,10 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 16px;
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
+  padding-bottom: 24px;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior: contain;
