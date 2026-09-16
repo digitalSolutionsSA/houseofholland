@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
-import { Check, Star, Zap, Crown, Smartphone, Loader2, CheckCircle2, XCircle } from 'lucide-react'
+import { Check, Star, Zap, Crown, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useMembership } from '../hooks/useMembership'
 import { supabase } from '../lib/supabase'
@@ -14,13 +14,6 @@ import './MembershipPage.css'
 // configured yet (no API key), upgrades stay hidden rather than falling back to PayFast.
 const IAP_REQUIRED = Capacitor.getPlatform() === 'ios'
 const IAP_READY = IAP_REQUIRED && iapAvailable()
-
-const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.houseofhollandtattoos'
-const IOS_URL     = 'https://apps.apple.com/us/app/hoh-tattoo/id6804735149'
-
-function qr(url: string) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=8`
-}
 
 const TIERS = [
   {
@@ -194,26 +187,6 @@ export function MembershipPage() {
             </ul>
           </div>
         ))}
-      </div>
-
-      <div className="membership-page__download">
-        <div className="membership-page__download-head">
-          <Smartphone size={18} strokeWidth={1.5} />
-          <h2>Download the App</h2>
-        </div>
-        <p className="membership-page__download-sub">Share these QR codes with clients so they can download the House of Holland app.</p>
-        <div className="membership-page__qr-row">
-          <div className="membership-page__qr-card">
-            <img src={qr(ANDROID_URL)} alt="Android QR code" className="membership-page__qr-img" />
-            <p className="membership-page__qr-label">Google Play</p>
-            <p className="membership-page__qr-platform">Android</p>
-          </div>
-          <div className="membership-page__qr-card">
-            <img src={qr(IOS_URL)} alt="iOS QR code" className="membership-page__qr-img" />
-            <p className="membership-page__qr-label">App Store</p>
-            <p className="membership-page__qr-platform">iPhone / iPad</p>
-          </div>
-        </div>
       </div>
     </div>
   )
