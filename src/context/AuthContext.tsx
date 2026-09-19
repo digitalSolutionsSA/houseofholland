@@ -97,16 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
     if (error) return error.message
     if (referralCode && data.user) {
-      const code = referralCode.trim().toUpperCase()
-      // Verify the code exists before saving it
-      const { data: artist } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('referral_code', code)
-        .single()
-      if (artist) {
-        await supabase.from('profiles').update({ referred_by_code: code }).eq('id', data.user.id)
-      }
+      // Artist code or a member's referral code — resolved server-side
+      await supabase.rpc('apply_referral_code', { p_code: referralCode.trim().toUpperCase() })
     }
     return null
   }

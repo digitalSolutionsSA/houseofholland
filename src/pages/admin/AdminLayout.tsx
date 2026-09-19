@@ -54,7 +54,7 @@ export function AdminLayout() {
   const links = [
     ...(isManager ? MANAGER_LINKS : ARTIST_LINKS),
     ...(isSuper ? SUPER_LINKS : []),
-    ...(canSeeReferrals ? [{ to: '/admin/referrals', label: 'Referrals', icon: GitBranch }] : []),
+    ...(canSeeReferrals ? [{ to: '/admin/referrals', label: 'Referrals', icon: GitBranch }, { to: '/admin/rewards', label: 'Loyalty Rewards', icon: Trophy }] : []),
   ]
 
   const [menuOpen, setMenuOpen] = useState(false)

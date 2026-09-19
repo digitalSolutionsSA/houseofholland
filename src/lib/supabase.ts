@@ -18,6 +18,8 @@ export type Profile = {
   phone: string | null
   avatar_url: string | null
   referred_by_code: string | null
+  referral_code: string | null
+  birthdate: string | null
   membership_plan: MembershipPlan
   payfast_token: string | null
   subscribed_at: string | null

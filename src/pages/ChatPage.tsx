@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ChevronLeft, Send, Paperclip, X, FileText } from 'lucide-react'
+import { ChevronLeft, Send, Paperclip, X, FileText, Mic, Square } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { STUDIO_TZ } from '../lib/studioTime'
@@ -62,6 +62,15 @@ function isImageType(type: string | null, url: string | null) {
   return /\.(jpe?g|png|gif|webp|heic|heif)(\?|$)/i.test(url)
 }
 
+function fmtDuration(sec: number) {
+  return `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`
+}
+
+function pickAudioMime() {
+  const types = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm']
+  return types.find(t => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) ?? ''
+}
+
 export function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const { user } = useAuth()
@@ -75,6 +84,12 @@ export function ChatPage() {
   const [uploading, setUploading] = useState(false)
   const [attachPreview, setAttachPreview] = useState<{ file: File; url: string } | null>(null)
   const [sendError, setSendError] = useState<string | null>(null)
+  const [recording, setRecording] = useState(false)
+  const [recSeconds, setRecSeconds] = useState(0)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const recChunksRef = useRef<Blob[]>([])
+  const recTimerRef = useRef<number | null>(null)
+  const recCancelRef = useRef(false)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -313,6 +328,82 @@ export function ChatPage() {
     scrollBottom()
   }
 
+  async function startRecording() {
+    if (recording || sending) return
+    setSendError(null)
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setSendError('Voice notes are not supported on this device.')
+      return
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mime = pickAudioMime()
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
+      recChunksRef.current = []
+      recCancelRef.current = false
+      rec.ondataavailable = e => { if (e.data.size > 0) recChunksRef.current.push(e.data) }
+      rec.onstop = () => {
+        stream.getTracks().forEach(t => t.stop())
+        if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null }
+        setRecording(false)
+        if (recCancelRef.current || recChunksRef.current.length === 0) return
+        const type = rec.mimeType || mime || 'audio/mp4'
+        sendVoiceNote(new Blob(recChunksRef.current, { type }), type)
+      }
+      rec.start()
+      recorderRef.current = rec
+      setRecSeconds(0)
+      setRecording(true)
+      recTimerRef.current = window.setInterval(() => {
+        setRecSeconds(s => {
+          if (s + 1 >= 300) recorderRef.current?.stop()  // 5 min cap
+          return s + 1
+        })
+      }, 1000)
+    } catch {
+      setSendError('Microphone access denied. Enable it in your device settings.')
+    }
+  }
+
+  function stopRecording(cancel = false) {
+    recCancelRef.current = cancel
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
+  }
+
+  useEffect(() => () => {
+    recCancelRef.current = true
+    if (recorderRef.current?.state === 'recording') recorderRef.current.stop()
+  }, [])
+
+  async function sendVoiceNote(blob: Blob, mime: string) {
+    if (!user || !conversationId) return
+    setSending(true)
+    setUploading(true)
+    const ext = mime.includes('webm') ? 'webm' : mime.includes('ogg') ? 'ogg' : 'm4a'
+    const path = `${conversationId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const { data: uploaded, error: upErr } = await supabase.storage
+      .from('message-attachments')
+      .upload(path, blob, { cacheControl: '3600', upsert: false, contentType: mime.split(';')[0] })
+    setUploading(false)
+    if (upErr || !uploaded) {
+      setSendError('Voice note upload failed. Please try again.')
+      setSending(false)
+      return
+    }
+    const { data: urlData } = supabase.storage.from('message-attachments').getPublicUrl(uploaded.path)
+    const { data: inserted, error: sendErr } = await supabase
+      .from('messages')
+      .insert({ conversation_id: conversationId, sender_id: user.id, body: null, attachment_url: urlData.publicUrl, attachment_type: 'audio' })
+      .select('id, sender_id, body, attachment_url, attachment_type, created_at')
+      .single()
+    if (sendErr) setSendError('Voice note failed to send. Please try again.')
+    else if (inserted) {
+      setMessages(prev => prev.some(m => m.id === (inserted as Message).id) ? prev : [...prev, inserted as Message])
+      scrollBottom()
+    }
+    setSending(false)
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -381,7 +472,10 @@ export function ChatPage() {
               return (
                 <div key={m.id} className={`chat-bubble-row${mine ? ' chat-bubble-row--mine' : ''}`}>
                   <div className={`chat-bubble${mine ? ' chat-bubble--mine' : ' chat-bubble--theirs'}`}>
-                    {m.attachment_url && isImageType(m.attachment_type, m.attachment_url) && (
+                    {m.attachment_url && m.attachment_type === 'audio' && (
+                      <audio controls preload="metadata" src={m.attachment_url} className="chat-bubble__audio" />
+                    )}
+                    {m.attachment_url && m.attachment_type !== 'audio' && isImageType(m.attachment_type, m.attachment_url) && (
                       <a href={m.attachment_url} target="_blank" rel="noopener noreferrer">
                         <img
                           src={m.attachment_url}
@@ -391,7 +485,7 @@ export function ChatPage() {
                         />
                       </a>
                     )}
-                    {m.attachment_url && !isImageType(m.attachment_type, m.attachment_url) && (
+                    {m.attachment_url && m.attachment_type !== 'audio' && !isImageType(m.attachment_type, m.attachment_url) && (
                       <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="chat-bubble__file">
                         <FileText size={18} strokeWidth={1.5} />
                         <span>View attachment</span>
@@ -429,41 +523,65 @@ export function ChatPage() {
             </button>
           </div>
         )}
+        {recording ? (
+          <div className="chat-page__input-row chat-page__rec-row">
+            <button type="button" className="chat-page__attach-btn" onClick={() => stopRecording(true)} aria-label="Cancel recording">
+              <X size={20} strokeWidth={1.5} />
+            </button>
+            <span className="chat-page__rec-indicator"><span className="chat-page__rec-dot" /> Recording {fmtDuration(recSeconds)}</span>
+            <button type="button" className="chat-page__send-btn" onClick={() => stopRecording(false)} aria-label="Stop and send voice note">
+              <Square size={16} strokeWidth={2} fill="currentColor" />
+            </button>
+          </div>
+        ) : (
         <div className="chat-page__input-row">
-          <button
-            type="button"
-            className="chat-page__attach-btn"
-            onClick={() => fileInputRef.current?.click()}
-            aria-label="Attach file"
-          >
-            <Paperclip size={20} strokeWidth={1.5} />
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,.pdf"
-            className="chat-page__file-input"
-            onChange={handleFileChange}
-          />
-          <textarea
-            ref={textareaRef}
-            className="chat-page__textarea"
-            placeholder="Type a message…"
-            value={text}
-            rows={1}
-            onChange={e => { setText(e.target.value); autoResize() }}
-            onKeyDown={handleKeyDown}
-          />
-          <button
-            type="button"
-            className="chat-page__send-btn"
-            onClick={handleSend}
-            disabled={sending || uploading || (!text.trim() && !attachPreview)}
-            aria-label="Send"
-          >
-            <Send size={18} strokeWidth={2} />
-          </button>
-        </div>
+            <button
+              type="button"
+              className="chat-page__attach-btn"
+              onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach file"
+            >
+              <Paperclip size={20} strokeWidth={1.5} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf"
+              className="chat-page__file-input"
+              onChange={handleFileChange}
+            />
+            <textarea
+              ref={textareaRef}
+              className="chat-page__textarea"
+              placeholder="Type a message…"
+              value={text}
+              rows={1}
+              onChange={e => { setText(e.target.value); autoResize() }}
+              onKeyDown={handleKeyDown}
+            />
+            {!text.trim() && !attachPreview ? (
+              <button
+                type="button"
+                className="chat-page__send-btn"
+                onClick={startRecording}
+                disabled={sending || uploading}
+                aria-label="Record voice note"
+              >
+                <Mic size={18} strokeWidth={2} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="chat-page__send-btn"
+                onClick={handleSend}
+                disabled={sending || uploading}
+                aria-label="Send"
+              >
+                <Send size={18} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

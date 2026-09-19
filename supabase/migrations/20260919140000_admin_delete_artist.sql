@@ -1,0 +1,3 @@
+-- Applied via Supabase: tattoo_completions.artist_id / flash_reservations.claimed_by_artist_id /
+-- profiles.artist_id now ON DELETE SET NULL, plus admin_delete_artist(uuid) RPC restricted to the
+-- two HoH admins (is_rewards_admin). See the applied migration "admin_delete_artist".

@@ -9,26 +9,12 @@ import './AdminDashboard.css'
 export function AdminDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [stats, setStats] = useState({ artists: 0, merch: 0, flash: 0, bookings: 0 })
   const [chatLoading, setChatLoading] = useState(false)
   const [chatError, setChatError] = useState('')
   const [flashEvent, setFlashEvent] = useState<{ id: string; title: string } | null>(null)
 
   useEffect(() => {
     async function load() {
-      const [a, m, f, b] = await Promise.all([
-        supabase.from('artists').select('id', { count: 'exact', head: true }),
-        supabase.from('merch').select('id', { count: 'exact', head: true }),
-        supabase.from('flash_events').select('id', { count: 'exact', head: true }),
-        supabase.from('bookings').select('id', { count: 'exact', head: true }),
-      ])
-      setStats({
-        artists: a.count ?? 0,
-        merch: m.count ?? 0,
-        flash: f.count ?? 0,
-        bookings: b.count ?? 0,
-      })
-
       // Most relevant flash day for the Quick Actions shortcut — a currently
       // open queue takes priority, otherwise the next upcoming one.
       const { data: openEvent } = await supabase
@@ -75,25 +61,6 @@ export function AdminDashboard() {
       <div className="admin-page__header">
         <h1 className="admin-page__title">Dashboard</h1>
       </div>
-      <div className="admin-stats">
-        <div className="admin-stat">
-          <div className="admin-stat__value">{stats.artists}</div>
-          <div className="admin-stat__label">Artists</div>
-        </div>
-        <div className="admin-stat">
-          <div className="admin-stat__value">{stats.merch}</div>
-          <div className="admin-stat__label">Merch Items</div>
-        </div>
-        <div className="admin-stat">
-          <div className="admin-stat__value">{stats.flash}</div>
-          <div className="admin-stat__label">Flash Events</div>
-        </div>
-        <div className="admin-stat">
-          <div className="admin-stat__value">{stats.bookings}</div>
-          <div className="admin-stat__label">Bookings</div>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div style={{ marginBottom: 32 }}>
         <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Quick Actions</p>

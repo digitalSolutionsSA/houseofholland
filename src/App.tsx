@@ -50,6 +50,7 @@ const AdminRent           = lazy(() => import('./pages/admin/AdminRent').then(m 
 const AdminWaivers        = lazy(() => import('./pages/admin/AdminWaivers').then(m        => ({ default: m.AdminWaivers })))
 const AdminArtistProfile  = lazy(() => import('./pages/admin/AdminArtistProfile').then(m  => ({ default: m.AdminArtistProfile })))
 const AdminReferrals      = lazy(() => import('./pages/admin/AdminReferrals').then(m      => ({ default: m.AdminReferrals })))
+const AdminRewards        = lazy(() => import('./pages/admin/AdminRewards').then(m        => ({ default: m.AdminRewards })))
 const AdminPoints         = lazy(() => import('./pages/admin/AdminPoints').then(m         => ({ default: m.AdminPoints })))
 
 function PushInit() {
@@ -110,6 +111,7 @@ export default function App() {
             <Route path="artist-profile"  element={<AdminArtistProfile />} />
             <Route path="referrals"       element={<AdminReferrals />} />
             <Route path="points"          element={<AdminPoints />} />
+            <Route path="rewards"         element={<AdminRewards />} />
           </Route>
 
           {/* Public app */}

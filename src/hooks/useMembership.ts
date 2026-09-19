@@ -25,7 +25,12 @@ export function useMembership() {
     // Passport points multiplier (tattoo-count based, legacy)
     pointsMultiplier: isBlackCard ? 1.5 : isPremium ? 1.0 : 0,
     // Battle pass spend rate: points earned per R10 spent
-    spendPointsRate: isBlackCard ? 2 : isPremium ? 1 : 0,
+    // Points per $100: tattoos / other spend
+    tattooPointsRate: isBlackCard ? 1.5 : isPremium ? 1 : 0,
+    otherPointsRate: isBlackCard ? 20 : isPremium ? 10 : 0,
+    referralPoints: isBlackCard ? 15 : isPremium ? 10 : 0,
+    birthdayPoints: isBlackCard ? 15 : isPremium ? 10 : 0,
+    flashDayPoints: isBlackCard ? 20 : isPremium ? 15 : 0,
     hasAccess: (required: MembershipPlan) =>
       tierIndex >= TIER_ORDER.indexOf(required),
   }

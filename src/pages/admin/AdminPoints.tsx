@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Search, Trophy, Gift, Zap, Users, Star, CheckCircle, ShieldOff } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { awardBonusPoints, CURRENT_SEASON } from '../../lib/awardPoints'
+import { awardBonusPoints, awardSpendPoints, bonusFor, CURRENT_SEASON } from '../../lib/awardPoints'
 
 type Client = { id: string; full_name: string | null; email: string | null; membership_plan: string }
 type PointTx = { id: string; points: number; reason: string; note: string | null; created_at: string }
@@ -10,16 +10,15 @@ type Reward  = { id: string; tier: number; name: string; points_required: number
 type Claim   = { id: string; reward_id: string; claimed_at: string; fulfilled_at: string | null; battle_pass_rewards: Reward | null }
 
 const BONUS_OPTIONS = [
-  { reason: 'review'    as const, label: 'Review',            points: 15,  icon: Star },
-  { reason: 'flash_day' as const, label: 'Flash Day',         points: 20,  icon: Zap },
-  { reason: 'referral'  as const, label: 'Referral',          points: 50,  icon: Users },
-  { reason: 'upgrade'   as const, label: 'Black Card Upgrade', points: 100, icon: Trophy },
-  { reason: 'manual'    as const, label: 'Manual (custom)',   points: 0,   icon: Gift },
+  { reason: 'flash_day' as const, label: 'Flash Day',       kind: 'flash_day' as const, icon: Zap },
+  { reason: 'referral'  as const, label: 'Referral',        kind: 'referral'  as const, icon: Users },
+  { reason: 'spend'     as const, label: 'Other spend ($)', kind: null,                 icon: Star },
+  { reason: 'manual'    as const, label: 'Manual (custom)', kind: null,                 icon: Gift },
 ]
 
 const REASON_LABELS: Record<string, string> = {
   spend: 'Purchase', referral: 'Referral', review: 'Review',
-  flash_day: 'Flash day', upgrade: 'Upgrade bonus', manual: 'Manual',
+  flash_day: 'Flash day', upgrade: 'Upgrade bonus', manual: 'Manual', birthday: 'Birthday',
 }
 
 export function AdminPoints() {
@@ -36,7 +35,7 @@ export function AdminPoints() {
   const [claims, setClaims]           = useState<Claim[]>([])
   const [loadingClient, setLoadingClient] = useState(false)
 
-  const [bonusReason, setBonusReason] = useState<typeof BONUS_OPTIONS[number]['reason']>('review')
+  const [bonusReason, setBonusReason] = useState<typeof BONUS_OPTIONS[number]['reason']>('flash_day')
   const [customPts, setCustomPts]     = useState('')
   const [bonusNote, setBonusNote]     = useState('')
   const [awarding, setAwarding]       = useState(false)
@@ -91,21 +90,27 @@ export function AdminPoints() {
   async function awardPoints() {
     if (!client || !profile?.id) return
     const selected = BONUS_OPTIONS.find(o => o.reason === bonusReason)!
-    const pts = bonusReason === 'manual'
-      ? (customPts.trim() ? parseInt(customPts) : 0)
-      : selected.points
-
-    if (pts <= 0) return
     setAwarding(true)
     setAwardMsg(null)
 
-    await awardBonusPoints({
-      profileId: client.id,
-      points: pts,
-      reason: bonusReason,
-      note: bonusNote.trim() || selected.label,
-      awardedBy: profile.id,
-    })
+    let pts = 0
+    if (bonusReason === 'spend') {
+      pts = await awardSpendPoints({ profileId: client.id, price: parseFloat(customPts) || 0, awardedBy: profile.id, category: 'other' })
+    } else {
+      pts = bonusReason === 'manual'
+        ? (customPts.trim() ? parseFloat(customPts) : 0)
+        : bonusFor(selected.kind!, client.membership_plan as any)
+      if (pts > 0) {
+        await awardBonusPoints({
+          profileId: client.id,
+          points: pts,
+          reason: bonusReason as 'referral' | 'flash_day' | 'manual',
+          note: bonusNote.trim() || selected.label,
+          awardedBy: profile.id,
+        })
+      }
+    }
+    if (pts <= 0) { setAwardMsg('No points to award (amount too low or free tier).'); setAwarding(false); return }
 
     setAwardMsg(`✓ Awarded ${pts} points to ${client.full_name ?? client.email}`)
     setCustomPts('')
@@ -255,16 +260,16 @@ export function AdminPoints() {
                         >
                           <Icon size={13} />
                           {opt.label}
-                          {opt.points > 0 && <span style={{ opacity: 0.7 }}>({opt.points})</span>}
+                          {opt.kind && <span style={{ opacity: 0.7 }}>({bonusFor(opt.kind, client.membership_plan as any)})</span>}
                         </button>
                       )
                     })}
                   </div>
 
-                  {bonusReason === 'manual' && (
+                  {(bonusReason === 'manual' || bonusReason === 'spend') && (
                     <div className="admin-modal__field">
-                      <label className="admin-modal__label">Custom Points</label>
-                      <input className="admin-modal__input" type="number" inputMode="numeric" min="1"
+                      <label className="admin-modal__label">{bonusReason === 'spend' ? 'Amount spent ($)' : 'Custom Points'}</label>
+                      <input className="admin-modal__input" type="number" inputMode="decimal" min="1"
                         value={customPts} placeholder="Enter amount"
                         onChange={e => setCustomPts(e.target.value)}
                         style={{ maxWidth: 180 }} />
@@ -282,7 +287,7 @@ export function AdminPoints() {
                     <button className="admin-btn admin-btn--primary"
                       onClick={awardPoints} disabled={awarding}>
                       <Trophy size={13} style={{ display: 'inline', marginRight: 6 }} />
-                      {awarding ? 'Awarding…' : `Award ${bonusReason === 'manual' ? (customPts || '?') : BONUS_OPTIONS.find(o => o.reason === bonusReason)?.points} pts`}
+                      {awarding ? 'Awarding…' : bonusReason === 'spend' ? 'Award spend points' : `Award ${bonusReason === 'manual' ? (customPts || '?') : bonusFor(BONUS_OPTIONS.find(o => o.reason === bonusReason)!.kind!, client.membership_plan as any)} pts`}
                     </button>
                     {awardMsg && (
                       <p style={{ marginTop: 10, fontSize: '0.82rem', color: 'var(--gold)' }}>{awardMsg}</p>

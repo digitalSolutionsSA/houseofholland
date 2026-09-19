@@ -399,3 +399,10 @@
     padding-bottom: 16px;
   }
 }
+
+/* ── Voice notes ── */
+.chat-bubble__audio { width: 220px; max-width: 100%; height: 36px; }
+.chat-page__rec-row { align-items: center; justify-content: space-between; }
+.chat-page__rec-indicator { flex: 1; display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 0.9rem; }
+.chat-page__rec-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff4d4d; animation: rec-pulse 1s ease-in-out infinite; }
+@keyframes rec-pulse { 50% { opacity: 0.25; } }

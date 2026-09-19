@@ -190,7 +190,8 @@ export function AdminArtists() {
 
   async function remove(id: string, name: string) {
     if (!confirm(`Remove ${name}? This cannot be undone.`)) return
-    await supabase.from('artists').delete().eq('id', id)
+    const { error: delErr } = await supabase.rpc('admin_delete_artist', { p_artist_id: id })
+    if (delErr) { alert(`Could not remove ${name}: ${delErr.message}`); return }
     load()
   }
 

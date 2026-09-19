@@ -1,5 +1,4 @@
 import { supabase } from './supabase'
-import { awardBonusPoints, CURRENT_SEASON } from './awardPoints'
 
 export type FlashReservation = {
   id: string
@@ -13,9 +12,8 @@ export type FlashReservation = {
  * must only invoke this once the customer has a signed consent form on
  * file (checked by the caller, since where that check happens differs
  * between the direct-join button and the sign-then-join redirect flow).
- * Also awards flash-day attendance points, same as the previous inline
- * logic in FlashQueuePage — centralised here so both entry points behave
- * identically.
+ * Flash-day points are NOT awarded here — they are granted when the
+ * appointment is completed (see AdminFlashQueue).
  */
 export async function joinFlashQueue(opts: {
   eventId: string
@@ -25,7 +23,7 @@ export async function joinFlashQueue(opts: {
   isPremium: boolean
   selectedTattoos?: number[]
 }): Promise<{ data?: FlashReservation; error?: string }> {
-  const { eventId, eventTitle, eventStatus, profileId, isPremium, selectedTattoos } = opts
+  const { eventId, profileId, selectedTattoos } = opts
 
   const { data, error } = await supabase
     .from('flash_reservations')
@@ -39,28 +37,6 @@ export async function joinFlashQueue(opts: {
     .single()
 
   if (error) return { error: error.message }
-
-  if (eventStatus === 'open' && isPremium) {
-    const { data: existing } = await supabase
-      .from('loyalty_points')
-      .select('id')
-      .eq('profile_id', profileId)
-      .eq('reason', 'flash_day')
-      .eq('reference_id', eventId)
-      .eq('season', CURRENT_SEASON)
-      .maybeSingle()
-
-    if (!existing) {
-      await awardBonusPoints({
-        profileId,
-        points: 20,
-        reason: 'flash_day',
-        note: eventTitle,
-        awardedBy: profileId,
-        referenceId: eventId,
-      })
-    }
-  }
 
   return { data: data as FlashReservation }
 }

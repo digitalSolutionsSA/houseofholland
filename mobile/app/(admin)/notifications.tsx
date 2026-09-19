@@ -41,8 +41,11 @@ export default function AdminNotificationsScreen() {
             const { data } = await supabase.from('memberships').select('profile_id').eq('tier', audience).eq('is_active', true)
             profileIds = (data ?? []).map((p: any) => p.profile_id)
           }
-          const rows = profileIds.map(id => ({ profile_id: id, title, message, type }))
-          if (rows.length > 0) await supabase.from('notifications').insert(rows)
+          const rows = profileIds.map(id => ({ profile_id: id, title, body: message, type }))
+          if (rows.length > 0) {
+            const { error } = await supabase.from('notifications').insert(rows)
+            if (error) { setSending(false); Alert.alert('Error', error.message); return }
+          }
           setSending(false)
           setTitle(''); setMessage('')
           Alert.alert('Sent', `Notification sent to ${profileIds.length} users.`)

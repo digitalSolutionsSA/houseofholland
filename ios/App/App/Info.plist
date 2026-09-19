@@ -68,6 +68,8 @@
 	<true/>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>HoH needs microphone access so you can send voice notes in chat.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>HoH needs camera access so artists can take a photo of finished tattoo work.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

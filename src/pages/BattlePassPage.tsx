@@ -16,6 +16,7 @@ type Reward = {
   points_required: number
   quantity_total: number
   quantity_claimed: number
+  image_url: string | null
   is_active: boolean
   sort_order: number
 }
@@ -34,9 +35,10 @@ const REASON_LABELS: Record<string, string> = {
   spend:     'Purchase',
   referral:  'Referral bonus',
   review:    'Review bonus',
-  flash_day: 'Flash day attendance',
+  flash_day: 'Flash day completed',
   upgrade:   'Black Card upgrade bonus',
   manual:    'Manual award',
+  birthday:  'Birthday bonus',
 }
 
 const REASON_ICONS: Record<string, typeof Star> = {
@@ -46,11 +48,12 @@ const REASON_ICONS: Record<string, typeof Star> = {
   flash_day: Zap,
   upgrade:   Trophy,
   manual:    Gift,
+  birthday:  Gift,
 }
 
 export function BattlePassPage() {
   const { profile } = useAuth()
-  const { isPremium, isBlackCard, spendPointsRate } = useMembership()
+  const { isPremium, isBlackCard, tattooPointsRate, otherPointsRate, referralPoints, birthdayPoints, flashDayPoints } = useMembership()
 
   const [totalPoints, setTotalPoints] = useState(0)
   const [rewards, setRewards] = useState<Reward[]>([])
@@ -214,6 +217,10 @@ export function BattlePassPage() {
                         : <Lock size={18} strokeWidth={1.8} />}
                     </div>
                     <div className="bp-tier__body">
+                      {r.image_url && (
+                        <img src={r.image_url} alt={r.name} loading="lazy"
+                          style={{ width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 10, marginBottom: 8 }} />
+                      )}
                       <div className="bp-tier__top">
                         <span className="bp-tier__number">TIER {r.tier}</span>
                         <span className="bp-tier__pts">{r.points_required} pts</span>
@@ -265,29 +272,36 @@ export function BattlePassPage() {
               <div className="bp-earn__item">
                 <Star size={18} className="bp-earn__icon" />
                 <div>
-                  <strong>Spend at HOH</strong>
-                  <span>{spendPointsRate} pt{spendPointsRate !== 1 ? 's' : ''} per $10 on tattoos or merch</span>
+                  <strong>Tattoos</strong>
+                  <span>{tattooPointsRate} pt{tattooPointsRate !== 1 ? 's' : ''} for every $100 spent on tattoos</span>
+                </div>
+              </div>
+              <div className="bp-earn__item">
+                <Gift size={18} className="bp-earn__icon" />
+                <div>
+                  <strong>Other spend</strong>
+                  <span>{otherPointsRate} pts for every $100 spent on anything else</span>
                 </div>
               </div>
               <div className="bp-earn__item">
                 <Users size={18} className="bp-earn__icon" />
                 <div>
                   <strong>Refer a friend</strong>
-                  <span>50 pts when they get a paid membership</span>
+                  <span>{referralPoints} pts when a friend signs up with your code</span>
                 </div>
               </div>
               <div className="bp-earn__item">
-                <Star size={18} className="bp-earn__icon" />
+                <Gift size={18} className="bp-earn__icon" />
                 <div>
-                  <strong>Leave a review</strong>
-                  <span>15 pts for a verified review</span>
+                  <strong>Birthday</strong>
+                  <span>{birthdayPoints} pts on your birthday (add it in your profile)</span>
                 </div>
               </div>
               <div className="bp-earn__item">
                 <Zap size={18} className="bp-earn__icon" />
                 <div>
-                  <strong>Attend a Flash Day</strong>
-                  <span>20 pts per flash day attended</span>
+                  <strong>Flash Day</strong>
+                  <span>{flashDayPoints} pts when your flash day appointment is completed</span>
                 </div>
               </div>
               {!isBlackCard && (
@@ -295,7 +309,7 @@ export function BattlePassPage() {
                   <Trophy size={18} className="bp-earn__icon" />
                   <div>
                     <strong>Upgrade to Black Card</strong>
-                    <span>100 pts bonus + earn 2× per $10</span>
+                    <span>Earn more on everything: 1.5 / 15 / 20 pts</span>
                   </div>
                 </div>
               )}

@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, Star, MessageCircle, CalendarDays, X, StarHalf } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { awardBonusPoints } from '../lib/awardPoints'
 import './ArtistProfilePage.css'
 
 function TikTokIcon({ size = 18 }: { size?: number }) {
@@ -88,7 +87,7 @@ function ReviewStars({ rating }: { rating: number }) {
 
 export function ArtistProfilePage() {
   const { artistId } = useParams()
-  const { user, profile: authProfile } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   const [artist, setArtist] = useState<Artist | null>(null)
@@ -201,16 +200,6 @@ export function ArtistProfilePage() {
     } else {
       const res = await supabase.from('reviews').insert(payload)
       error = res.error
-      // Award 15 points for first-time review
-      if (!res.error && authProfile) {
-        await awardBonusPoints({
-          profileId: user.id,
-          points: 15,
-          reason: 'review',
-          note: `Review for ${artist.name}`,
-          awardedBy: user.id,
-        })
-      }
     }
 
     if (error) {

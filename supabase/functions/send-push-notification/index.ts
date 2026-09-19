@@ -51,7 +51,35 @@ async function getAccessToken(serviceAccount: Record<string, string>): Promise<s
   })
 
   const { access_token } = await res.json()
+  if (!access_token) throw new Error('OAuth token fetch failed')
   return access_token
+}
+
+// Broadcasts insert many notification rows at once, so many invocations hit
+// Google's OAuth/FCM endpoints simultaneously. Retry throttled/failed calls.
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+
+async function withRetry<T>(fn: () => Promise<T>, attempts = 4): Promise<T> {
+  let lastErr: unknown
+  for (let i = 0; i < attempts; i++) {
+    try { return await fn() } catch (e) {
+      lastErr = e
+      await sleep(300 * 2 ** i + Math.random() * 400)
+    }
+  }
+  throw lastErr
+}
+
+async function sendFcm(accessToken: string, body: string): Promise<unknown> {
+  return withRetry(async () => {
+    const r = await fetch(FCM_URL, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body,
+    })
+    if (r.status === 429 || r.status >= 500) throw new Error(`FCM ${r.status}`)
+    return r.json()
+  })
 }
 
 Deno.serve(async (req) => {
@@ -79,35 +107,28 @@ Deno.serve(async (req) => {
     }
 
     const serviceAccount = JSON.parse(Deno.env.get('FIREBASE_SERVICE_ACCOUNT')!)
-    const accessToken = await getAccessToken(serviceAccount)
+    const accessToken = await withRetry(() => getAccessToken(serviceAccount))
 
     const results = await Promise.allSettled(
       tokens.map(({ token }) =>
-        fetch(FCM_URL, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: {
-              token,
-              notification: {
-                title: record.title ?? 'HoH',
-                body: record.body ?? '',
-              },
-              data: {
-                path: record.link ?? '',
-                type: record.type ?? 'general',
-              },
-              apns: {
-                payload: {
-                  aps: { sound: 'default' },
-                },
+        sendFcm(accessToken, JSON.stringify({
+          message: {
+            token,
+            notification: {
+              title: record.title ?? 'HoH',
+              body: record.body ?? '',
+            },
+            data: {
+              path: record.link ?? '',
+              type: record.type ?? 'general',
+            },
+            apns: {
+              payload: {
+                aps: { sound: 'default' },
               },
             },
-          }),
-        }).then(r => r.json())
+          },
+        }))
       )
     )
 

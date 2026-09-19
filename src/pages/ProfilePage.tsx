@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   ChevronRight, CreditCard, Award, Shirt, FilePen,
   LogOut, Camera, User, Mail, Phone, Save, X, Loader2,
-  IdCard, Upload, CheckCircle2, Palette, Trash2, AlertTriangle,
+  IdCard, Upload, CheckCircle2, Palette, Trash2, AlertTriangle, Cake, Copy, Share2,
 } from 'lucide-react'
 import { PageHeader } from '../components/shared/PageHeader'
 import { useAuth } from '../context/AuthContext'
@@ -49,6 +49,8 @@ export function ProfilePage() {
   const [editing, setEditing]           = useState(false)
   const [fullName, setFullName]         = useState(profile?.full_name ?? '')
   const [phone, setPhone]               = useState(profile?.phone ?? '')
+  const [birthdate, setBirthdate]       = useState(profile?.birthdate ?? '')
+  const [copied, setCopied]             = useState(false)
   const [saving, setSaving]             = useState(false)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const [error, setError]               = useState<string | null>(null)
@@ -59,6 +61,7 @@ export function ProfilePage() {
   function startEdit() {
     setFullName(profile?.full_name ?? '')
     setPhone(profile?.phone ?? '')
+    setBirthdate(profile?.birthdate ?? '')
     setError(null)
     setSuccess(null)
     setEditing(true)
@@ -123,6 +126,7 @@ export function ProfilePage() {
       .update({
         full_name: fullName.trim() || null,
         phone: phone.trim() || null,
+        birthdate: birthdate || null,
       })
       .eq('id', profile.id)
 
@@ -312,6 +316,20 @@ export function ProfilePage() {
 
             <div className="profile-page__field">
               <label className="profile-page__label">
+                <Cake size={14} strokeWidth={1.5} /> Birthday
+              </label>
+              <input
+                className="profile-page__input"
+                type="date"
+                value={birthdate}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={e => setBirthdate(e.target.value)}
+              />
+              <span className="profile-page__hint">Premium and Black Card members earn birthday points.</span>
+            </div>
+
+            <div className="profile-page__field">
+              <label className="profile-page__label">
                 <Phone size={14} strokeWidth={1.5} /> Phone
               </label>
               <input
@@ -357,11 +375,46 @@ export function ProfilePage() {
                 <span>{profile.phone}</span>
               </div>
             )}
+            {profile?.birthdate && (
+              <div className="profile-page__info-row">
+                <Cake size={15} strokeWidth={1.5} />
+                <span>{new Date(profile.birthdate + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </div>
+            )}
             {!profile?.full_name && !profile?.phone && (
               <p className="profile-page__hint" style={{ padding: '4px 0' }}>
                 Tap <strong>Edit</strong> to add your name and phone number.
               </p>
             )}
+          </div>
+        )}
+
+        {/* ── Friend referral code (paid members) ── */}
+        {!editing && !isStaff && profile?.referral_code && (tier === 'premium' || tier === 'black-card') && (
+          <div className="profile-page__id-section">
+            <div className="profile-page__id-header">
+              <Share2 size={16} strokeWidth={1.5} />
+              <span>Refer a friend</span>
+            </div>
+            <p className="profile-page__hint" style={{ margin: '4px 0 10px' }}>
+              Earn {tier === 'black-card' ? 15 : 10} points when a friend signs up with your code. Your code:
+            </p>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <strong style={{ fontSize: '1.3rem', letterSpacing: '0.12em' }}>{profile.referral_code}</strong>
+              <button
+                type="button"
+                className="profile-page__cancel-btn"
+                onClick={async () => {
+                  const text = `Join me on the House of Holland app! Use my code ${profile.referral_code} when you sign up.`
+                  try {
+                    if (navigator.share) await navigator.share({ text })
+                    else { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+                  } catch { /* cancelled */ }
+                }}
+              >
+                <Copy size={14} /> {copied ? 'Copied' : 'Share'}
+              </button>
+            </div>
           </div>
         )}
 

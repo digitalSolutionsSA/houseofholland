@@ -166,7 +166,7 @@ export function LoginPage() {
                     />
                     <InputField
                       type="text"
-                      placeholder="Artist Referral Code (optional)"
+                      placeholder="Referral Code — artist or friend (optional)"
                       leftIcon={<Tag size={18} strokeWidth={1.5} />}
                       autoComplete="off"
                       value={referralCode}

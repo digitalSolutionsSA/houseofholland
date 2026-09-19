@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Users, Trash2, Phone, Mail, CheckCircle2, UserCheck, Upload, ChevronRight, FileCheck, FileX } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { awardSpendPoints } from '../../lib/awardPoints'
+import { awardSpendPoints, awardFlashDayPoints } from '../../lib/awardPoints'
 import { StyleSelect } from '../../components/shared/StyleSelect'
 import { downloadConsentForm, type ConsentFormFields } from '../../lib/downloadConsentForm'
 
@@ -266,6 +266,15 @@ export function AdminFlashQueue() {
 
     const { error: completeErr } = await supabase.rpc('complete_flash_customer', { p_reservation_id: completeTarget.id })
     if (completeErr) { setCompleteError(completeErr.message); setSaving(false); return }
+
+    if (profile?.id) {
+      await awardFlashDayPoints({
+        profileId: completeTarget.profile_id,
+        awardedBy: profile.id,
+        referenceId: completeTarget.id,
+        note: event?.title ?? 'Flash day',
+      })
+    }
 
     setSaving(false)
     setCompleteTarget(null)
