@@ -108,7 +108,12 @@ export function MembershipPage() {
         if (err?.userCancelled) {
           // User backed out of the native purchase sheet — not an error.
         } else {
-          setUpgradeError(err?.message || 'Purchase failed. Please try again.')
+          // Never show raw RevenueCat/StoreKit developer messages to members.
+          setUpgradeError(
+            err?.message === 'This plan is not available for purchase right now.'
+              ? err.message
+              : "We couldn't complete your upgrade right now. Please try again in a little while."
+          )
           console.error(err)
         }
       } finally {
